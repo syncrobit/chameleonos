@@ -610,6 +610,7 @@ menu "Erlang libraries/modules"
 	source "package/erlang-p1-yaml/Config.in"
 	source "package/erlang-p1-yconf/Config.in"
 	source "package/erlang-p1-zlib/Config.in"
+	source "package/helium-miner/Config.in"
 endmenu
 endif
 	source "package/execline/Config.in"

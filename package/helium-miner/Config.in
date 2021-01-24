@@ -1,0 +1,4 @@
+config BR2_PACKAGE_HELIUM_MINER
+	bool "helium-miner"
+	help
+	  https://github.com/helium/miner
