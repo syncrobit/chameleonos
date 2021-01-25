@@ -1,0 +1,11 @@
+diff -uNr procket/c_src/Makefile procket-patched/c_src/Makefile
+--- procket/c_src/Makefile	2021-01-25 23:45:29.464268770 +0200
++++ procket-patched/c_src/Makefile	2021-01-25 23:45:50.507619471 +0200
+@@ -4,6 +4,7 @@
+ PROJECT ?= $(notdir $(BASEDIR))
+ PROJECT := $(strip $(PROJECT))
+ 
++ERLANG_ARCH = arch=armv8-a
+ 
+ C_SRC_DIR = $(CURDIR)
+ C_SRC_OUTPUT ?= $(CURDIR)/../priv/$(PROJECT).so
