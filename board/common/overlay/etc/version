@@ -1,4 +1,4 @@
-OS_NAME="thingOS"
-OS_SHORT_NAME="thingos"
-OS_PREFIX="thing"
+OS_NAME="ChameleonOS"
+OS_SHORT_NAME="chameleonos"
+OS_PREFIX="cham"
 OS_VERSION="unknown"
