@@ -29,10 +29,10 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
             ./rebar3 get-deps \
     )
     
-    patch -d $($D)/_build/default/lib/erasure -p1 < package/helium-miner/erlang-erasure.patch
-    patch -d $($D)/_build/default/lib/erlang_pbc -p1 < package/helium-miner/erlang-pbc.patch
-    patch -d $($D)/_build/default/lib/procket -p1 < package/helium-miner/procket.patch
-    patch -d $($D)/_build/default/lib/rocksdb -p1 < package/helium-miner/erlang-rocksdb.patch
+    patch -d $(@D)/_build/default/lib/erasure -p1 < package/helium-miner/erlang-erasure._patch
+    patch -d $(@D)/_build/default/lib/erlang_pbc -p1 < package/helium-miner/erlang-pbc._patch
+    patch -d $(@D)/_build/default/lib/procket -p1 < package/helium-miner/procket._patch
+    patch -d $(@D)/_build/default/lib/rocksdb -p1 < package/helium-miner/erlang-rocksdb._patch
 endef
             
 define HELIUM_MINER_BUILD_CMDS
