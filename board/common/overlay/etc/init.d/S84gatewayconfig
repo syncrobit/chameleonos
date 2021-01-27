@@ -1,0 +1,80 @@
+#!/bin/bash
+
+WORK_DIR="/opt/gateway_config"
+PROG="bin/gateway_config"
+FULL_PROG=${WORK_DIR}/${PROG}
+LOG="/var/log/gateway_config/startup.log"
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+
+setup_bluetooth() {
+    # Advertise on channels 37, 38 and 39
+    echo 7 > /sys/kernel/debug/bluetooth/hci0/adv_channel_map
+
+    # Send a beacon every 152.5 ms
+    echo 153 > /sys/kernel/debug/bluetooth/hci0/adv_min_interval
+    echo 153 > /sys/kernel/debug/bluetooth/hci0/adv_max_interval
+    
+    echo -e "pairable off\nquit" | /usr/bin/bluetoothctl &>/dev/null
+
+    # Since we don't have a button, just enable pairing at boot, with a short delay
+    (/bin/sleep 10 && ${FULL_PROG} advertise on) &>> ${LOG} &
+}
+
+start() {
+    msg_begin "Starting gateway-config"
+    
+    setup_bluetooth
+
+    cd ${WORK_DIR}
+    mkdir -p $(dirname ${LOG})
+    
+    export DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
+    export RUNNER_LOG_DIR="/var/log/gateway_config"
+    export ERL_CRASH_DUMP="/var/log/gateway_config"
+    export ERL_EPMD_ADDRESS="127.0.0.1"
+    export ERL_FULLSWEEP_AFTER=0  # We don't care about performance, just don't eat up RAM
+    
+    ${PROG} foreground &>> ${LOG} &
+
+    msg_done
+}
+
+stop() {
+    msg_begin "Stopping gateway-config"
+    
+    base_prog=$(basename ${PROG})
+    if killall -q ${base_prog}; then
+        # Allow 2 seconds for a gracefulish shutdown
+        sleep 2
+        msg_done
+    else
+        msg_fail
+    fi
+    
+    # Kill any remainings with SIGKILL
+    ps | grep -E 'gateway.?config' | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    restart)
+        stop
+        start
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

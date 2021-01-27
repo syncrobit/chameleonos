@@ -18,11 +18,11 @@ define HELIUM_PACKET_FORWARDER_BUILD_CMDS
 endef
 
 define HELIUM_PACKET_FORWARDER_INSTALL_TARGET_CMDS
-    mkdir -p $(TARGET_DIR)/packet_forwarder/bin
-    mkdir -p $(TARGET_DIR)/packet_forwarder/etc
-    cp $(@D)/tools/reset_lgw.sh $(TARGET_DIR)/packet_forwarder/bin
-    cp $(@D)/packet_forwarder/lora_pkt_fwd $(TARGET_DIR)/packet_forwarder/bin
-    cp package/helium-packet-forwarder/global_conf_sx1302.json $(TARGET_DIR)/packet_forwarder/etc
+    mkdir -p $(TARGET_DIR)/opt/packet_forwarder/bin
+    mkdir -p $(TARGET_DIR)/opt/packet_forwarder/etc
+    cp $(@D)/tools/reset_lgw.sh $(TARGET_DIR)/opt/packet_forwarder/bin
+    cp $(@D)/packet_forwarder/lora_pkt_fwd $(TARGET_DIR)/opt/packet_forwarder/bin
+    cp package/helium-packet-forwarder/global_conf_sx1302.json $(TARGET_DIR)/opt/packet_forwarder/etc
 endef
 
 define HELIUM_PACKET_FORWARDER_INSTALL_STAGING_CMDS

@@ -6,7 +6,7 @@ diff -uNr gateway-config-2021.01.22.0/config/sys.config gateway-config-2021.01.2
   {gateway_config,
    [
 -   {keys_file, "/var/data/public_keys"},
-+   {keys_file, "/var/lib/public_keys"},
++   {keys_file, "/var/run/public_keys"},
     {lights_off, "/tmp/gateway_lights_off"},
     {button, [
               {gpio, 7}

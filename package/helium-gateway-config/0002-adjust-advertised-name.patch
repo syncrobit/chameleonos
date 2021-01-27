@@ -1,0 +1,9 @@
+diff -uNr gateway-config-2021.01.22.0/src/gateway_ble_advertisement.erl gateway-config-2021.01.22.0-patched/src/gateway_ble_advertisement.erl
+--- gateway-config-2021.01.22.0/src/gateway_ble_advertisement.erl	2020-09-16 20:42:36.000000000 +0300
++++ gateway-config-2021.01.22.0-patched/src/gateway_ble_advertisement.erl	2021-01-27 17:43:13.987967925 +0200
+@@ -23,4 +23,4 @@
+ 
+ local_name(_) ->
+     Serial = gateway_config:serial_number(),
+-    "Helium Hotspot " ++ lists:nthtail(length(Serial) - 4, Serial).
++    "SyncroBit Chameleon " ++ lists:nthtail(length(Serial) - 4, Serial).
