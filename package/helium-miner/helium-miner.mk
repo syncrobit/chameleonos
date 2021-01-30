@@ -60,6 +60,7 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     mkdir -p update; \
     wget https://github.com/helium/blockchain-api/raw/master/priv/prod/genesis -O update/genesis; \
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
+    cp $(@D)/config/com.helium.Miner.conf $(TARGET_DIR)/etc/dbus-1/system.d
 endef
 
 define HELIUM_MINER_INSTALL_STAGING_CMDS

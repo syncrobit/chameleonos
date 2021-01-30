@@ -24,9 +24,11 @@ define HELIUM_GATEWAY_CONFIG_BUILD_CMDS
 endef
 
 define HELIUM_GATEWAY_CONFIG_INSTALL_TARGET_CMDS
-    mkdir -p $(TARGET_DIR)/opt/gateway_config; \
-    cd $(TARGET_DIR)/opt/gateway_config; \
-    tar -zxvf $(@D)/_build/prod/rel/*/*.tar.gz;
+    mkdir -p $(TARGET_DIR)/opt/gateway_config \
+    cd $(TARGET_DIR)/opt/gateway_config \
+    tar -zxvf $(@D)/_build/prod/rel/*/*.tar.gz \
+    rm -rf media
+    cp $(@D)/config/com.helium.Config.conf $(TARGET_DIR)/etc/dbus-1/system.d
 endef
 
 define HELIUM_GATEWAY_CONFIG_INSTALL_STAGING_CMDS
