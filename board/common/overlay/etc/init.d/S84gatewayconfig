@@ -10,6 +10,8 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 
 
 setup_bluetooth() {
+    connmanctl enable bluetooth &>/dev/null
+
     # Advertise on channels 37, 38 and 39
     echo 7 > /sys/kernel/debug/bluetooth/hci0/adv_channel_map
 
@@ -26,10 +28,10 @@ setup_bluetooth() {
 start() {
     msg_begin "Starting gateway-config"
     
+    mkdir -p $(dirname ${LOG})
     setup_bluetooth
 
     cd ${WORK_DIR}
-    mkdir -p $(dirname ${LOG})
     
     export DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
     export RUNNER_LOG_DIR="/var/log/gateway_config"
