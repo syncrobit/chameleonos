@@ -14,7 +14,8 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 
 start() {
     msg_begin "Starting connman"
-    
+
+    mkdir -p /var/run/connman    
     ${PROG} -n -r &> ${LOG} &
     test $? == 0 && msg_done || msg_fail
 }
