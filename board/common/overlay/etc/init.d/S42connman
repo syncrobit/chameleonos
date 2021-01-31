@@ -7,14 +7,15 @@ PROG="/usr/sbin/connmand"
 
 
 test -x ${PROG} || exit 0
-test -x ${CONF} || exit 0
+test -s ${CONF} || exit 0
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
 
 start() {
     msg_begin "Starting connman"
-    ${PROG} -n &> ${LOG} &
+    
+    ${PROG} -n -r &> ${LOG} &
     test $? == 0 && msg_done || msg_fail
 }
 
