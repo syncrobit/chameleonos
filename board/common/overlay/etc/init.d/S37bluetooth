@@ -61,7 +61,7 @@ start() {
     fi
 
     msg_begin "Starting bluetoothd"
-    ${PROG} &>/dev/null &
+    ${PROG} -E --noplugin=* &>/dev/null &
     msg_done
 
     # if DiscoverableTimeout is set to 0, make adapter discoverable from boot time
