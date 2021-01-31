@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CONF="/etc/connman/main.conf"
-
-LOG="/var/log/connman.log"
 PROG="/usr/sbin/connmand"
+LOG="/var/log/connman.log"
+RUN_DIR="/var/run/connman"
 
 
 test -x ${PROG} || exit 0
@@ -15,7 +15,8 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 start() {
     msg_begin "Starting connman"
 
-    mkdir -p /var/run/connman    
+    mkdir -p ${RUN_DIR}
+    ifconfig lo up
     ${PROG} -n -r &> ${LOG} &
     test $? == 0 && msg_done || msg_fail
 }
