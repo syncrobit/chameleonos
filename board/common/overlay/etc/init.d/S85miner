@@ -1,0 +1,87 @@
+#!/bin/bash
+
+WORK_DIR="/opt/miner"
+PROG="bin/miner"
+FULL_PROG=${WORK_DIR}/${PROG}
+LOG="/var/log/miner/startup.log"
+
+WATCH_INTERVAL=10
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+
+watch() {
+    count=0
+    while true; do
+        sleep ${WATCH_INTERVAL}
+        if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
+            logger -t miner -s "not running, calling panic action"
+            panic_action miner
+            break
+        fi
+    done
+}
+
+start() {
+    msg_begin "Starting miner"
+
+    cd ${WORK_DIR}
+    mkdir -p $(dirname ${LOG})
+    
+    export RUNNER_LOG_DIR="/var/log/miner"
+    export ERL_CRASH_DUMP="/var/log/miner"
+    export ERL_FULLSWEEP_AFTER=5
+    export HOME=/var/run
+    ulimit -n 8192
+    
+    public_keys=$(${PROG} print_keys)
+    if [[ $? != 0 ]]; then
+        msg_fail
+        return 1
+    fi
+    
+    echo $public_keys > /var/run/public_keys
+
+    nice -n 10 ${PROG} foreground &>> ${LOG} &
+    watch &
+
+    msg_done
+}
+
+stop() {
+    msg_begin "Stopping miner"
+    
+    base_prog=$(basename ${PROG})
+    if killall -q ${base_prog}; then
+        # Allow 2 seconds for a gracefulish shutdown
+        sleep 2
+        msg_done
+    else
+        msg_fail
+    fi
+    
+    # Kill any remainings with SIGKILL
+    ps | grep miner | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    restart)
+        stop
+        start
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

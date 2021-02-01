@@ -22,7 +22,7 @@ setup_bluetooth() {
     echo -e "pairable off\nquit" | /usr/bin/bluetoothctl &>/dev/null
 
     # Since we don't have a button, just enable pairing at boot, with a short delay
-    (/bin/sleep 10 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
+    (/bin/sleep 5 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
 }
 
 start() {
