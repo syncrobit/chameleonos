@@ -24,7 +24,7 @@ define HELIUM_GATEWAY_CONFIG_BUILD_CMDS
 endef
 
 define HELIUM_GATEWAY_CONFIG_INSTALL_TARGET_CMDS
-    mkdir -p $(TARGET_DIR)/opt/gateway_config; \
+    mkdir -p $(TARGET_DIR)/opt/gateway_config/log; \
     cd $(TARGET_DIR)/opt/gateway_config; \
     tar xvf $(@D)/_build/prod/rel/*/*.tar.gz; \
     rm -rf media
