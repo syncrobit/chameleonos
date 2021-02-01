@@ -20,7 +20,7 @@ endef
 define HELIUM_PACKET_FORWARDER_INSTALL_TARGET_CMDS
     mkdir -p $(TARGET_DIR)/opt/packet_forwarder/bin
     mkdir -p $(TARGET_DIR)/opt/packet_forwarder/etc
-    cp $(@D)/tools/reset_lgw.sh $(TARGET_DIR)/opt/packet_forwarder/bin
+    ln -sf /usr/bin/reset_lgw.sh $(TARGET_DIR)/opt/packet_forwarder/bin
     cp $(@D)/packet_forwarder/lora_pkt_fwd $(TARGET_DIR)/opt/packet_forwarder/bin
     cp package/helium-packet-forwarder/global_conf.json $(TARGET_DIR)/opt/packet_forwarder/etc
 endef
