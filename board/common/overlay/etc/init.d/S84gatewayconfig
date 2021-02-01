@@ -22,7 +22,7 @@ setup_bluetooth() {
     echo -e "pairable off\nquit" | /usr/bin/bluetoothctl &>/dev/null
 
     # Since we don't have a button, just enable pairing at boot, with a short delay
-    (/bin/sleep 10 && ${FULL_PROG} advertise on) &>> ${LOG} &
+    (/bin/sleep 10 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
 }
 
 start() {
@@ -38,7 +38,8 @@ start() {
     export ERL_CRASH_DUMP="/var/log/gateway_config"
     export ERL_EPMD_ADDRESS="127.0.0.1"
     export ERL_FULLSWEEP_AFTER=0  # We don't care about performance, just don't eat up RAM
-    
+    export HOME=/var/run
+
     ${PROG} foreground &>> ${LOG} &
 
     msg_done
