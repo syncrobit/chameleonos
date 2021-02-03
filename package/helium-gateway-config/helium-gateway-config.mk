@@ -26,8 +26,9 @@ endef
 define HELIUM_GATEWAY_CONFIG_INSTALL_TARGET_CMDS
     mkdir -p $(TARGET_DIR)/opt/gateway_config/log; \
     cd $(TARGET_DIR)/opt/gateway_config; \
-    tar xvf $(@D)/_build/prod/rel/*/*.tar.gz; \
-    rm -rf media
+    tar xvf $(@D)/_build/prod/rel/*/*.tar.gz
+    
+    rm -rf $(TARGET_DIR)/opt/gateway_config/$${HOME}
     cp $(@D)/config/com.helium.Config.conf $(TARGET_DIR)/etc/dbus-1/system.d
 endef
 

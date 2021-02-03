@@ -61,6 +61,8 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     wget https://github.com/helium/blockchain-api/raw/master/priv/prod/genesis -O update/genesis; \
     sed -i 's/\(.*ecc\)/%%\1/' releases/0.1.0/sys.config; \
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
+    
+    rm -rf $(TARGET_DIR)/opt/gateway_config/$${HOME}
     cp $(@D)/config/com.helium.Miner.conf $(TARGET_DIR)/etc/dbus-1/system.d
 endef
 
