@@ -5,5 +5,6 @@ dtparam=i2s=on
 dtparam=spi=on
 dtparam=audio=on
 dtoverlay=i2c-gpio
+dtoverlay=dwc2,dr_mode=host
 
 arm_64bit=1
