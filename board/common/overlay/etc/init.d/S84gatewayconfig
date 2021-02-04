@@ -4,20 +4,22 @@ WORK_DIR="/opt/gateway_config"
 PROG="bin/gateway_config"
 FULL_PROG=${WORK_DIR}/${PROG}
 LOG="/var/log/gateway_config/startup.log"
+HCI_DIR="/sys/kernel/debug/bluetooth/hci0"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
+test -d ${HCI_DIR} || exit 0
 
 
 setup_bluetooth() {
     connmanctl enable bluetooth &>/dev/null
 
     # Advertise on channels 37, 38 and 39
-    echo 7 > /sys/kernel/debug/bluetooth/hci0/adv_channel_map
+    echo 7 > ${HCI_DIR}/adv_channel_map
 
     # Send a beacon every 152.5 ms
-    echo 153 > /sys/kernel/debug/bluetooth/hci0/adv_min_interval
-    echo 153 > /sys/kernel/debug/bluetooth/hci0/adv_max_interval
+    echo 153 > ${HCI_DIR}/adv_min_interval
+    echo 153 > ${HCI_DIR}/adv_max_interval
     
     echo -e "pairable off\nquit" | /usr/bin/bluetoothctl &>/dev/null
 
