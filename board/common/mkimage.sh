@@ -85,8 +85,8 @@ if [ -f ${ROOT}/etc/version ]; then
     if [ -n "${THINGOS_NAME}" ]; then
         msg "setting OS name to ${THINGOS_NAME}"
         sed -ri "s/OS_NAME=\".*\"/OS_NAME=\"${THINGOS_NAME}\"/" ${ROOT}/etc/version
-        sed -ri "s/DISTRIB_ID=\".*\"/DISTRIB_ID=\"${THINGOS_NAME}\"/" ${ROOT}/etc/lsb_release
-        sed -ri "s/DISTRIB_DESCRIPTION=\".*\"/DISTRIB_DESCRIPTION=\"${THINGOS_NAME}\"/" ${ROOT}/etc/lsb_release
+        sed -ri "s/DISTRIB_ID=.*/DISTRIB_ID=${THINGOS_NAME}/" ${ROOT}/etc/lsb_release
+        sed -ri "s/DISTRIB_DESCRIPTION=.*/DISTRIB_DESCRIPTION=\"${THINGOS_NAME}\"/" ${ROOT}/etc/lsb_release
     fi
     if [ -n "${THINGOS_SHORT_NAME}" ]; then
         msg "setting OS short name to ${THINGOS_SHORT_NAME}"
@@ -99,8 +99,8 @@ if [ -f ${ROOT}/etc/version ]; then
     if [ -n "${THINGOS_VERSION}" ]; then
         msg "setting OS version to ${THINGOS_VERSION}"
         sed -ri "s/OS_VERSION=\".*\"/OS_VERSION=\"${THINGOS_VERSION}\"/" ${ROOT}/etc/version
-        sed -ri "s/DISTRIB_RELEASE=\".*\"/DISTRIB_RELEASE=\"${THINGOS_VERSION}\"/" ${ROOT}/etc/lsb_release
-        sed -ri "s/DISTRIB_DATE=\".*\"/DISTRIB_DATE=\"$(date -u '+%Y-%m-%d %H:%M:%S')\"/" ${ROOT}/etc/lsb_release
+        sed -ri "s/DISTRIB_RELEASE=.*/DISTRIB_RELEASE=${THINGOS_VERSION}/" ${ROOT}/etc/lsb_release
+        sed -ri "s/DISTRIB_DATE=.*/DISTRIB_DATE=\"$(date -u '+%Y-%m-%d %H:%M:%S')\"/" ${ROOT}/etc/lsb_release
     fi
 fi
 
