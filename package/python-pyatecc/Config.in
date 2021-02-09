@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PYTHON_PYATECC
+	bool "python-pyatecc"
+	help
+	  Python package for Microchip's ATECC508/ATECC608 cryptographic co-processors with secure hardware-based key storage.
+
+	  https://github.com/ccrisan/pyatecc
