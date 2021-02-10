@@ -8,7 +8,6 @@ HCI_DIR="/sys/kernel/debug/bluetooth/hci0"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
-test -d ${HCI_DIR} || exit 0
 
 
 setup_bluetooth() {
@@ -29,6 +28,11 @@ setup_bluetooth() {
 
 start() {
     msg_begin "Starting gateway-config"
+    
+    if ! [[ -e ${HCI_DIR} ]]; then
+        msg_fail "no bluetooth device"
+        return
+    fi
     
     mkdir -p $(dirname ${LOG})
     setup_bluetooth

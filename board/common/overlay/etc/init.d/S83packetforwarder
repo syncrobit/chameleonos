@@ -11,6 +11,11 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 start() {
     msg_begin "Starting packet-forwarder"
     
+    if ! [[ -e /dev/spidev0.0 ]]; then
+        msg_fail "no SPI device"
+        return
+    fi
+    
     cd $(dirname ${PROG})  # Must be run from the bin directory
     ${PROG} -c ${CONF} &>> ${LOG} &
 

@@ -26,6 +26,11 @@ watch() {
 start() {
     msg_begin "Starting miner"
 
+    if ! [[ -e /dev/i2c-1 ]]; then
+        msg_fail "no I2C device"
+        return
+    fi
+
     cd ${WORK_DIR}
     mkdir -p $(dirname ${LOG})
     
