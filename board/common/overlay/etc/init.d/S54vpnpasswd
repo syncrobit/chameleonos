@@ -15,7 +15,8 @@ start() {
         return
     fi
     
-    ${MKVPNPASSWD} > ${VPNPASSWD_FILE}
+    echo "cham-${BOARD_SN}" > ${VPNPASSWD_FILE}
+    ${MKVPNPASSWD} >> ${VPNPASSWD_FILE}
 
     test $? == 0 && msg_done || msg_fail
 }
