@@ -31,6 +31,11 @@ start() {
         return
     fi
 
+    if ! [[ -s /var/run/vpnpasswd ]]; then
+        msg_fail "no provisioned ECC device"
+        return
+    fi
+
     cd ${WORK_DIR}
     mkdir -p $(dirname ${LOG})
     
