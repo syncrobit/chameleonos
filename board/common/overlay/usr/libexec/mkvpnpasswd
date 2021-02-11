@@ -24,7 +24,7 @@ def make_password():
     atecc = pyatecc.ATECC(1)
     now = int(time.time())
     cpu_serial_number = get_unit_serial_number()
-    ecc_serial_number = atecc.serial_number
+    ecc_serial_number = atecc.serial_number.lower()
     to_hash = f'{now}.{cpu_serial_number}.{ecc_serial_number}'
     to_sign = hashlib.sha256(to_hash.encode()).digest()
     signature = atecc.ecdsa_sign(ECC_SLOT, to_sign)

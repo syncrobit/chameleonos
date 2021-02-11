@@ -16,9 +16,14 @@ start() {
     fi
     
     echo "cham-${BOARD_SN}" > ${VPNPASSWD_FILE}
-    ${MKVPNPASSWD} >> ${VPNPASSWD_FILE}
+    ${MKVPNPASSWD} 2>/var/log/mkvpnpasswd.log >> ${VPNPASSWD_FILE}
 
-    test $? == 0 && msg_done || msg_fail
+    if [[ $? == 0 ]]; then
+        msg_done
+    else
+        msg_fail
+        rm -f ${VPNPASSWD_FILE}
+    fi
 }
 
 case "$1" in

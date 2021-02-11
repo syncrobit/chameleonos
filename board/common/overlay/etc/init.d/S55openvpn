@@ -22,6 +22,7 @@ prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
 
 test -s ${WATCH_CONF} && source ${WATCH_CONF}
 test -d ${CONF} || exit 0
+test -s /var/run/vpnpasswd || exit 0
 
 
 running() {
