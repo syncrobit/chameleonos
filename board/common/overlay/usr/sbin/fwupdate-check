@@ -1,0 +1,29 @@
+#!/bin/bash
+
+source /etc/init.d/base
+
+BASE_URL="http://firmware.syncrob.it"
+
+
+if [[ "${OS_PRERELEASES}" == "true" ]]; then
+    latest_file="latest.json"
+else
+    latest_file="latest_stable.json"
+fi
+
+latest_url="${BASE_URL}/${latest_file}"
+latest=$(curl -sSL ${latest_url})
+latest=$(jq -r '.path,.version,.date' <<<"${latest}")
+latest=(${latest})
+latest_path=${latest[0]}
+latest_version=${latest[1]}
+
+if [[ "${OS_VERSION}" == "${latest_version}" ]]; then
+    echo "Already running latest version (${latest_version})"
+    exit
+fi
+
+firmware_url="${BASE_URL}/${latest_path}"
+touch /var/run/panic_prohibited
+echo "Updating from ${OS_VERSION} to ${latest_version} using ${firmware_url}"
+fwupdate upgrade "${firmware_url}"
