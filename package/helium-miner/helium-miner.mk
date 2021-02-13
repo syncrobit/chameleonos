@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-HELIUM_MINER_VERSION = 2021.01.22.0
+HELIUM_MINER_VERSION = 2021.02.12.0
 HELIUM_MINER_SITE = $(call github,helium,miner,$(HELIUM_MINER_VERSION))
 HELIUM_MINER_LICENSE = Apache-2.0
 HELIUM_MINER_LICENSE_FILES = LICENSE
@@ -61,7 +61,7 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     wget https://github.com/helium/blockchain-api/raw/master/priv/prod/genesis -O update/genesis; \
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
     
-    rm -rf $(TARGET_DIR)/opt/gateway_config/$${HOME}
+    rm -rf $(TARGET_DIR)/opt/miner/$${HOME}
     cp $(@D)/config/com.helium.Miner.conf $(TARGET_DIR)/etc/dbus-1/system.d
 endef
 
