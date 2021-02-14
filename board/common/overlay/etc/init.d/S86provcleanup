@@ -1,0 +1,37 @@
+#!/bin/bash
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+test -e /var/log/provision.log || exit 0
+
+
+start() {
+    msg_begin "Provisioning cleanup"
+
+    rm -f /var/log/provision.log
+    rm -f /var/log/post-upgrade.log
+    rm -rf /var/log/gateway_mfr
+    
+    if [[ -s /var/run/provision_ok_gpio ]]; then
+        source /var/lib/provision_ok_gpio
+        gpio.sh ${GPIO_NO} ${GPIO_VAL}
+    fi
+
+    rm -f /var/lib/provision_ok_gpio
+    
+    msg_done
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        ;;
+
+    *)
+        echo "Usage: $0 {start}"
+        exit 1
+esac
+
+exit $?
