@@ -5,6 +5,11 @@ source /etc/init.d/base
 BASE_URL="http://firmware.syncrob.it"
 
 
+if ps aux | grep fwupdate | grep -v $$ |grep -vq grep; then
+    echo "Firmware update process is already running"
+    exit
+fi
+
 if [[ "${OS_PRERELEASES}" == "true" ]]; then
     latest_file="latest.json"
 else
@@ -23,7 +28,7 @@ if [[ "${OS_VERSION}" == "${latest_version}" ]]; then
     exit
 fi
 
-firmware_url="${BASE_URL}/${latest_path}"
+firmware_url="${BASE_URL}${latest_path}"
 touch /var/run/panic_prohibited
 echo "Updating from ${OS_VERSION} to ${latest_version} using ${firmware_url}"
 fwupdate upgrade "${firmware_url}"
