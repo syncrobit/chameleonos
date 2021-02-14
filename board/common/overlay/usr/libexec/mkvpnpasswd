@@ -40,8 +40,9 @@ if __name__ == '__main__':
             password = make_password()
             break
         
-        except RuntimeError:
+        except Exception:
             time.sleep(0.5)
+
     else:
         raise RuntimeError('Timeout when talking to ECC')
 
