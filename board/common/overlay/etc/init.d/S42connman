@@ -7,6 +7,7 @@ LOG="/var/log/connman.log"
 LIB_DIR="/var/lib/connman"
 RUN_DIR="/var/run/connman"
 ONLINE_TIMEOUT=20
+ONLINE_TIMEOUT_INITIAL=10
 
 
 test -x ${PROG} || exit 0
@@ -24,11 +25,13 @@ start() {
     ifconfig lo up
     ${PROG} -n -r &> ${LOG} &
     if grep -qE '(Favorite)|(AutoConnect)=true' ${LIB_DIR}/*/settings 2>/dev/null; then
-        ${PROG_WO} --timeout=${ONLINE_TIMEOUT}
-        test $? == 0 && msg_done || msg_fail
+        timeout=${ONLINE_TIMEOUT}
     else
-        msg_done
+        timeout=${ONLINE_TIMEOUT_INITIAL}
     fi
+
+    ${PROG_WO} --timeout=${timeout}
+    test $? == 0 && msg_done || msg_fail
 }
 
 stop() {
