@@ -9,7 +9,7 @@
 
 # Writing the OS Image
 
-You'll the [`writeimage.sh`](https://github.com/ccrisan/chameleonos/blob/main/writeimage.sh) script. Alternatively, you can use any SD card image writing tool, after extracting the compressed image.
+You'll the [`writeimage.sh`](https://github.com/syncrobit/chameleonos/blob/main/writeimage.sh) script. Alternatively, you can use any SD card image writing tool, after extracting the compressed image.
 
 Use the following command to write the OS image onto your SD card with `writeimage.sh`:
 
