@@ -3,10 +3,17 @@
 source /etc/init.d/base
 
 BASE_URL="http://firmware.syncrob.it"
+MIN_UPTIME=600
 
 
 if ps aux | grep fwupdate | grep -v $$ |grep -vq grep; then
     echo "Firmware update process is already running"
+    exit
+fi
+
+uptime_seconds=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
+if [[ ${uptime_seconds} -lt ${MIN_UPTIME} ]]; then
+    echo "Skipping firmware update check immediately after boot"
     exit
 fi
 
