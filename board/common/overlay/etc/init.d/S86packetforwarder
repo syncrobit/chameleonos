@@ -1,12 +1,20 @@
 #!/bin/bash
 
 PROG="/opt/packet_forwarder/bin/lora_pkt_fwd"
-CONF="/opt/packet_forwarder/etc/global_conf.json"
+PROG_M="/opt/miner/bin/miner"
+CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.sx1250.%s"
 LOG="/var/log/packet_forwarder.log"
+REG_TIMEOUT=300
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
+
+find_reg() {
+    region=$(${PROG_M} info region 2>/dev/null)
+    test $? == 0 || region=""
+    echo ${region}
+}
 
 start() {
     msg_begin "Starting packet-forwarder"
@@ -16,8 +24,26 @@ start() {
         return
     fi
     
+    count=0
+    while true; do
+        reg=$(find_reg)
+        if [[ -z "${reg}" ]]; then
+            count=$((count + 1))
+            if [[ ${count} -gt ${REG_TIMEOUT} ]]; then
+                msg_fail "no regulatory information"
+                logger -t packetforwarder "cannot start, calling panic action"
+                panic_action packetforwarder
+                return 1
+            else
+                break
+            fi
+            sleep 1
+        fi
+    done
+    
     cd $(dirname ${PROG})  # Must be run from the bin directory
-    ${PROG} -c ${CONF} &>> ${LOG} &
+    conf=$(printf ${CONF_TEMPLATE} ${reg})
+    ${PROG} -c ${conf} &>> ${LOG} &
 
     msg_done
 }
