@@ -23,7 +23,7 @@ else
     latest_file="latest_stable.json"
 fi
 
-latest_url="${BASE_URL}/${latest_file}"
+latest_url="${BASE_URL}/cham/${latest_file}"
 latest=$(curl -sSL ${latest_url})
 latest=$(jq -r '.path,.version,.date' <<<"${latest}")
 latest=(${latest})
