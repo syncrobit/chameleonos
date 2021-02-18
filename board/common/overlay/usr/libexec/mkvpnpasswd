@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import base64
+import binascii
 import hashlib
+import os
+import sys
 import time
 
 import pyatecc
@@ -20,14 +23,21 @@ def get_unit_serial_number():
     raise RuntimeError('Could not read CPU serial number')
 
 
-def make_password():
-    atecc = pyatecc.ATECC(1)
+def make_password(user_swarm_key=None):
     now = int(time.time())
     cpu_serial_number = get_unit_serial_number()
-    ecc_serial_number = atecc.serial_number.lower()
-    to_hash = f'{now}.{cpu_serial_number}.{ecc_serial_number}'
-    to_sign = hashlib.sha256(to_hash.encode()).digest()
-    signature = atecc.ecdsa_sign(ECC_SLOT, to_sign)
+    if user_swarm_key:
+        user_swarm_key_hex = binascii.hexlify(user_swarm_key)
+        to_hash = f'{now}.{cpu_serial_number}.{user_swarm_key_hex}'
+        signature = hashlib.sha256(to_hash.encode()).digest()
+
+    else:
+        atecc = pyatecc.ATECC(1)
+        ecc_serial_number = atecc.serial_number.lower()
+        to_hash = f'{now}.{cpu_serial_number}.{ecc_serial_number}'
+        to_sign = hashlib.sha256(to_hash.encode()).digest()
+        signature = atecc.ecdsa_sign(ECC_SLOT, to_sign)
+
     signature_b32 = base64.b32encode(signature).decode()
     password = f'{now}.{signature_b32}'
     
@@ -35,15 +45,22 @@ def make_password():
 
 
 if __name__ == '__main__':
-    for _ in range(RETRIES):
-        try:
-            password = make_password()
-            break
-        
-        except Exception:
-            time.sleep(0.5)
+    user_swarm_key_file = None
+    if len(sys.argv) > 1:
+        user_swarm_key_file = sys.argv[0]
+    if user_swarm_key_file and os.path.exists(user_swarm_key_file):
+        password = make_password(open(user_swarm_key_file, 'rb').read())
 
     else:
-        raise RuntimeError('Timeout when talking to ECC')
+        for _ in range(RETRIES):
+            try:
+                password = make_password()
+                break
+            
+            except Exception:
+                time.sleep(0.5)
+
+        else:
+            raise RuntimeError('Timeout when talking to ECC')
 
     print(password)
