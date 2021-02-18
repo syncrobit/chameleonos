@@ -50,7 +50,7 @@ start() {
     conf=$(printf ${CONF_TEMPLATE} ${reg})
     ${PROG} -c ${conf} &>> ${LOG} &
 
-    msg_done
+    msg_done ${reg}
 }
 
 stop() {
