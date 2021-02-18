@@ -1,4 +1,4 @@
 13 * * * * /usr/sbin/logrotate /etc/logrotate.conf
 0 2 * * 0 /usr/sbin/https-update
 */15 * * * * /usr/sbin/dyndns-update
-*/10 * * * * /usr/sbin/fwupdate-check >> /var/log/fwupdate-check.log
+*/10 * * * * /sbin/fwupdate-check >> /var/log/fwupdate-check.log

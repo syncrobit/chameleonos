@@ -8,7 +8,7 @@ MIN_UPTIME=600
 
 echo "---- $(date) ----"
 
-if ps aux | grep fwupdate | grep -v $$ |grep -vq grep; then
+if ps aux | grep '{fwupdate}' | grep -vq grep; then
     echo "Firmware update process is already running"
     exit
 fi
@@ -38,6 +38,6 @@ if [[ "${OS_VERSION}" == "${latest_version}" ]]; then
 fi
 
 firmware_url="${BASE_URL}${latest_path}"
-touch /var/run/panic_prohibited
+touch /var/run/panic_inhibited
 echo "Updating from ${OS_VERSION} to ${latest_version} using ${firmware_url}"
 fwupdate upgrade "${firmware_url}"
