@@ -62,6 +62,8 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
     
     rm -rf $(TARGET_DIR)/opt/miner/$${HOME}
+    cp $(TARGET_DIR)/opt/miner/releases/*/sys.config cp $(TARGET_DIR)/opt/miner/releases/*/sys.noecc.config
+    sed -ri 's/(.*key_slot.*)/%%\1/' $(TARGET_DIR)/opt/miner/releases/*/sys.noecc.config
     cp $(@D)/config/com.helium.Miner.conf $(TARGET_DIR)/etc/dbus-1/system.d
 endef
 

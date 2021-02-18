@@ -15,7 +15,7 @@ prepare_conf ${USER_SWARM_KEY} ${SYS_USER_SWARM_KEY} ${BOOT_USER_SWARM_KEY}
 start() {
     msg_begin "Generating VPN password"
 
-    if ! [[ -e /dev/i2c-1 ]] && ! [[ -s "${USER_SWARM_KEY}" ]]; then
+    if ! [[ -e /dev/i2c-1 ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
         msg_fail "no I2C device"
         return
     fi
@@ -24,7 +24,7 @@ start() {
     ${MKVPNPASSWD} ${USER_SWARM_KEY} 2>/var/log/mkvpnpasswd.log >> ${VPNPASSWD_FILE}
 
     if [[ $? == 0 ]]; then
-        msg_done
+        test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
     else
         msg_fail
         rm -f ${VPNPASSWD_FILE}
