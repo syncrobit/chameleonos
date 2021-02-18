@@ -6,21 +6,39 @@ FULL_PROG=${WORK_DIR}/${PROG}
 LOG="/var/log/miner/startup.log"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
 
-WATCH_INTERVAL=10
+WATCH_PROG_INTERVAL=10
+WATCH_LAG_INTERVAL=3600
+MAX_LAG=250
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
 
-watch() {
+watch_prog() {
     count=0
     while true; do
-        sleep ${WATCH_INTERVAL}
+        sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
             logger -t miner -s "not running, calling panic action"
             panic_action miner
             break
         fi
+    done
+}
+
+watch_lag() {
+    while true; do
+        sleep ${WATCH_LAG_INTERVAL}
+        current_height=$(curl -s https://api.helium.io/v1/blocks/height | jq .data.height)
+        test $? == 0 || continue
+        our_height=$(${FULL_PROG} info height | awk '{print $2}')
+        test $? == 0 || continue
+        dif=$(expr ${current_height} - ${our_height})
+        if [[ ${dif} -le ${MAX_LAG} ]]; then
+            continue
+        fi
+        logger -t miner -s "lag is ${dif} > ${MAX_LAG}, restarting"
+        panic_action miner
     done
 }
 
@@ -65,7 +83,8 @@ start() {
     echo $public_keys > /var/run/public_keys
 
     nice -n 10 ${PROG} foreground &>> ${LOG} &
-    watch &
+    watch_prog &
+    watch_lag &
 
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
 }
