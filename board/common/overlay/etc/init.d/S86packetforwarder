@@ -4,7 +4,7 @@ PROG="/opt/packet_forwarder/bin/lora_pkt_fwd"
 PROG_M="/opt/miner/bin/miner"
 CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.sx1250.%s"
 LOG="/var/log/packet_forwarder.log"
-REG_TIMEOUT=60
+REG_TIMEOUT=300
 DEF_REG="US915"
 
 

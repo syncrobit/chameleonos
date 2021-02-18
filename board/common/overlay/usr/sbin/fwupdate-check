@@ -6,6 +6,8 @@ BASE_URL="http://firmware.syncrob.it"
 MIN_UPTIME=600
 
 
+echo "---- $(date) ----"
+
 if ps aux | grep fwupdate | grep -v $$ |grep -vq grep; then
     echo "Firmware update process is already running"
     exit
