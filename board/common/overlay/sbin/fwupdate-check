@@ -2,7 +2,7 @@
 
 source /etc/init.d/base
 
-BASE_URL="http://firmware.syncrob.it"
+BASE_URL="https://fwd.syncrob.it"
 MIN_UPTIME=600
 
 
