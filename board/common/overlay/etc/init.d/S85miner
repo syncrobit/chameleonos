@@ -9,6 +9,7 @@ USER_SWARM_KEY="/var/lib/user_swarm_key"
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
 MAX_LAG=250
+SYNC_URL="https://msync.syncrob.it/"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -24,6 +25,23 @@ watch_prog() {
             break
         fi
     done
+}
+
+sync_from_snapshot() {
+    msg_begin "Synchronizing miner data"
+
+    data=$(curl -s ${SYNC_URL}) || (msg_fail "metadata download failed"; return 1)
+    block_height=$(jq -r '.blockHeight' <<< ${data})
+    file=$(jq -r '.fileUri' <<< ${data})
+    check_sum=$(jq -r '.checkSum.md5' <<< ${data})
+
+    curl -sSL "${file}" -o /tmp/snapshot.bin || (msg_fail "snapshot download failed"; return 1)
+    local_check_sum=$(md5sum /tmp/snapshot.bin | awk '{print $1}')
+    test "${local_check_sum}" == "${check_sum}" || (msg_fail "invalid checksum"; return 1)
+
+    # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
+    ${FULL_PROG} snapshot load /tmp/snapshot.bin &>/dev/null
+    msg_done
 }
 
 watch_lag() {
@@ -68,6 +86,7 @@ start() {
     RELX_CONFIG_PATH="/opt/miner/releases/0.1.0/sys"
     if [[ -s ${USER_SWARM_KEY} ]]; then
         RELX_CONFIG_PATH+=".noecc"
+        mkdir -p /var/lib/miner/miner
         cp ${USER_SWARM_KEY} /var/lib/miner/miner/swarm_key
     fi
     RELX_CONFIG_PATH+=".config"
@@ -79,6 +98,8 @@ start() {
         return 1
     fi
     
+    test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
+    
     # We need the public key information for gateway config
     echo $public_keys > /var/run/public_keys
 
@@ -87,6 +108,10 @@ start() {
     watch_lag &
 
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
+    
+    if [[ "${sync_needed}" == "true" ]]; then
+        sync_from_snapshot
+    fi
 }
 
 stop() {
