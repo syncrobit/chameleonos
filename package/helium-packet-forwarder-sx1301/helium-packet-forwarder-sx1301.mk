@@ -1,0 +1,29 @@
+################################################################################
+#
+# helium-packet-forwarder-sx1301
+#
+################################################################################
+
+HELIUM_PACKET_FORWARDER_SX1301_VERSION = 2021.02.12.0
+HELIUM_PACKET_FORWARDER_SX1301_SITE = $(call github,helium,packet_forwarder,$(HELIUM_PACKET_FORWARDER_SX1301_VERSION))
+HELIUM_PACKET_FORWARDER_SX1301_LICENSE = Apache-2.0
+HELIUM_PACKET_FORWARDER_SX1301_LICENSE_FILES = LICENSE
+HELIUM_PACKET_FORWARDER_SX1301_CONF_OPTS = -DWITH_VENDORED_HAL=ON
+HELIUM_PACKET_FORWARDER_SX1301_POST_EXTRACT_HOOKS += HELIUM_PACKET_FORWARDER_SX1301_POST_EXTRACT
+
+define HELIUM_PACKET_FORWARDER_SX1301_POST_EXTRACT
+    cd $(@D) && \
+        git clone git@github.com:helium/lora_gateway.git extern/lora_gateway && \
+        cd extern/lora_gateway && \
+        git checkout $(HELIUM_PACKET_FORWARDER_SX1301_VERSION)
+endef
+
+define HELIUM_PACKET_FORWARDER_SX1301_INSTALL_TARGET_CMDS
+    mkdir -p $(TARGET_DIR)/opt/packet_forwarder/bin
+    mkdir -p $(TARGET_DIR)/opt/packet_forwarder/etc
+    ln -sf /usr/bin/reset_lgw.sh $(TARGET_DIR)/opt/packet_forwarder/bin
+    cp $(@D)/lora_pkt_fwd/lora_pkt_fwd $(TARGET_DIR)/opt/packet_forwarder/bin/lora_pkt_fwd_sx1301
+    cp package/helium-packet-forwarder-sx1301/global_conf.json.sx1301.* $(TARGET_DIR)/opt/packet_forwarder/etc/
+endef
+
+$(eval $(cmake-package))

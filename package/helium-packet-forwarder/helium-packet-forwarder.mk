@@ -22,6 +22,8 @@ define HELIUM_PACKET_FORWARDER_INSTALL_TARGET_CMDS
     mkdir -p $(TARGET_DIR)/opt/packet_forwarder/etc
     ln -sf /usr/bin/reset_lgw.sh $(TARGET_DIR)/opt/packet_forwarder/bin
     cp $(@D)/packet_forwarder/lora_pkt_fwd $(TARGET_DIR)/opt/packet_forwarder/bin
+    cp $(@D)/util_chip_id/chip_id $(TARGET_DIR)/opt/packet_forwarder/bin
+    cp $(@D)/util_net_downlink/net_downlink $(TARGET_DIR)/opt/packet_forwarder/bin
     cp $(@D)/packet_forwarder/global_conf.json.sx1250.* $(TARGET_DIR)/opt/packet_forwarder/etc
 endef
 
