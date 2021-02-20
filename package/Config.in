@@ -617,8 +617,8 @@ menu "Erlang libraries/modules"
 	source "package/erlang-p1-zlib/Config.in"
 	source "package/helium-gateway-config/Config.in"
 	source "package/helium-miner/Config.in"
-	source "package/helium-packet-forwarder/Config.in"
 	source "package/helium-packet-forwarder-sx1301/Config.in"
+	source "package/helium-packet-forwarder-sx1302/Config.in"
 	source "package/helium-gateway-mfr/Config.in"
 endmenu
 endif

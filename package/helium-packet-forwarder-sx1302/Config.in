@@ -1,0 +1,4 @@
+config BR2_PACKAGE_HELIUM_PACKET_FORWARDER_SX1302
+	bool "helium-packet-forwarder-sx1302"
+	help
+	  https://github.com/helium/sx1302_hal

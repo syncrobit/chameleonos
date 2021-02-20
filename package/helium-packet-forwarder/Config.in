@@ -1,4 +1,0 @@
-config BR2_PACKAGE_HELIUM_PACKET_FORWARDER
-	bool "helium-packet-forwarder"
-	help
-	  https://github.com/helium/packet_forwarder
