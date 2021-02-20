@@ -1,8 +1,9 @@
 #!/bin/bash
 
-PROG="/opt/packet_forwarder/bin/lora_pkt_fwd"
+PROG_TEMPLATE="/opt/packet_forwarder/bin/lora_pkt_fwd_%s"
 PROG_M="/opt/miner/bin/miner"
-CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.sx1250.%s"
+PROG_CI="/opt/packet_forwarder/bin/chip_id"
+CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.%s.%s"
 LOG="/var/log/packet_forwarder.log"
 REG_TIMEOUT=300
 DEF_REG="US915"
@@ -19,6 +20,15 @@ find_reg() {
     test -f /var/log/provision.log && test -z "${region}" && region=${DEF_REG}
 
     echo ${region}
+}
+
+find_sx() {
+    cd $(dirname ${PROG_CI})
+    if ${PROG_CI} | grep -q "concentrator EUI:"; then
+        echo "sx1302"
+    else
+        echo "sx1301"
+    fi
 }
 
 start() {
@@ -46,17 +56,21 @@ start() {
         fi
     done
     
-    cd $(dirname ${PROG})  # Must be run from the bin directory
-    conf=$(printf ${CONF_TEMPLATE} ${reg})
-    ${PROG} -c ${conf} &>> ${LOG} &
+    sx=$(find_sx)
+    prog=$(printf ${PROG_TEMPLATE} ${sx})
+    cd $(dirname ${prog})  # Must be run from the bin directory
+    conf=$(printf ${CONF_TEMPLATE} ${sx} ${reg})
+    ${prog} -c ${conf} &>> ${LOG} &
 
-    msg_done ${reg}
+    msg_done ${sx}/${reg}
 }
 
 stop() {
     msg_begin "Stopping packet-forwarder"
     
-    base_prog=$(basename ${PROG})
+    sx=$(find_sx)
+    prog=$(printf ${PROG_TEMPLATE} ${sx})
+    base_prog=$(basename ${prog})
     if killall -q ${base_prog}; then
         # Allow 2 seconds for a gracefulish shutdown
         sleep 2
