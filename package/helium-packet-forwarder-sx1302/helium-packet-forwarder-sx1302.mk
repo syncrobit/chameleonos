@@ -28,6 +28,7 @@ define HELIUM_PACKET_FORWARDER_SX1302_INSTALL_TARGET_CMDS
         fname=$$(basename "$${file}" | sed 's/sx1250/sx1302/'); \
         cp "$${file}" $(TARGET_DIR)/opt/packet_forwarder/etc/$${fname}; \
     done
+    ln -sf /var/run/global_conf.json $(TARGET_DIR)/opt/packet_forwarder/bin/global_conf.json
 endef
 
 define HELIUM_PACKET_FORWARDER_SX1302_INSTALL_STAGING_CMDS

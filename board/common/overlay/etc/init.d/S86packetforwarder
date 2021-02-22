@@ -5,6 +5,7 @@ PROG_M="/opt/miner/bin/miner"
 PROG_CI="/opt/packet_forwarder/bin/chip_id"
 CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.%s.%s"
 LOG="/var/log/packet_forwarder.log"
+LIB_DIR="/opt/packet_forwarder/lib"
 REG_TIMEOUT=300
 DEF_REG="US915"
 
@@ -55,12 +56,18 @@ start() {
             break
         fi
     done
-    
+
     sx=$(find_sx)
     prog=$(printf ${PROG_TEMPLATE} ${sx})
-    cd $(dirname ${prog})  # Must be run from the bin directory
+
+    # Prepare conf
     conf=$(printf ${CONF_TEMPLATE} ${sx} ${reg})
-    ${prog} -c ${conf} &>> ${LOG} &
+    ln -sf ${conf} /var/run/global_conf.json
+
+    # Must be run from the bin directory
+    cd $(dirname ${prog})
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${LIB_DIR}
+    ${prog} &>> ${LOG} &
 
     msg_done ${sx}/${reg}
 }
