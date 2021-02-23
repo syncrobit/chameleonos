@@ -1,0 +1,37 @@
+#!/bin/bash
+
+
+source /etc/mqtt-send.conf
+source /etc/version 
+
+MQTT_TOPIC="units/%s/sys_info"
+
+
+function prepare_payload() {
+    cpu_usage=$(top -d1 -bn2 | grep '^CPU:' | tail -n1 | tr -s ' ' | cut -d ' ' -f 2,4 | tr -d '%' | tr ' ' + | bc)
+    mem_info=($(free -m | grep '^Mem:' | tr -s ' ' | cut -d ' ' -f 2,3))
+    storage_info=($(df -m /data | tail -n 1 | tr -s ' ' | cut -d ' ' -f 2,3))
+    temperature=$(echo $(cat /sys/class/thermal/thermal_zone0/temp)/1000 | bc)
+    miner_height=$(/opt/miner/bin/miner info height | tr '\t' ' ' | tr -s ' ' | cut -d ' ' -f 2)
+    test $? == 0 || miner_height="null"
+    uptime=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
+
+    payload="{
+        \"cpu_usage\":${cpu_usage},
+        \"mem_used\":${mem_info[1]},
+        \"mem_total\":${mem_info[0]},
+        \"storage_used\":${storage_info[1]},
+        \"storage_total\":${storage_info[0]},
+        \"temperature\":${temperature},
+        \"miner_height\":${miner_height},
+        \"fw_version\":\"${OS_VERSION}\",
+        \"uptime\":${uptime} 
+    }"
+
+    payload=$(echo ${payload} | tr -d '\t\n ')
+    echo "${payload}"
+}
+
+payload=$(prepare_payload)
+topic=$(printf ${MQTT_TOPIC} $(hostname))
+mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${topic} -m "${payload}"
