@@ -1,0 +1,36 @@
+#!/bin/bash
+
+LOG="/var/log/send-error-report.log"
+API_ENDPOINT_URL="https://api.syncrob.it/watchdog/"
+AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+if [[ -z "$2" ]]; then
+    echo "Usage: $0 <service> <error>"
+    exit 1
+fi
+
+service="$1"
+error="$2"
+
+msg_begin "Sending error report for ${service}"
+
+payload="{
+    \"rpi_sn\":\"${BOARD_SN}\",
+    \"error\":\"${error}\",
+    \"reported_by\":\"${service}\"
+}"
+
+curl -sSL "${API_ENDPOINT_URL}" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: ${AUTH_TOKEN}" \
+     -X POST -d "${payload}" >/dev/null
+
+if [[ $? == 0 ]]; then
+    msg_done
+else
+    msg_fail
+    exit 1
+fi
