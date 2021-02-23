@@ -67,7 +67,9 @@ start() {
     # Must be run from the bin directory
     cd $(dirname ${prog})
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${LIB_DIR}
-    ${prog} &>> ${LOG} &
+    
+    # stdbuf here forces line buffering, allowing real-time log
+    stdbuf -oL -eL ${prog} &> ${LOG} &
 
     msg_done ${sx}/${reg}
 }
