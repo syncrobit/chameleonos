@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-HELIUM_GATEWAY_CONFIG_VERSION = 2021.01.22.0
+HELIUM_GATEWAY_CONFIG_VERSION = 2021.02.23.0
 HELIUM_GATEWAY_CONFIG_SITE = $(call github,helium,gateway-config,$(HELIUM_GATEWAY_CONFIG_VERSION))
 HELIUM_GATEWAY_CONFIG_LICENSE = Apache-2.0
 HELIUM_GATEWAY_CONFIG_LICENSE_FILES = LICENSE
