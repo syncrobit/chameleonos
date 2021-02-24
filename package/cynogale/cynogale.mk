@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-CYNOGALE_VERSION = dfcb584d0aa33af9fe66869bdb33f61ecd86ad2d
+CYNOGALE_VERSION = 90c8a618515f29723ec9c6644dec0ef318fdd789
 CYNOGALE_SITE = $(call github,syncrobit,cynogale,$(CYNOGALE_VERSION))
 CYNOGALE_DEPENDENCIES = sqlite
 
