@@ -4,6 +4,7 @@ PANIC_REBOOT_DELAY_FACTOR=10
 PANIC_REBOOT_DELAY_MAX=3600  # reboot at least once an hour in case of panic
 PANIC_INHIBIT_FILE="/var/run/panic_inhibit"
 PANIC_INHIBIT_TIMEOUT=3600  # inhibit panic action for at most one hour
+SEND_ERROR_REPORT="/sbin/send-error-report"
 
 
 panic_action() {
@@ -32,6 +33,8 @@ panic_action() {
             return
         fi
     fi
+    
+    ${SEND_ERROR_REPORT} "$1" "$2"
     
     if [[ "${delay}" -gt 0 ]]; then
         logger -t panic -s "rebooting in ${delay} seconds (caused by $1)"

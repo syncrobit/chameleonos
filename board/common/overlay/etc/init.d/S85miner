@@ -20,8 +20,7 @@ watch_prog() {
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
-            logger -t miner -s "not running, calling panic action"
-            panic_action miner
+            panic_action miner "service dead"
             break
         fi
     done
@@ -55,8 +54,7 @@ watch_lag() {
         if [[ ${dif} -le ${MAX_LAG} ]]; then
             continue
         fi
-        logger -t miner -s "lag is ${dif} > ${MAX_LAG}, restarting"
-        panic_action miner
+        panic_action miner "lag is ${dif} > ${MAX_LAG}"
     done
 }
 
