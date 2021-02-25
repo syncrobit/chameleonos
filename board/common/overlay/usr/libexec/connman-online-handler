@@ -1,0 +1,12 @@
+#!/bin/bash
+
+ONLINE=$1
+
+if [[ "${ONLINE}" == true ]]; then
+    addr_wlan0=$(ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
+           cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
+    addr_eth0=$(ip addr show dev eth0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
+           cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
+
+    echo -e "\nIP address is: [${addr_wlan0}] [${addr_eth0}]\n" > /dev/console
+fi
