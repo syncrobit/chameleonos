@@ -1,6 +1,12 @@
 #!/bin/bash
 
 ONLINE=$1
+API_ENDPOINT_URL="https://api.syncrob.it/advertise/"
+AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
 
 if [[ "${ONLINE}" == true ]]; then
     addr_wlan0=$(ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
@@ -8,5 +14,23 @@ if [[ "${ONLINE}" == true ]]; then
     addr_eth0=$(ip addr show dev eth0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
            cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
 
-    echo -e "\nIP address is: [${addr_wlan0}] [${addr_eth0}]\n" > /dev/console
+    test -n "${addr_wlan0}" && addr=${addr_wlan0} || addr=${addr_eth0}
+    msg_begin "Sending local IP address ${addr}"
+
+    payload="{
+        \"rpi_sn\":\"${BOARD_SN}\",
+        \"ip_addr\":\"${addr}\"
+    }"
+
+    curl -sSL "${API_ENDPOINT_URL}" \
+         -H "Content-Type: application/json" \
+         -H "Authorization: ${AUTH_TOKEN}" \
+         -X POST -d "${payload}" >/dev/null
+
+    if [[ $? == 0 ]]; then
+        msg_done
+    else
+        msg_fail
+        exit 1
+    fi
 fi
