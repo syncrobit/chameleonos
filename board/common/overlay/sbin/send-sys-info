@@ -1,10 +1,10 @@
 #!/bin/bash
 
 
+source /etc/init.d/base
 source /etc/mqtt-send.conf
-source /etc/version 
 
-MQTT_TOPIC="units/%s/sys_info"
+MQTT_TOPIC="units/chameleon/${BOARD_SN}/sys_info"
 
 
 function prepare_payload() {
@@ -33,5 +33,4 @@ function prepare_payload() {
 }
 
 payload=$(prepare_payload)
-topic=$(printf ${MQTT_TOPIC} $(hostname))
-mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${topic} -m "${payload}"
+mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${MQTT_TOPIC} -m "${payload}" -i ${BOARD_SN}

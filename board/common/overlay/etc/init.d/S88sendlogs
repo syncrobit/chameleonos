@@ -1,11 +1,10 @@
 #!/bin/bash
 
 
-MQTT_TOPIC="units/%s/logs/%s"
-
-test -n "${OS_VERSION}" || source /etc/init.d/base
-
+source /etc/init.d/base
 source /etc/mqtt-send.conf
+
+MQTT_TOPIC_TEMPLATE="units/chameleon/${BOARD_SN}/logs/%s"
 
 
 send_log() {
@@ -18,11 +17,11 @@ send_log() {
 watch_file() {
     # $1 - file path
     # $2 - topic suffix
-    id=$(hostname)
-    topic=$(printf ${MQTT_TOPIC} ${id} $2)
+    file_path=$1
+    topic=$(printf ${MQTT_TOPIC_TEMPLATE} $2)
     
-    test -s $1 && send_log "$(cat $1)" "${topic}" "${id}"
-    tail -n0 -qF "$1" 2>/dev/null | while read line; do send_log "${line}" "${topic}" "${id}"; done
+    test -s ${file_path} && send_log "$(cat ${file_path})" "${topic}" ${BOARD_SN}
+    tail -n0 -qF "$1" 2>/dev/null | while read line; do send_log "${line}" "${topic}" ${BOARD_SN}; done
 }
 
 start() {
