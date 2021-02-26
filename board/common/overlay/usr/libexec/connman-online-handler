@@ -22,7 +22,7 @@ if [[ "${ONLINE}" == true ]]; then
         \"ip_addr\":\"${addr}\"
     }"
 
-    curl -sSL "${API_ENDPOINT_URL}" \
+    curl --insecure -sSL "${API_ENDPOINT_URL}" \
          -H "Content-Type: application/json" \
          -H "Authorization: ${AUTH_TOKEN}" \
          -X POST -d "${payload}" >/dev/null
