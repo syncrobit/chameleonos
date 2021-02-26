@@ -47,7 +47,7 @@ def make_password(user_swarm_key=None):
 if __name__ == '__main__':
     user_swarm_key_file = None
     if len(sys.argv) > 1:
-        user_swarm_key_file = sys.argv[0]
+        user_swarm_key_file = sys.argv[1]
     if user_swarm_key_file and os.path.exists(user_swarm_key_file):
         password = make_password(open(user_swarm_key_file, 'rb').read())
 
