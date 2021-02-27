@@ -18,6 +18,7 @@ test -x ${PROG} || exit 0
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
+rm -rf ${CONF}  # Ignore any existing user config
 prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
 
 test -s ${WATCH_CONF} && source ${WATCH_CONF}
