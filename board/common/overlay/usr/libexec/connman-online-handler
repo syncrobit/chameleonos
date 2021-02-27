@@ -10,19 +10,22 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 
 if [[ "${ONLINE}" == true ]]; then
     addr_wlan0=$(ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
-           cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
+                 cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
     addr_eth0=$(ip addr show dev eth0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
-           cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
+                cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
+    addr_tun0=$(ip addr show dev tun0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
+                cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
 
     test -n "${addr_wlan0}" && addr=${addr_wlan0} || addr=${addr_eth0}
-    msg_begin "Sending local IP address ${addr}"
+    msg_begin "Sending local IP address \"${addr}\", VPN IP address \"${addr_tun0}\""
 
     payload="{
         \"rpi_sn\":\"${BOARD_SN}\",
-        \"ip_addr\":\"${addr}\"
+        \"ip_addr_local\":\"${addr}\",
+        \"ip_addr_vpn\":\"${addr_tun0}\",
     }"
 
-    curl --insecure -sSL "${API_ENDPOINT_URL}" \
+    curl -sSL "${API_ENDPOINT_URL}" \
          -H "Content-Type: application/json" \
          -H "Authorization: ${AUTH_TOKEN}" \
          -X POST -d "${payload}" >/dev/null
