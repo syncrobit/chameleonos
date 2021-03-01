@@ -6,7 +6,7 @@ PROG_CI="/opt/packet_forwarder/bin/chip_id"
 CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.%s.%s"
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
-REG_TIMEOUT=300
+REG_TIMEOUT=600
 DEF_REG="US915"
 
 
