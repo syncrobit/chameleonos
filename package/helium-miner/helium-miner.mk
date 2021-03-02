@@ -22,9 +22,9 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
             ERLANG_ROCKSDB_OPTS="-DWITH_BUNDLE_SNAPPY=ON -DWITH_BUNDLE_LZ4=ON" \
             ERL_COMPILER_OPTIONS="[deterministic]" \
             ERTS_INCLUDE_DIR="$(STAGING_DIR)/usr/lib/erlang/erts-10.6/include" \
+            CARGO_HOME=$(HOST_DIR)/share/cargo \
             $(REBAR_TARGET_DEPS_ENV) \
             $(TARGET_MAKE_ENV) \
-            CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
             ./rebar3 get-deps \
     )
@@ -32,7 +32,6 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
     patch -d $(@D)/_build/default/lib/erasure -p1 < package/helium-miner/erlang-erasure._patch
     patch -d $(@D)/_build/default/lib/erlang_pbc -p1 < package/helium-miner/erlang-pbc._patch
     patch -d $(@D)/_build/default/lib/procket -p1 < package/helium-miner/procket._patch
-    patch -d $(@D)/_build/default/lib/rocksdb -p1 < package/helium-miner/erlang-rocksdb._patch
 endef
             
 define HELIUM_MINER_BUILD_CMDS
