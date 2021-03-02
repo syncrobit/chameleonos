@@ -22,10 +22,10 @@ if [[ "${ONLINE}" == true ]]; then
     payload="{
         \"rpi_sn\":\"${BOARD_SN}\",
         \"ip_addr_local\":\"${addr}\",
-        \"ip_addr_vpn\":\"${addr_tun0}\",
+        \"ip_addr_vpn\":\"${addr_tun0}\"
     }"
 
-    curl -sSL "${API_ENDPOINT_URL}" \
+    curl --insecure -sSL "${API_ENDPOINT_URL}" \
          -H "Content-Type: application/json" \
          -H "Authorization: ${AUTH_TOKEN}" \
          -X POST -d "${payload}" >/dev/null
