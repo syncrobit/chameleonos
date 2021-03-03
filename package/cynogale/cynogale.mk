@@ -6,7 +6,7 @@
 
 CYNOGALE_VERSION = 0785dc9e362b237b9fb81467c642af2016ba6869
 CYNOGALE_SITE = $(call github,syncrobit,cynogale,$(CYNOGALE_VERSION))
-CYNOGALE_DEPENDENCIES = sqlite
+CYNOGALE_DEPENDENCIES = sqlite libcurl
 
 define CYNOGALE_BUILD_CMDS
     make CC="$(TARGET_CC)" -C "$(@D)"
