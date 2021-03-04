@@ -16,7 +16,7 @@ define HELIUM_PACKET_FORWARDER_SX1301_POST_EXTRACT
         git clone git@github.com:helium/lora_gateway.git extern/lora_gateway && \
         cd extern/lora_gateway && \
         git checkout $(HELIUM_PACKET_FORWARDER_SX1301_VERSION)
-    sed -r 's/SPI_SPEED\s+1/SPI_SPEED 2/' $(@D)/extern/lora_gateway/libloragw/src/loragw_spi.native.c
+    sed -ri 's/SPI_SPEED\s+1/SPI_SPEED 2/' $(@D)/extern/lora_gateway/libloragw/src/loragw_spi.native.c
 endef
 
 define HELIUM_PACKET_FORWARDER_SX1301_INSTALL_TARGET_CMDS
