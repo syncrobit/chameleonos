@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+
+import asyncio
+import hashlib
+import logging
+import os
+import re
+
+from typing import Awaitable, Callable
+
+import ecdsa
+import base58
+
+from aiohttp import web
+
+
+PORT = 2319
+PUB_KEYS_FILE = '/var/run/public_keys'
+
+router = web.RouteTableDef()
+
+
+def read_pub_key() -> str:
+    with open(PUB_KEYS_FILE, 'rt') as f:
+        data = f.read()
+
+    pub_key_encoded_b58 = re.search(r'[a-zA-Z0-9]{50,}', data).group()
+    pub_key_encoded = base58.b58decode(pub_key_encoded_b58)
+    payload = b'\x02' + pub_key_encoded[2:-4]
+
+    return ecdsa.VerifyingKey.from_string(payload, curve=ecdsa.NIST256p).to_string('raw').hex()
+
+
+def read_rpi_sn() -> str:
+    with open('/proc/cpuinfo', 'rt') as f:
+        for line in f:
+            if line.startswith('Serial'):
+                return line.strip()[-8:]
+
+    raise RuntimeError('Could not read CPU serial number')
+
+
+def get_auth_hash() -> str:
+    to_hash = f'{read_rpi_sn()}:{read_pub_key()}'
+    return hashlib.sha256(to_hash).hexdigest()
+
+
+def handle_auth(
+    func: Callable[[web.Request], Awaitable[web.Response]]
+) -> Callable[[web.Request], Awaitable[web.Response]]:
+    async def handler(request: web.Request) -> web.Response:
+        try:
+            auth = request.headers['Authorization']
+
+        except KeyError:
+            return web.json_response({'error': 'unauthorized'}, status=401)
+
+        auth = auth.lower()
+        if auth != get_auth_hash():
+            return web.json_response({'error': 'unauthorized'}, status=401)
+
+        return await func(request)
+
+    return handler
+
+
+def do_reboot() -> None:
+    logging.info('reboot request received')
+    os.system('/sbin/reboot')
+
+
+@router.post('/reboot')
+@handle_auth
+async def reboot(request: web.Request) -> web.Response:
+    loop = asyncio.get_event_loop()
+    loop.call_later(2, do_reboot)
+
+    return web.json_response({'message': 'ok'})
+
+
+def make_app() -> web.Application:
+    app = web.Application()
+    app.add_routes(router)
+
+    return app
+
+
+if __name__ == '__main__':
+    logging.basicConfig(
+        format='%(asctime)s [%(levelname)s]: %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    logging.info('hello!')
+
+    app = make_app()
+    web.run_app(app, port=PORT, print=lambda *args: None)
