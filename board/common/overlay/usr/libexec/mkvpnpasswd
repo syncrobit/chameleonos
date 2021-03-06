@@ -11,7 +11,7 @@ import pyatecc
 
 
 ECC_SLOT = 0
-RETRIES = 5
+RETRIES = 10
 
 
 def get_unit_serial_number():

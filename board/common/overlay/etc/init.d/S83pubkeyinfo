@@ -1,0 +1,40 @@
+#!/bin/bash
+
+
+PROG="/usr/libexec/print-pub-key-info"
+
+source /etc/init.d/base
+
+
+start() {
+    msg_begin "Saving public key info"
+    
+    info=$(${PROG})
+    info=(${info})
+    ecc_sn=${info[0]}
+    pub_key_hex=${info[1]}
+    
+    if [[ "${ecc_sn}" != "unknown" ]]; then
+        echo "${ecc_sn}" > /var/run/ecc_sn
+    else
+        echo > /var/run/ecc_sn
+    fi
+    echo "${pub_key_hex}" > /var/run/public_key_hex
+
+    msg_done
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        ;;
+
+    *)
+        echo "Usage: $0 {start}"
+        exit 1
+esac
+
+exit $?

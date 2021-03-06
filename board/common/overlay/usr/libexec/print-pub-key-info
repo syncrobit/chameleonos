@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+
+import base58
+import ecdsa
+import pyatecc
+
+
+RETRIES = 10
+PUB_KEYS_FILE = '/var/run/public_keys'
+
+
+def get_pub_key_hex():
+    with open(PUB_KEYS_FILE, 'rt') as f:
+        data = f.read()
+
+    pub_key_encoded_b58 = re.search(r'[a-zA-Z0-9]{50,}', data).group()
+    pub_key_encoded = base58.b58decode(pub_key_encoded_b58)
+    payload = b'\x02' + pub_key_encoded[2:-4]
+
+    return ecdsa.VerifyingKey.from_string(payload, curve=ecdsa.NIST256p).to_string('raw').hex())
+
+
+def get_ecc_sn():
+    atecc = pyatecc.ATECC(1)
+    return atecc.serial_number.lower()
+
+
+if __name__ == '__main__':
+    ecc_sn = 'unknown'
+
+    user_swarm_key_file = None
+    if len(sys.argv) > 1:
+        user_swarm_key_file = sys.argv[1]
+    if not user_swarm_key_file or not os.path.exists(user_swarm_key_file):
+        for _ in range(RETRIES):
+            try:
+                ecc_sn = get_ecc_sn()
+                break
+            
+            except Exception:
+                time.sleep(0.5)
+
+        else:
+            raise RuntimeError('Timeout when talking to ECC')
+
+    pub_key_hex = get_pub_key_hex()
+    print(f'{ecc_sn} {pub_key_hex}')
