@@ -1,7 +1,7 @@
 #!/bin/bash
 
-
 PROG="/usr/libexec/print-pub-key-info"
+USER_SWARM_KEY="/var/lib/user_swarm_key"
 
 source /etc/init.d/base
 
@@ -9,7 +9,7 @@ source /etc/init.d/base
 start() {
     msg_begin "Saving public key info"
     
-    info=$(${PROG})
+    info=$(${PROG} ${USER_SWARM_KEY})
     info=(${info})
     ecc_sn=${info[0]}
     pub_key_hex=${info[1]}
