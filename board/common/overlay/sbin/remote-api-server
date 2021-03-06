@@ -32,7 +32,7 @@ def read_rpi_sn() -> str:
 
 def get_auth_hash() -> str:
     to_hash = f'{read_rpi_sn()}:{read_pub_key()}'
-    return hashlib.sha256(to_hash).hexdigest()
+    return hashlib.sha256(to_hash.encode()).hexdigest()
 
 
 def handle_auth(
