@@ -21,7 +21,7 @@ def get_pub_key_hex():
     pub_key_encoded = base58.b58decode(pub_key_encoded_b58)
     payload = b'\x02' + pub_key_encoded[2:-4]
 
-    return ecdsa.VerifyingKey.from_string(payload, curve=ecdsa.NIST256p).to_string('raw').hex())
+    return ecdsa.VerifyingKey.from_string(payload, curve=ecdsa.NIST256p).to_string('raw').hex()
 
 
 def get_ecc_sn():
