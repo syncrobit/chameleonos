@@ -5,6 +5,8 @@ VPNPASSWD_FILE="/var/run/vpnpasswd"
 SYS_USER_SWARM_KEY="/usr/share/user_swarm_key"
 BOOT_USER_SWARM_KEY="/boot/user_swarm_key"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
+PROV_REGISTER_URL="https://api.syncrob.it/alienunit/"
+AUTH_TOKEN="6993E8BF9E116991FA6581A7BA7D9"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -12,12 +14,38 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 prepare_conf ${USER_SWARM_KEY} ${SYS_USER_SWARM_KEY} ${BOOT_USER_SWARM_KEY}
 
 
+send_prov_info() {
+    test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
+    test -r /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address)
+    pub_key=$(cat /var/run/public_key_hex)
+    swarm_key_hex=$(cat ${USER_SWARM_KEY} | od -t x1 -w1000 -An | tr -d ' ')
+
+    prov_info_json="{
+        \"rpi_sn\":\"${BOARD_SN}\",
+        \"pub_key\":\"${pub_key}\",
+        \"eth_mac\":\"${eth_mac}\",
+        \"wlan_mac\":\"${wlan_mac}\",
+        \"swarm_key\":\"${swarm_key_hex}\"
+    }"
+    
+    prov_info_json=$(echo "${prov_info_json}" | tr -d '\t\n ')
+    
+    curl --insecure --fail -sSL "${PROV_REGISTER_URL}" \
+         -H "Content-Type: application/json" \
+         -H "Authorization: ${AUTH_TOKEN}" \
+         -X POST -d "${prov_info_json}" >/dev/null
+}
+
 start() {
     msg_begin "Generating VPN password"
 
     if ! [[ -e /dev/i2c-1 ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
         msg_fail "no I2C device"
         return
+    fi
+    
+    if [[ -s ${USER_SWARM_KEY} ]]; then
+        (sleep 10 && send_prov_info &>/var/log/send-prov-info.log) &
     fi
     
     echo "cham-${BOARD_SN}" > ${VPNPASSWD_FILE}
