@@ -29,12 +29,12 @@ watch_prog() {
 sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
 
-    data=$(curl -s ${SYNC_URL}) || (msg_fail "metadata download failed"; return 1)
+    data=$(curl -m 300 -s ${SYNC_URL}) || (msg_fail "metadata download failed"; return 1)
     block_height=$(jq -r '.blockHeight' <<< ${data})
     file=$(jq -r '.fileUri' <<< ${data})
     check_sum=$(jq -r '.checkSum.md5' <<< ${data})
 
-    curl -sSL "${file}" -o /tmp/snapshot.bin || (msg_fail "snapshot download failed"; return 1)
+    curl -m 300 -sSL "${file}" -o /tmp/snapshot.bin || (msg_fail "snapshot download failed"; return 1)
     local_check_sum=$(md5sum /tmp/snapshot.bin | awk '{print $1}')
     test "${local_check_sum}" == "${check_sum}" || (msg_fail "invalid checksum"; return 1)
 
