@@ -29,14 +29,31 @@ watch_prog() {
 sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
 
-    data=$(curl -m 300 -s ${SYNC_URL}) || (msg_fail "metadata download failed"; return 1)
-    block_height=$(jq -r '.blockHeight' <<< ${data})
-    file=$(jq -r '.fileUri' <<< ${data})
-    check_sum=$(jq -r '.checkSum.md5' <<< ${data})
-
-    curl -m 300 -sSL "${file}" -o /tmp/snapshot.bin || (msg_fail "snapshot download failed"; return 1)
+    if ! data=$(curl --fail -m 300 -s ${SYNC_URL}); then
+        msg_fail "metadata download failed"
+        return 1
+    fi
+    if ! block_height=$(jq -r '.blockHeight' <<< ${data}); then
+        msg_fail "metadata parsing failed"
+        return 1
+    fi
+    if ! file=$(jq -r '.fileUri' <<< ${data}); then
+        msg_fail "metadata parsing failed"
+        return 1
+    fi
+    if ! check_sum=$(jq -r '.checkSum.md5' <<< ${data}); then
+        msg_fail "metadata parsing failed"
+        return 1
+    fi
+    if ! curl --fail -m 300 -sSL "${file}" -o /tmp/snapshot.bin; then
+        msg_fail "snapshot download failed"
+        return 1
+    fi
     local_check_sum=$(md5sum /tmp/snapshot.bin | awk '{print $1}')
-    test "${local_check_sum}" == "${check_sum}" || (msg_fail "invalid checksum"; return 1)
+    if [[ "${local_check_sum}" != "${check_sum}" ]]; then
+        msg_fail "invalid checksum"
+        return 1
+    fi
 
     # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
     ${FULL_PROG} snapshot load /tmp/snapshot.bin &>/dev/null
@@ -108,7 +125,7 @@ start() {
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
     
     if [[ "${sync_needed}" == "true" ]]; then
-        sync_from_snapshot
+        sync_from_snapshot || panic_action miner "sync from snapshot failed"
     fi
 }
 
