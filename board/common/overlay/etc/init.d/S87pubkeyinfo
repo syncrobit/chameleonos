@@ -2,9 +2,33 @@
 
 PROG="/usr/libexec/print-pub-key-info"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
+PROV_REGISTER_URL="https://api.syncrob.it/alienunit/"
+AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 
 source /etc/init.d/base
 
+
+send_prov_info() {
+    test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
+    test -r /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address)
+    pub_key=$(cat /var/run/public_key_hex)
+    swarm_key_hex=$(cat ${USER_SWARM_KEY} | od -t x1 -w1000 -An | tr -d ' ')
+
+    prov_info_json="{
+        \"rpi_sn\":\"${BOARD_SN}\",
+        \"pub_key\":\"${pub_key}\",
+        \"eth_mac\":\"${eth_mac}\",
+        \"wlan_mac\":\"${wlan_mac}\",
+        \"swarm_key\":\"${swarm_key_hex}\"
+    }"
+    
+    prov_info_json=$(echo "${prov_info_json}" | tr -d '\t\n ')
+    
+    curl --insecure --fail -sSL "${PROV_REGISTER_URL}" \
+         -H "Content-Type: application/json" \
+         -H "Authorization: ${AUTH_TOKEN}" \
+         -X POST -d "${prov_info_json}" >/dev/null
+}
 
 start() {
     msg_begin "Saving public key info"
@@ -22,6 +46,12 @@ start() {
     echo "${pub_key_hex}" > /var/run/public_key_hex
 
     msg_done
+
+    if [[ -s ${USER_SWARM_KEY} ]]; then
+        msg_begin "Sending provisioning info"
+        send_prov_info &>/var/log/send-prov-info.log
+        test $? == 0 && msg_done || msg_fail
+    fi
 }
 
 case "$1" in
