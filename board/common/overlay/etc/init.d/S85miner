@@ -56,6 +56,7 @@ sync_from_snapshot() {
     fi
 
     # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
+    export NODETOOL_TIMEOUT=300000
     ${FULL_PROG} snapshot load /tmp/snapshot.bin &>/dev/null
     msg_done
 }
@@ -85,7 +86,8 @@ start() {
 
     if ! [[ -s /var/run/vpnpasswd ]]; then
         msg_fail "no provisioned ECC device"
-        return
+        panic_action miner "no provisioned ECC device"
+        return 1
     fi
 
     cd ${WORK_DIR}
@@ -109,7 +111,8 @@ start() {
     
     public_keys=$(${PROG} print_keys)
     if [[ $? != 0 ]]; then
-        msg_fail
+        msg_fail "failed to print public key"
+        panic_action miner "failed to print public key"
         return 1
     fi
     
@@ -125,7 +128,10 @@ start() {
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
     
     if [[ "${sync_needed}" == "true" ]]; then
-        sync_from_snapshot || panic_action miner "sync from snapshot failed"
+        if ! sync_from_snapshot; then
+            panic_action miner "sync from snapshot failed"
+            return 1
+        fi
     fi
 }
 
