@@ -12,6 +12,7 @@ from aiohttp import web
 
 PORT = 2319
 PUB_KEY_FILE = '/var/run/public_key_hex'
+SEND_LOGS_ACTIVE = '/var/run/send_logs_active'
 
 router = web.RouteTableDef()
 
@@ -64,6 +65,27 @@ def do_reboot() -> None:
 async def reboot(request: web.Request) -> web.Response:
     loop = asyncio.get_event_loop()
     loop.call_later(2, do_reboot)
+
+    return web.json_response({'message': 'ok'})
+
+
+@router.post('/logs/start')
+@handle_auth
+async def logs_start(request: web.Request) -> web.Response:
+    with open(SEND_LOGS_ACTIVE, 'w'):
+        pass
+
+    return web.json_response({'message': 'ok'})
+
+
+@router.post('/logs/stop')
+@handle_auth
+async def logs_stop(request: web.Request) -> web.Response:
+    try:
+        os.remove(SEND_LOGS_ACTIVE)
+
+    except IOError:
+        pass
 
     return web.json_response({'message': 'ok'})
 
