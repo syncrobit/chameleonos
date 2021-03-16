@@ -2,4 +2,4 @@
 0 2 * * 0 /usr/sbin/https-update
 */15 * * * * /usr/sbin/dyndns-update
 */10 * * * * /sbin/fwupdate-check >> /var/log/fwupdate-check.log
-* * * * * for i in {1..4}; do /sbin/send-sys-info >> /var/log/send-sys-info.log; sleep 15; done
+* * * * * (/sbin/send-sys-info; sleep 30; /sbin/send-sys-info) >> /var/log/send-sys-info.log
