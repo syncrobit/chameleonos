@@ -10,11 +10,16 @@ MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
 MAX_LAG=250
+MIN_FREE_SPACE=2048 # MB
 SYNC_URL="https://msync.syncrob.it/"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
+
+free_space() {
+    df -m /data | tail -n1 | tr -s ' ' | cut -d ' ' -f 4
+}
 
 watch_prog() {
     count=0
@@ -24,13 +29,18 @@ watch_prog() {
             panic_action miner "service dead"
             break
         fi
+        free_mb=$(free_space)
+        if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
+            panic_action miner "low disk space"
+            break
+        fi
     done
 }
 
 sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
     
-    # Cleanup any existing blockchain data
+    # Cleanup any existing miner data
     rm -rf /var/lib/miner
     
     if ! data=$(curl --fail -m 300 -s ${SYNC_URL}); then
@@ -81,6 +91,14 @@ watch_lag() {
 }
 
 start() {
+    # If we don't have enough storage space, remove miner data and do a resync
+    free_mb=$(free_space)
+    if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
+        msg_begin "Removing miner data due to low space"
+        msg_done "${free_mb} MB"
+        rm -rf /var/lib/miner
+    fi
+    
     msg_begin "Starting miner"
 
     if ! [[ -e /dev/i2c-1 ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
@@ -110,13 +128,13 @@ start() {
 
         # If swarm key has changed, we need to resync
         new_sk_hash=$(md5sum ${USER_SWARM_KEY} | cut -d ' ' -f 1)
-        test -s ${MINER_SWARM_KEY} && old_sk_hash=$(md5sum ${MINER_SWARM_KEY} | cut -d ' ' -f 1)
+        test -s ${MINER_SWARM_KEY}.copy && old_sk_hash=$(md5sum ${MINER_SWARM_KEY}.copy | cut -d ' ' -f 1)
         test "${old_sk_hash}" == "${new_sk_hash}" || sync_needed="true"
         
         # Copy user swarm key to miner swarm key location
         mkdir -p $(dirname ${MINER_SWARM_KEY})
         cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
-        
+        cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}.copy
     fi
     RELX_CONFIG_PATH+=".config"
     export RELX_CONFIG_PATH
