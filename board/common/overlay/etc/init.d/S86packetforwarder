@@ -4,6 +4,7 @@ PROG_TEMPLATE="/opt/packet_forwarder/bin/lora_pkt_fwd_%s"
 PROG_M="/opt/miner/bin/miner"
 PROG_CI="/opt/packet_forwarder/bin/chip_id"
 CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.%s.%s"
+USER_CONF="/data/etc/global_conf.json"
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
 REG_TIMEOUT=600
@@ -60,7 +61,11 @@ start() {
     prog=$(printf ${PROG_TEMPLATE} ${sx})
 
     # Prepare conf
-    conf=$(printf ${CONF_TEMPLATE} ${sx} ${reg})
+    if [[ -f ${USER_CONF} ]]; then
+        conf=${USER_CONF}
+    else
+        conf=$(printf ${CONF_TEMPLATE} ${sx} ${reg})
+    fi
     ln -sf ${conf} /var/run/global_conf.json
 
     # Must be run from the bin directory
