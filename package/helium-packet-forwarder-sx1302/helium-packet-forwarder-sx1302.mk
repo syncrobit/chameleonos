@@ -27,6 +27,7 @@ define HELIUM_PACKET_FORWARDER_SX1302_INSTALL_TARGET_CMDS
     for file in $(@D)/packet_forwarder/global_conf.json.sx1250.*; do \
         fname=$$(basename "$${file}" | sed 's/sx1250/sx1302/'); \
         cp "$${file}" $(TARGET_DIR)/opt/packet_forwarder/etc/$${fname}; \
+        sed -i 's,/dev/i2c-1,/dev/i2c-inexistent,' $(TARGET_DIR)/opt/packet_forwarder/etc/$${fname}; \
     done
     ln -sf /var/run/global_conf.json $(TARGET_DIR)/opt/packet_forwarder/bin/global_conf.json
 endef
