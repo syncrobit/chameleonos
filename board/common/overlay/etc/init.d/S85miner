@@ -40,9 +40,6 @@ watch_prog() {
 sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
     
-    # Cleanup any existing miner data
-    rm -rf /var/lib/miner
-    
     if ! data=$(curl --fail -m 300 -s ${SYNC_URL}); then
         msg_fail "metadata download failed"
         return 1
@@ -128,13 +125,12 @@ start() {
 
         # If swarm key has changed, we need to resync
         new_sk_hash=$(md5sum ${USER_SWARM_KEY} | cut -d ' ' -f 1)
-        test -s ${USER_SWARM_KEY}.copy && old_sk_hash=$(md5sum ${USER_SWARM_KEY}.copy | cut -d ' ' -f 1)
+        test -s ${MINER_SWARM_KEY} && old_sk_hash=$(md5sum ${MINER_SWARM_KEY} | cut -d ' ' -f 1)
         test "${old_sk_hash}" == "${new_sk_hash}" || sync_needed="true"
         
         # Copy user swarm key to miner swarm key location
         mkdir -p $(dirname ${MINER_SWARM_KEY})
         cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
-        cp ${USER_SWARM_KEY} ${USER_SWARM_KEY}.copy
     fi
     RELX_CONFIG_PATH+=".config"
     export RELX_CONFIG_PATH
