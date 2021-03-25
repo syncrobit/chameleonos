@@ -1,0 +1,58 @@
+#!/bin/bash
+
+HW_CONF=/var/run/hardware.conf
+
+EXPANDER_GPIO=13
+DEFAULT_LGW_RESET_GPIO=17
+OG_LGW_RESET_GPIO=25
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+
+start() {
+    msg_begin "Detecting hardware"
+
+    # Enable GPIO expander that is present on OG and RAK models
+    gpio.sh ${EXPANDER_GPIO} 1
+    usleep 100000
+    
+    truncate -s0 ${HW_CONF}
+
+    # Detect I2C peripherals
+    has_expander=false
+    has_gps=false
+    has_ecc=false
+    i2c_output=$(i2cdetect -y 1 | awk -F: '{print $2}')
+    grep -q 20 <<< "${i2c_output}" && has_expander=true
+    grep -q 42 <<< "${i2c_output}" && has_gps=true
+    grep -q 60 <<< "${i2c_output}" && has_ecc=true
+    
+    lgw_reset_gpio=${DEFAULT_LGW_RESET_GPIO}
+    if [[ ${has_gps} == true ]]; then
+        # OG models have GPS
+        lgw_reset_gpio=${OG_LGW_RESET_GPIO}
+    fi
+    
+    echo "HAS_GPS=${has_gps}" >> ${HW_CONF}
+    echo "HAS_ECC=${has_ecc}" >> ${HW_CONF}
+    echo "HAS_EXPANDER=${has_expander}" >> ${HW_CONF}
+    echo "LGW_RESET_GPIO=${lgw_reset_gpio}" >> ${HW_CONF}
+
+    msg_done
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        ;;
+    
+    *)
+        echo "Usage: $0 {start}"
+        exit 1
+        ;;
+esac
+
+exit $?

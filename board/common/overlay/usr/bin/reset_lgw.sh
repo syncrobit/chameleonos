@@ -1,10 +1,10 @@
 #!/bin/bash
 
-RESET_GPIO=17
+source /var/run/hardware.conf
 
-gpio.sh ${RESET_GPIO} 0
+gpio.sh ${LGW_RESET_GPIO} 0
 usleep 100000
-gpio.sh ${RESET_GPIO} 1
+gpio.sh ${LGW_RESET_GPIO} 1
 usleep 100000
-gpio.sh ${RESET_GPIO} 0
+gpio.sh ${LGW_RESET_GPIO} 0
 usleep 100000
