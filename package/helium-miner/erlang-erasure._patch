@@ -1,0 +1,48 @@
+diff -uNr erlang-erasure-orig/c_src/cmake/FindGFComplete.cmake erlang-erasure-patched/c_src/cmake/FindGFComplete.cmake
+--- erlang-erasure-orig/c_src/cmake/FindGFComplete.cmake	2021-03-09 00:50:46.000000000 +0200
++++ erlang-erasure-patched/c_src/cmake/FindGFComplete.cmake	2021-03-28 23:41:51.383074952 +0300
+@@ -8,6 +8,8 @@
+ set(CONFIGURE_ARGS $ENV{CONFIGURE_ARGS})
+ separate_arguments(CONFIGURE_ARGS)
+ 
++string(REPLACE "-L " "-L" LDFLAGS2 $ENV{LDFLAGS})
++
+ set(CONFIGURE_CFLAGS   "$ENV{CFLAGS}   ${CMAKE_C_FLAGS_${BUILD_TYPE_UC}}")
+ 
+ ExternalProject_Add(gf-complete
+@@ -20,10 +22,12 @@
+                     ./configure
+                     --prefix=${CMAKE_CURRENT_BINARY_DIR}
+                     --with-pic
++                    --host=aarch64-buildroot-linux-gnu
+                     --disable-shared
+                     ${CONFIGURE_ARGS}
+                     CC=${CMAKE_C_COMPILER}
+                     CFLAGS=${CONFIGURE_CFLAGS}
++                    LDFLAGS=${LDFLAGS2}
+                     ${GF_APPLE_ENV}  
+   BUILD_COMMAND     ${CMAKE_BUILD_TOOL} -j ${GF_APPLE_ENV}
+   BUILD_BYPRODUCTS  ${CMAKE_CURRENT_BINARY_DIR}/lib/libgf_complete.a
+diff -uNr erlang-erasure-orig/c_src/cmake/FindJerasure.cmake erlang-erasure-patched/c_src/cmake/FindJerasure.cmake
+--- erlang-erasure-orig/c_src/cmake/FindJerasure.cmake	2021-03-09 00:50:46.000000000 +0200
++++ erlang-erasure-patched/c_src/cmake/FindJerasure.cmake	2021-03-28 23:45:27.287202963 +0300
+@@ -11,8 +11,10 @@
+ set(CONFIGURE_ARGS $ENV{CONFIGURE_ARGS})
+ separate_arguments(CONFIGURE_ARGS)
+ 
++string(REPLACE "-L " "-L" LDFLAGS2 $ENV{LDFLAGS})
++
+ set(CONFIGURE_CFLAGS   "$ENV{CFLAGS}   -I${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_C_FLAGS_${BUILD_TYPE_UC}}")
+-set(CONFIGURE_LDFLAGS  "$ENV{LDFLAGS}  -L${CMAKE_CURRENT_BINARY_DIR}/lib")
++set(CONFIGURE_LDFLAGS  "${LDFLAGS2}    -L${CMAKE_CURRENT_BINARY_DIR}/lib")
+ 
+ ExternalProject_Add(jerasure
+   PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/jerasure
+@@ -24,6 +26,7 @@
+                     ./configure
+                     --prefix=${CMAKE_CURRENT_BINARY_DIR}
+                     --with-pic
++                     --host=aarch64-buildroot-linux-gnu
+                     --disable-shared
+                     ${CONFIGURE_ARGS}
+                     CC=${CMAKE_C_COMPILER}
