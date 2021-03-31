@@ -6,15 +6,21 @@ FULL_PROG=${WORK_DIR}/${PROG}
 LOG="/var/log/miner/startup.log"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
 MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
+SYS_CONF="/opt/miner/releases/0.1.0/sys.config"
+USER_CONF="/data/etc/miner_sys.config"
+NAT_CONF="/data/etc/nat.conf"
 
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
 MAX_LAG=250
 MIN_FREE_SPACE=2048 # MB
 SYNC_URL="https://msync.syncrob.it/"
+DEF_PORT=44158
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
+
+test -s ${NAT_CONF} && source ${NAT_CONF}
 
 
 free_space() {
@@ -118,21 +124,52 @@ start() {
     export HOME=/var/run
     ulimit -n 8192
     
-    # If user swarm key is present, configure miner to use it instead of ECC
-    RELX_CONFIG_PATH="/opt/miner/releases/0.1.0/sys"
-    if [[ -s ${USER_SWARM_KEY} ]]; then
-        RELX_CONFIG_PATH+=".noecc"
+    RELX_CONFIG_PATH="/var/run/miner_sys.config"
+    
+    # Use custom config, if present
+    if [[ -s ${USER_CONF} ]]; then
+        cp ${USER_CONF} ${RELX_CONFIG_PATH}
+    else
+        cp ${SYS_CONF} ${RELX_CONFIG_PATH}
 
-        # If swarm key has changed, we need to resync
-        new_sk_hash=$(md5sum ${USER_SWARM_KEY} | cut -d ' ' -f 1)
-        test -s ${MINER_SWARM_KEY} && old_sk_hash=$(md5sum ${MINER_SWARM_KEY} | cut -d ' ' -f 1)
-        test "${old_sk_hash}" == "${new_sk_hash}" || sync_needed="true"
-        
-        # Copy user swarm key to miner swarm key location
-        mkdir -p $(dirname ${MINER_SWARM_KEY})
-        cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
+        # If user swarm key is present, configure miner to use it instead of ECC
+        if [[ -s ${USER_SWARM_KEY} ]]; then
+            sed -ri 's/(.*key_slot.*)/%%\1/' ${RELX_CONFIG_PATH}
+
+            # If swarm key has changed, we need to resync
+            new_sk_hash=$(md5sum ${USER_SWARM_KEY} | cut -d ' ' -f 1)
+            test -s ${MINER_SWARM_KEY} && old_sk_hash=$(md5sum ${MINER_SWARM_KEY} | cut -d ' ' -f 1)
+            test "${old_sk_hash}" == "${new_sk_hash}" || sync_needed="true"
+            
+            # Copy user swarm key to miner swarm key location
+            mkdir -p $(dirname ${MINER_SWARM_KEY})
+            cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
+        fi
+
+        if [[ -n "${NAT_EXTERNAL_PORT}" ]]; then
+            NAT_INTERNAL_PORT=${NAT_INTERNAL_PORT:-${DEF_PORT}}
+            if [[ -z "${NAT_EXTERNAL_IP}" ]]; then
+                NAT_EXTERNAL_IP=$(curl -sSL --fail https://ifconfig.co)
+            fi
+            if [[ -z "${NAT_INTERNAL_IP}" ]]; then
+                eth_addr=$(
+                    ip addr show dev eth0 2>/dev/null | grep inet | tr -s ' ' | sed -r 's/^\s+//' | \
+                    cut -d ' ' -f 2 | grep -iv fe80 | sed 'N;s/\n/, /'
+                )
+                wlan_addr=$(
+                    ip addr show dev wlan0 2>/dev/null | grep inet | tr -s ' ' | sed -r 's/^\s+//' | \
+                    cut -d ' ' -f 2 | grep -iv fe80 | sed 'N;s/\n/, /'
+                )
+                addr=${eth_addr:-${wlan_addr}}
+                NAT_INTERNAL_IP=$(cut -d / -f 1 <<< ${addr})
+            fi
+            NAT_INTERNAL_IP=$(tr . , <<< ${NAT_INTERNAL_IP})
+            NAT_EXTERNAL_IP=$(tr . , <<< ${NAT_EXTERNAL_IP})
+            mapping="#{{{${NAT_INTERNAL_IP}},${NAT_INTERNAL_PORT}} => {{${NAT_EXTERNAL_IP}},${NAT_EXTERNAL_PORT}}}}"
+            sed -ri "s/(\s+)(\{node_aliases,)/\1{nat_map, ${mapping},\n\1\2/" ${RELX_CONFIG_PATH}
+        fi
     fi
-    RELX_CONFIG_PATH+=".config"
+
     export RELX_CONFIG_PATH
     
     public_keys=$(${PROG} print_keys)
