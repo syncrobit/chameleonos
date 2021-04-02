@@ -12,14 +12,16 @@ send_prov_info() {
     test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
     test -r /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address)
     pub_key=$(cat /var/run/public_key_hex)
-    swarm_key_hex=$(cat ${USER_SWARM_KEY} | od -t x1 -w1000 -An | tr -d ' ')
+    hotspot_name=$(cat /var/run/hotspot_name)
+    swarm_key_hex=$(cat ${USER_SWARM_KEY} 2>/dev/null | od -t x1 -w1000 -An | tr -d ' ')
 
     prov_info_json="{
         \"rpi_sn\":\"${BOARD_SN}\",
         \"pub_key\":\"${pub_key}\",
         \"eth_mac\":\"${eth_mac}\",
         \"wlan_mac\":\"${wlan_mac}\",
-        \"swarm_key\":\"${swarm_key_hex}\"
+        \"swarm_key\":\"${swarm_key_hex}\",
+        \"hotspot_name\":\"${hotspot_name}\"
     }"
     
     prov_info_json=$(echo "${prov_info_json}" | tr -d '\t\n ')
@@ -37,6 +39,7 @@ start() {
     info=(${info})
     ecc_sn=${info[0]}
     pub_key_hex=${info[1]}
+    hotspot_name=$(cut -d '"' -f 6 < /var/run/public_keys)
     
     if [[ "${ecc_sn}" != "unknown" ]]; then
         echo "${ecc_sn}" > /var/run/ecc_sn
@@ -44,14 +47,13 @@ start() {
         echo > /var/run/ecc_sn
     fi
     echo "${pub_key_hex}" > /var/run/public_key_hex
+    echo "${hotspot_name}" > /var/run/hotspot_name
 
     msg_done
 
-    if [[ -s ${USER_SWARM_KEY} ]]; then
-        msg_begin "Sending provisioning info"
-        send_prov_info &>/var/log/send-prov-info.log
-        test $? == 0 && msg_done || msg_fail
-    fi
+    msg_begin "Sending provisioning info"
+    send_prov_info &>/var/log/send-prov-info.log
+    test $? == 0 && msg_done || msg_fail
 }
 
 case "$1" in

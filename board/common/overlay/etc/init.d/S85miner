@@ -185,7 +185,7 @@ start() {
     
     test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
     
-    # We need the public key information for gateway config
+    # We need the public key information for gateway config & more
     echo $public_keys > /var/run/public_keys
 
     nice -n 10 ${PROG} foreground &>> ${LOG} &
