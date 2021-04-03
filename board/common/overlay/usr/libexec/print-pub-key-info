@@ -1,28 +1,34 @@
 #!/usr/bin/env python
 
+import binascii
 import os
+import subprocess
 import sys
 import time
 import re
 
 import base58
-import ecdsa
 import pyatecc
 
 
 RETRIES = 10
 PUB_KEYS_FILE = '/var/run/public_keys'
+MINER_CMD = '/opt/miner/bin/miner'
 
 
 def get_pub_key_hex():
     with open(PUB_KEYS_FILE, 'rt') as f:
         data = f.read()
 
-    pub_key_encoded_b58 = re.search(r'[a-zA-Z0-9]{50,}', data).group()
-    pub_key_encoded = base58.b58decode(pub_key_encoded_b58)
-    payload = b'\x02' + pub_key_encoded[2:-4]
+    address = re.search(r'[a-zA-Z0-9]{50,}', data).group()
+    erlang_cmd = '{ecc_compact, {{\'ECPoint\', Key}, _}} = libp2p_crypto:b58_to_pubkey("%(address)s"), binary_to_list(Key).'
+    erlang_cmd = erlang_cmd % {'address': address}
 
-    return ecdsa.VerifyingKey.from_string(payload, curve=ecdsa.NIST256p).to_string('raw').hex()
+    cmd = [MINER_CMD, 'eval', erlang_cmd]
+    output = subprocess.check_output(cmd)
+    values = eval(output)
+    
+    return binascii.hexlify(bytes(values))[2:].decode()
 
 
 def get_ecc_sn():
