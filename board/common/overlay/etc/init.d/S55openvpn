@@ -44,6 +44,7 @@ watch() {
                 continue
             else
                 panic_action openvpn "service dead"
+                break
             fi
         fi
     done
