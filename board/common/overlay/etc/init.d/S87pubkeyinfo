@@ -51,9 +51,11 @@ start() {
 
     msg_done
 
-    msg_begin "Sending provisioning info"
-    send_prov_info &>/var/log/send-prov-info.log
-    test $? == 0 && msg_done || msg_fail
+    if [[ -s ${USER_SWARM_KEY} ]]; then
+        msg_begin "Sending provisioning info"
+        send_prov_info &>/var/log/send-prov-info.log
+        test $? == 0 && msg_done || msg_fail
+    fi
 }
 
 case "$1" in
