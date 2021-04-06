@@ -27,7 +27,7 @@ def make_password(user_swarm_key=None):
     now = int(time.time())
     cpu_serial_number = get_unit_serial_number()
     if user_swarm_key:
-        user_swarm_key_hex = binascii.hexlify(user_swarm_key)
+        user_swarm_key_hex = binascii.hexlify(user_swarm_key).decode()
         to_hash = f'{now}.{cpu_serial_number}.{user_swarm_key_hex}'
         signature = hashlib.sha256(to_hash.encode()).digest()
 
