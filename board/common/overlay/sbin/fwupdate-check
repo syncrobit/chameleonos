@@ -5,21 +5,33 @@ source /etc/init.d/base
 BASE_URL="https://fwd.syncrob.it"
 MIN_UPTIME=600
 
+cmdline_args="$*"
+
+function arg_present() {
+    for arg in ${cmdline_args}; do
+        if [ "${arg}" == "$1" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 
 echo "---- $(date) ----"
 
-if [[ "${OS_DEBUG}" == "true" ]]; then
+if [[ "${OS_DEBUG}" == "true" ]] && ! arg_present "--force"; then
     echo "Skipping firmware update check in debug mode"
     exit
 fi
 
-if ps aux | grep '{fwupdate}' | grep -vq grep; then
+if ps aux | grep '{fwupdate}' | grep -vq grep && ! arg_present "--force"; then
     echo "Firmware update process is already running"
     exit
 fi
 
 uptime_seconds=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
-if [[ ${uptime_seconds} -lt ${MIN_UPTIME} ]]; then
+if [[ ${uptime_seconds} -lt ${MIN_UPTIME} ]] && ! arg_present "--force"; then
     echo "Skipping firmware update check immediately after boot"
     exit
 fi
