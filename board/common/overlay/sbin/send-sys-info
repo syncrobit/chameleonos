@@ -19,6 +19,7 @@ function prepare_payload() {
     test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
     test -r /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address)
     ecc_sn=$(cat /var/run/ecc_sn)
+    address=$(cat /var/run/public_keys | grep -oE '[0-9a-zA-Z]{50,}' | head -n 1)
     pub_key=$(cat /var/run/public_key_hex)
     hotspot_name=$(cat /var/run/hotspot_name)
 
@@ -34,6 +35,7 @@ function prepare_payload() {
         \"hotspot_name\":\"${hotspot_name}\",
         \"fw_version\":\"${OS_VERSION}\",
         \"ecc_sn\":\"${ecc_sn}\",
+        \"address\":\"${address}\",
         \"pub_key\":\"${pub_key}\",
         \"eth_mac\":\"${eth_mac}\",
         \"wlan_mac\":\"${wlan_mac}\",

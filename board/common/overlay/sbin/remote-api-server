@@ -4,6 +4,9 @@ import asyncio
 import hashlib
 import logging
 import os
+import psutil
+import re
+import subprocess
 
 from typing import Awaitable, Callable
 
@@ -11,14 +14,24 @@ from aiohttp import web
 
 
 PORT = 2319
-PUB_KEY_FILE = '/var/run/public_key_hex'
-SEND_LOGS_ACTIVE = '/var/run/send_logs_active'
+PUB_KEY_HEX_FILE = '/var/run/public_key_hex'
+PUB_KEYS_FILE = '/var/run/public_keys'
+HOTSPOT_NAME_FILE = '/var/run/hotspot_name'
+ECC_SN_FILE = '/var/run/ecc_sn'
+ETH_MAC_FILE = '/sys/class/net/eth0/address'
+WLAN_MAC_FILE = '/sys/class/net/wlan0/address'
+MINER_HEIGHT_CMD = '/opt/miner/bin/miner info height'
+MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d "|"'
+FW_VERSION_CMD = '/sbin/fwupdate current'
+UPTIME_CMD = 'cat /proc/uptime | grep -oE "^[[:digit:]]+"'
+SEND_LOGS_ACTIVE_FILE = '/var/run/send_logs_active'
+DATA_DIR = '/data'
 
 router = web.RouteTableDef()
 
 
-def read_pub_key() -> str:
-    with open(PUB_KEY_FILE, 'rt') as f:
+def read_pub_key_hex() -> str:
+    with open(PUB_KEY_HEX_FILE, 'rt') as f:
         return f.read().strip()
 
 
@@ -32,7 +45,7 @@ def read_rpi_sn() -> str:
 
 
 def get_auth_hash() -> str:
-    to_hash = f'{read_rpi_sn()}:{read_pub_key()}'
+    to_hash = f'{read_rpi_sn()}:{read_pub_key_hex()}'
     return hashlib.sha256(to_hash.encode()).hexdigest()
 
 
@@ -60,6 +73,83 @@ def do_reboot() -> None:
     os.system('/sbin/reboot')
 
 
+@router.get('/summary')
+async def summary(request: web.Request) -> web.Response:
+    vm = psutil.virtual_memory()
+    du = psutil.disk_usage(DATA_DIR)
+    
+    try:
+        info_height = subprocess.check_output(MINER_HEIGHT_CMD, shell=True)
+        miner_height = int(info_height.decode().split()[1])
+    except:
+        miner_height = None
+    
+    try:
+        miner_listen_addr = subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True).decode().strip()
+    except:
+        miner_listen_addr = None
+    
+    try:
+        with open(HOTSPOT_NAME_FILE, 'rt') as f:
+            hotspot_name = f.read().strip()
+    except:
+        hotspot_name = None
+    
+    try:
+        fw_version = subprocess.check_output(FW_VERSION_CMD, shell=True).decode().strip()
+    except:
+        fw_version = None
+    
+    try:
+        with open(ECC_SN_FILE, 'rt') as f:
+            ecc_sn = f.read().strip()
+    except:
+        ecc_sn = None
+    
+    try:
+        with open(PUB_KEYS_FILE, 'rt') as f:
+            address = re.search(r'[a-zA-Z0-9]{50,}', f.read()).group()
+    except:
+        address = None
+    
+    try:
+        with open(ETH_MAC_FILE, 'rt') as f:
+            eth_mac = f.read().strip()
+    except:
+        eth_mac = None
+    
+    try:
+        with open(WLAN_MAC_FILE, 'rt') as f:
+            wlan_mac = f.read().strip()
+    except:
+        wlan_mac = None
+    
+    try:
+        uptime = subprocess.check_output(UPTIME_CMD, shell=True).decode().strip()
+    except:
+        uptime = None
+ 
+    return web.json_response({
+        'serial_number': read_rpi_sn(),
+        'cpu_usage': psutil.cpu_percent(),
+        'mem_used': int(vm.used / 1024 / 1024),
+        'mem_total': int(vm.total / 1024 / 1024),
+        'storage_used': int(du.used / 1024 / 1024),
+        'storage_total': int(du.total / 1024 / 1024),
+        'temperature': int(psutil.sensors_temperatures()['cpu_thermal'][0].current),
+        'miner_height': miner_height,
+        'miner_listen_addr': miner_listen_addr,
+        'hotspot_name': hotspot_name,
+        'fw_version': fw_version,
+        'ecc_sn': ecc_sn,
+        'address': address,
+        'pub_key': read_pub_key_hex(),
+        'eth_mac': eth_mac,
+        'wlan_mac': wlan_mac,
+        'uptime': uptime
+    })
+
+
 @router.post('/reboot')
 @handle_auth
 async def reboot(request: web.Request) -> web.Response:
@@ -72,7 +162,7 @@ async def reboot(request: web.Request) -> web.Response:
 @router.post('/logs/start')
 @handle_auth
 async def logs_start(request: web.Request) -> web.Response:
-    with open(SEND_LOGS_ACTIVE, 'w'):
+    with open(SEND_LOGS_ACTIVE_FILE, 'w'):
         pass
 
     return web.json_response({'message': 'ok'})
@@ -82,7 +172,7 @@ async def logs_start(request: web.Request) -> web.Response:
 @handle_auth
 async def logs_stop(request: web.Request) -> web.Response:
     try:
-        os.remove(SEND_LOGS_ACTIVE)
+        os.remove(SEND_LOGS_ACTIVE_FILE)
 
     except IOError:
         pass
