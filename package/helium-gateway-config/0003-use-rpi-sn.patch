@@ -1,0 +1,12 @@
+diff -uNr gateway-config-orig/src/gateway_config.erl gateway-config-patched/src/gateway_config.erl
+--- gateway-config-orig/src/gateway_config.erl	2021-02-23 17:56:13.000000000 +0200
++++ gateway-config-patched/src/gateway_config.erl	2021-04-11 21:38:04.402601286 +0300
+@@ -71,7 +71,7 @@
+     end.
+ 
+ serial_number() ->
+-    mac_address(wifi).
++    os:cmd("cat /proc/cpuinfo | grep Serial | cut -d ':' -f 2 | rev | cut -b 1-8 | rev | tr a-f A-F | xargs printf %s").
+ 
+ wifi_services() ->
+     %% Fetch name and strength of currently visible wifi services
