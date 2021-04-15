@@ -13,10 +13,14 @@ LINK_WATCH=true
 NETWATCH_RETRIES=3
 NETWATCH_INTERVAL=20
 
+REG_CONF="/var/lib/reg.conf"
+
 
 test -x ${PROG} || exit 0
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
+
+test -s ${REG_CONF} && source ${REG_CONF}
 
 rm -rf ${CONF}  # Ignore any existing user config
 prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
@@ -24,6 +28,12 @@ prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
 test -s ${WATCH_CONF} && source ${WATCH_CONF}
 test -d ${CONF} || exit 0
 test -s /var/run/vpnpasswd || exit 0
+
+
+# Adjust the VPN server host according to region
+SERVER_HOST="et.%ssyncrob.it"
+SERVER_HOST=$(printf "${SERVER_HOST}" "${REGION_PREFIX}")
+sed -ri "s/remote.*1194/remote ${SERVER_HOST} 1194/" ${CONF}/client.conf
 
 
 running() {
