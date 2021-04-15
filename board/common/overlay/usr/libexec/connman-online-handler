@@ -1,12 +1,14 @@
 #!/bin/bash
 
 ONLINE=$1
+#API_ENDPOINT_URL="https://api.%ssyncrob.it/advertise/"  # TODO: enable me when api service is ready
 API_ENDPOINT_URL="https://api.syncrob.it/advertise/"
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
-
+REG_CONF="/var/lib/reg.conf"
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
-
+test -s ${REG_CONF} && source ${REG_CONF}
+API_ENDPOINT_URL=$(printf "${API_ENDPOINT_URL}" "${REGION_PREFIX}")
 
 if [[ "${ONLINE}" == true ]]; then
     addr_wlan0=$(ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \

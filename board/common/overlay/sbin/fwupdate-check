@@ -8,7 +8,7 @@ REG_CONF="/var/lib/reg.conf"
 MIN_UPTIME=600
 
 test -s ${REG_CONF} && source ${REG_CONF}
-BASE_URL=$(printf "${BASE_URL}" ${REGION_PREFIX})
+BASE_URL=$(printf "${BASE_URL}" "${REGION_PREFIX}")
 
 cmdline_args="$*"
 
