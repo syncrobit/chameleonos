@@ -8,6 +8,7 @@ USER_CONF="/data/etc/global_conf.json"
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
 REG_TIMEOUT=600
+REG_CONF="/var/lib/reg.conf"
 DEF_REG="US915"
 
 
@@ -56,6 +57,14 @@ start() {
             break
         fi
     done
+    
+    # Remember the region for future use
+    reg_prefix="$(echo ${reg} | cut -b1-2 | tr A-Z a-z)."
+    if [[ "${reg_prefix}" == "us." ]]; then
+        reg_prefix=""  # US works without prefix since it's the default
+    fi
+    echo "REGION=${reg}" > ${REG_CONF}
+    echo "REGION_PREFIX=${reg_prefix}" >> ${REG_CONF}
 
     sx=$(find_sx)
     prog=$(printf ${PROG_TEMPLATE} ${sx})

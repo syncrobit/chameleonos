@@ -125,7 +125,7 @@ async def summary(request: web.Request) -> web.Response:
         wlan_mac = None
     
     try:
-        uptime = subprocess.check_output(UPTIME_CMD, shell=True).decode().strip()
+        uptime = int(subprocess.check_output(UPTIME_CMD, shell=True).decode().strip())
     except:
         uptime = None
  
