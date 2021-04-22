@@ -22,6 +22,8 @@ function prepare_payload() {
     address=$(cat /var/run/public_keys | grep -oE '[0-9a-zA-Z]{50,}' | head -n 1)
     pub_key=$(cat /var/run/public_key_hex)
     hotspot_name=$(cat /var/run/hotspot_name)
+    test -r /var/lib/reg.conf && source /var/lib/reg.conf
+    swarm_key_mode=$(test -s /var/lib/user_swarm_key && echo true || echo false)
 
     payload="{
         \"cpu_usage\":${cpu_usage},
@@ -33,8 +35,10 @@ function prepare_payload() {
         \"miner_height\":${miner_height},
         \"miner_listen_addr\":\"${miner_listen_addr}\",
         \"hotspot_name\":\"${hotspot_name}\",
+        \"region\":\"${REGION}\",
         \"fw_version\":\"${OS_VERSION}\",
         \"ecc_sn\":\"${ecc_sn}\",
+        \"swarm_key_mode\":${swarm_key_mode},
         \"address\":\"${address}\",
         \"pub_key\":\"${pub_key}\",
         \"eth_mac\":\"${eth_mac}\",
