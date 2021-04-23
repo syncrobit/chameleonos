@@ -21,7 +21,7 @@ def get_rpi_sn() -> str:
             if line.startswith('Serial'):
                 return line.strip()[-8:]
 
-    raise RuntimeError('Could not read CPU serial number')
+    return '00000000'
 
 
 def reboot() -> None:

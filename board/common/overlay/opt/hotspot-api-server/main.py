@@ -13,6 +13,7 @@ import miner
 import pubkey
 import settings
 import system
+import user
 
 
 router = web.RouteTableDef()
@@ -23,6 +24,11 @@ router = web.RouteTableDef()
 #     return hashlib.sha256(to_hash.encode()).hexdigest()
 
 
+def make_auth_error_response() -> web.Response:
+    www_authenticate = f'Basic realm="SyncroB.it Chameleon {system.get_rpi_sn()}"'
+    return web.Response(status=401, headers={'WWW-Authenticate': www_authenticate})
+
+
 def handle_auth(
     func: Callable[[web.Request], Awaitable[web.Response]]
 ) -> Callable[[web.Request], Awaitable[web.Response]]:
@@ -31,15 +37,35 @@ def handle_auth(
             auth = request.headers['Authorization']
 
         except KeyError:
-            return web.json_response({'error': 'unauthorized'}, status=401)
+            return make_auth_error_response()
 
-        auth = auth.lower()
-        if auth != get_auth_hash():
-            return web.json_response({'error': 'unauthorized'}, status=401)
+        try:
+            unpw = base64.urlsafe_b64decode(auth[5:].strip()).decode()
+
+        except (ValueError, TypeError):
+            return make_auth_error_response()
+
+        try:
+            username, password = unpw.split(':')
+
+        except ValueError:
+            return make_auth_error_response()
+
+        if not user.verify_credentials(username, password):
+            logging.error(f'invalid credentials for %s', username)
+            return make_auth_error_response()
+
+        logging.debug(f'authentication successful for %s', username)
 
         return await func(request)
 
     return handler
+
+
+@router.get('/test')
+@handle_auth
+async def test(request: web.Request) -> web.Response:
+    return web.json_response({'aaaa': 'bbbb'})
 
 
 @router.get('/summary')
