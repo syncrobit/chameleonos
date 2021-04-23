@@ -1,22 +1,22 @@
 #!/bin/bash
 
-
-PROG="/sbin/remote-api-server"
-LOG="/var/log/remote-api-server.log"
+PROG="/opt/hotspot-api-server/main.py"
+PYTHON="/usr/bin/python"
+LOG="/var/log/hotspot-api-server.log"
 
 source /etc/init.d/base
 
 
 start() {
-    msg_begin "Starting remote API server"
+    msg_begin "Starting hotspot API server"
     
-    ${PROG} &>${LOG} &
+    ${PYTHON} ${PROG} &>${LOG} &
 
     msg_done
 }
 
 stop() {
-    msg_begin "Stopping remote API server"
+    msg_begin "Stopping hotspot API server"
 
     prog_name=$(basename ${PROG})
     ps | grep ${prog_name} | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
