@@ -16,16 +16,13 @@ import system
 import user
 
 
+AUTH_REALM_PREFIX = 'SyncroB.it Chameleon'
+
 router = web.RouteTableDef()
 
 
-# def get_auth_hash() -> str:
-#     to_hash = f'{get_rpi_sn()}:{get_pub_key_hex()}'
-#     return hashlib.sha256(to_hash.encode()).hexdigest()
-
-
 def make_auth_error_response() -> web.Response:
-    www_authenticate = f'Basic realm="SyncroB.it Chameleon {system.get_rpi_sn()}"'
+    www_authenticate = f'Basic realm="{AUTH_REALM_PREFIX} {system.get_rpi_sn()}"'
     return web.Response(status=401, headers={'WWW-Authenticate': www_authenticate})
 
 
@@ -62,14 +59,8 @@ def handle_auth(
     return handler
 
 
-@router.get('/test')
-@handle_auth
-async def test(request: web.Request) -> web.Response:
-    return web.json_response({'aaaa': 'bbbb'})
-
-
 @router.get('/summary')
-async def summary(request: web.Request) -> web.Response:
+async def get_summary(request: web.Request) -> web.Response:
     mem_used, mem_total = system.get_mem_info()
     storage_used, storage_total = system.get_storage_info()
 
@@ -84,6 +75,7 @@ async def summary(request: web.Request) -> web.Response:
         'miner_height': miner.get_height(),
         'miner_listen_addr': miner.get_listen_addr(),
         'hotspot_name': pubkey.get_name(),
+        'region': miner.get_region(),
         'fw_version': system.get_fw_version(),
         'ecc_sn': pubkey.get_ecc_sn(),
         'address': pubkey.get_address(),
@@ -94,27 +86,80 @@ async def summary(request: web.Request) -> web.Response:
     })
 
 
+@router.get('/stats')
+async def get_stats(request: web.Request) -> web.Response:
+    # TODO: implement stats module
+    return web.json_response({
+        'blockchain_height': 0,
+        'rewards_1d': 0,
+        'rewards_7d': 0,
+        'rewards_30d': 0,
+        'rewards_365d': 0,
+        'oracle_price': 0
+    })
+
+
+@router.get('/config')
+@handle_auth
+async def get_config(request: web.Request) -> web.Response:
+    nat = miner.get_nat_config()
+    return web.json_response({
+        'nat_external_ip': nat['external_ip'],
+        'nat_external_port': nat['external_port'],
+        'nat_internal_port': nat['internal_port'],
+        'pf_antenna_gain': 0,  # TODO implement pf module
+        'pf_rssi_offset': 0,
+        'pf_tx_power': 0
+    })
+
+
+@router.patch('/config')
+@handle_auth
+async def set_config(request: web.Request) -> web.Response:
+    config = await request.json()
+
+    nat_config = {}
+    for field in ('external_ip', 'external_port', 'internal_port'):
+        if f'nat_{field}' in config:
+            nat_config[field] = config[f'nat_{field}']
+
+    if nat_config:
+        miner.set_nat_config(nat_config)
+
+    pf_config = {}
+    for field in ('antenna_gain', 'rssi_offset', 'tx_power'):
+        if f'pf_{field}' in config:
+            pf_config[field] = config[f'pf_{field}']
+
+    if pf_config:
+        pass
+        # pf.set_config(pf_config) TODO: implement me
+
+    if 'password' in config:
+        user.set_password(user.DEFAULT_USERNAME, config['password'])
+
+
 @router.post('/reboot')
 @handle_auth
 async def reboot(request: web.Request) -> web.Response:
     loop = asyncio.get_event_loop()
     loop.call_later(2, system.reboot)
 
-    return web.json_response({'message': 'ok'})
+    return web.Response(status=204)
 
 
 @router.post('/logs/start')
 @handle_auth
 async def logs_start(request: web.Request) -> web.Response:
     logs.enable_logs_sending()
-    return web.json_response({'message': 'ok'})
+    return web.Response(status=204)
 
 
 @router.post('/logs/stop')
 @handle_auth
 async def logs_stop(request: web.Request) -> web.Response:
     logs.disable_logs_sending()
-    return web.json_response({'message': 'ok'})
+    return web.Response(status=204)
 
 
 def make_app() -> web.Application:
