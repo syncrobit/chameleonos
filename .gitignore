@@ -17,3 +17,5 @@
 *.img.gz
 *.img.xz
 *.img.zip
+.idea
+.venv

@@ -3,16 +3,32 @@
 PROG_TEMPLATE="/opt/packet_forwarder/bin/lora_pkt_fwd_%s"
 PROG_M="/opt/miner/bin/miner"
 PROG_CI="/opt/packet_forwarder/bin/chip_id"
-CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.%s.%s"
-USER_CONF="/data/etc/global_conf.json"
+
+JSON_CONF_TEMPLATE="/opt/packet_forwarder/etc/global_conf.json.%s.%s"
+JSON_CONF="/var/run/global_conf.json"
+USER_JSON_CONF="/data/etc/global_conf.json"
+
+SYS_CONF="/etc/packet_forwarder.conf"
+BOOT_CONF="/boot/packet_forwarder.conf"
+CONF="/var/lib/packet_forwarder.conf"
+
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
+
 REG_TIMEOUT=600
 REG_CONF="/var/lib/reg.conf"
 DEF_REG="US915"
 
+# TX power:      12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
+SX1301_PA_GAIN=(  9 15 10 10 11 12 13 14  9 10 10 10 10 11 12 14)
+SX1301_MIX_GAIN=( 2  1  2  2  2  2  2  2  3  3  3  3  3  3  3  3)
+SX1301_DIG_GAIN=( 0  0  0  0  0  0  0  0  0  1  1  0  0  0  0  0)
+SX1302_PWR_IDX=(  4  5  6  7  8  9 10 11 12 13 14 15 16 17 19 20)
+
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
+
+prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
 
 
 find_reg() {
@@ -32,6 +48,24 @@ find_sx() {
     else
         echo "sx1301"
     fi
+}
+
+prepare_conf_json() {
+    # $1 - template
+    # $2 - sx
+    # $3 - reg
+    source ${CONF}
+    export PF_ANTENNA_GAIN
+    export PF_RSSI_OFFSET
+    if [[ $2 == sx1301 ]]; then
+        # TX power ranges from 12 to 27 dBm
+        export PF_PA_GAIN=${SX1301_PA_GAIN[${PF_TX_POWER} - 12]}
+        export PF_MIX_GAIN=${SX1301_MIX_GAIN[${PF_TX_POWER} - 12]}
+        export PF_DIG_GAIN=${SX1301_DIG_GAIN[${PF_TX_POWER} - 12]}
+    else  # Assuming $2 == sx1302
+        export PF_PWR_IDX=${SX1302_PWR_IDX[${PF_TX_POWER} - 12]}
+    fi
+    cat $1 | envsubst > ${JSON_CONF}
 }
 
 start() {
@@ -69,13 +103,14 @@ start() {
     sx=$(find_sx)
     prog=$(printf ${PROG_TEMPLATE} ${sx})
 
-    # Prepare conf
-    if [[ -f ${USER_CONF} ]]; then
-        conf=${USER_CONF}
+    # Prepare JSON conf
+    if [[ -f ${USER_JSON_CONF} ]]; then
+        # User config has precedence
+        cp ${USER_JSON_CONF} ${JSON_CONF}
     else
-        conf=$(printf ${CONF_TEMPLATE} ${sx} ${reg})
+        json_conf_template=$(printf ${JSON_CONF_TEMPLATE} ${sx} ${reg})
+        prepare_conf_json ${json_conf_template} ${sx} ${reg} > ${JSON_CONF}
     fi
-    ln -sf ${conf} /var/run/global_conf.json
 
     # Must be run from the bin directory
     cd $(dirname ${prog})
