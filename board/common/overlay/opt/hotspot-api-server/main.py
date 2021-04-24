@@ -10,6 +10,7 @@ from aiohttp import web
 
 import logs
 import miner
+import pf
 import pubkey
 import settings
 import system
@@ -75,6 +76,7 @@ async def get_summary(request: web.Request) -> web.Response:
         'miner_height': miner.get_height(),
         'miner_listen_addr': miner.get_listen_addr(),
         'hotspot_name': pubkey.get_name(),
+        'concentrator_model': pf.get_concentrator_model(),
         'region': miner.get_region(),
         'fw_version': system.get_fw_version(),
         'ecc_sn': pubkey.get_ecc_sn(),
@@ -117,6 +119,8 @@ async def get_config(request: web.Request) -> web.Response:
 @handle_auth
 async def set_config(request: web.Request) -> web.Response:
     config = await request.json()
+    restart_miner = False
+    restart_pf = False
 
     nat_config = {}
     for field in ('external_ip', 'external_port', 'internal_port'):
@@ -125,6 +129,7 @@ async def set_config(request: web.Request) -> web.Response:
 
     if nat_config:
         miner.set_nat_config(nat_config)
+        restart_miner = True
 
     pf_config = {}
     for field in ('antenna_gain', 'rssi_offset', 'tx_power'):
@@ -132,11 +137,16 @@ async def set_config(request: web.Request) -> web.Response:
             pf_config[field] = config[f'pf_{field}']
 
     if pf_config:
-        pass
-        # pf.set_config(pf_config) TODO: implement me
+        pf.set_config(pf_config)
+        restart_pf = True
 
     if 'password' in config:
         user.set_password(user.DEFAULT_USERNAME, config['password'])
+
+    if restart_miner:
+        miner.restart()
+    if restart_pf:
+        pf.restart()
 
 
 @router.post('/reboot')

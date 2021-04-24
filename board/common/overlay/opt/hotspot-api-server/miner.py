@@ -84,4 +84,6 @@ def set_nat_config(nat: Dict[str, Any]) -> None:
             line = f'{k}={v}\n'
             f.write(line)
 
-    subprocess.check_output(MINER_RESTART_CMD, shell=True).decode().strip()
+
+def restart() -> None:
+    subprocess.check_output(MINER_RESTART_CMD, shell=True)
