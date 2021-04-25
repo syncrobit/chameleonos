@@ -3,6 +3,7 @@
 PROG="/opt/hotspot-api-server/main.py"
 PYTHON="/usr/bin/python"
 LOG="/var/log/hotspot-api-server.log"
+CONF="/etc/hotspot-api-server.conf"
 
 source /etc/init.d/base
 
@@ -10,6 +11,9 @@ source /etc/init.d/base
 start() {
     msg_begin "Starting hotspot API server"
     
+    set -a
+    source ${CONF}
+    set +a
     ${PYTHON} ${PROG} &>${LOG} &
 
     msg_done
