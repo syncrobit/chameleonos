@@ -8,8 +8,7 @@ import subprocess
 
 PF_RESTART_CMD = 'service packetforwarder restart'
 PF_CONCENTRATOR_MODEL_CMD = 'ps aux | grep /opt/packet_forwarder/bin/lora_pkt_fwd_ | grep -v grep'
-SYS_CONF_FILE = '/opt/packet_forwarder/etc/global_conf.json.{model}.{region}'
-CONF_FILE = '/var/lib/global_conf.json'
+CONF_FILE = '/data/etc/packet_forwarder.conf'
 
 
 def get_concentrator_model() -> Optional[str]:
@@ -22,59 +21,54 @@ def get_concentrator_model() -> Optional[str]:
         pass
 
 
-# def get_region() -> Optional[str]:
-#     try:
-#         with open(REG_FILE, 'rt') as f:
-#             return re.search(r'REGION=([a-zA-Z0-9])', f.read()).group(1)
-#     except Exception:
-#         pass
-#
-#
-# def get_nat_config() -> Dict[str, Any]:
-#     nat = {
-#         'external_ip': None,
-#         'external_port': None,
-#         'internal_port': None
-#     }
-#
-#     with open(NAT_FILE, 'rt') as f:
-#         for line in f:
-#             line = line.strip()
-#             try:
-#                 k, v = line.split('=', 1)
-#
-#             except ValueError:
-#                 continue
-#
-#             k = k[4:].lower()  # Skip NAT_
-#             if k.endswith('port'):
-#                 try:
-#                     v = int(v)
-#
-#                 except ValueError:
-#                     continue
-#
-#             nat[k] = v
-#
-#     return nat
-#
-#
-# def set_nat_config(nat: Dict[str, Any]) -> None:
-#     logging.info('updating NAT config: %s', nat)
-#
-#     # Use current values for missing entries
-#     current_nat = get_nat_config()
-#     for k, v in current_nat.items():
-#         nat.setdefault(k, v)
-#
-#     with open(NAT_FILE, 'wt') as f:
-#         for k, v in nat.items():
-#             if v is None:
-#                 continue
-#
-#             k = f'NAT_{k.upper()}'
-#             line = f'{k}={v}\n'
-#             f.write(line)
+def get_config() -> Dict[str, Any]:
+    config = {
+        'antenna_gain': None,
+        'rssi_offset': None,
+        'tx_power': None
+    }
+
+    with open(CONF_FILE, 'rt') as f:
+        for line in f:
+            line = line.strip()
+            try:
+                k, v = line.split('=', 1)
+
+            except ValueError:
+                continue
+
+            k = k[3:].lower()  # Skip PF_
+            try:
+                v = int(v)
+
+            except ValueError:
+                try:
+                    v = float(v)
+
+                except ValueError:
+                    continue
+
+            config[k] = v
+
+    return config
+
+
+def set_config(config: Dict[str, Any]) -> None:
+    logging.info('updating PF config: %s', config)
+
+    # Use current values for missing entries
+    current_config = get_config()
+    for k, v in current_config.items():
+        config.setdefault(k, v)
+
+    with open(CONF_FILE, 'wt') as f:
+        for k, v in config.items():
+            if v is None:
+                continue
+
+            k = f'PF_{k.upper()}'
+            line = f'{k}={v}\n'
+            f.write(line)
 
 
 def restart() -> None:

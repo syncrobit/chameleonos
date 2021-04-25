@@ -104,14 +104,15 @@ async def get_stats(request: web.Request) -> web.Response:
 @router.get('/config')
 @handle_auth
 async def get_config(request: web.Request) -> web.Response:
-    nat = miner.get_nat_config()
+    nat_config = miner.get_nat_config()
+    pf_config = pf.get_config()
     return web.json_response({
-        'nat_external_ip': nat['external_ip'],
-        'nat_external_port': nat['external_port'],
-        'nat_internal_port': nat['internal_port'],
-        'pf_antenna_gain': 0,  # TODO implement pf module
-        'pf_rssi_offset': 0,
-        'pf_tx_power': 0
+        'nat_external_ip': nat_config['external_ip'],
+        'nat_external_port': nat_config['external_port'],
+        'nat_internal_port': nat_config['internal_port'],
+        'pf_antenna_gain': pf_config['antenna_gain'],
+        'pf_rssi_offset': pf_config['rssi_offset'],
+        'pf_tx_power': pf_config['tx_power']
     })
 
 
@@ -148,6 +149,8 @@ async def set_config(request: web.Request) -> web.Response:
     if restart_pf:
         pf.restart()
 
+    return web.Response(status=204)
+
 
 @router.post('/reboot')
 @handle_auth
@@ -162,6 +165,7 @@ async def reboot(request: web.Request) -> web.Response:
 @handle_auth
 async def logs_start(request: web.Request) -> web.Response:
     logs.enable_logs_sending()
+
     return web.Response(status=204)
 
 
@@ -169,6 +173,7 @@ async def logs_start(request: web.Request) -> web.Response:
 @handle_auth
 async def logs_stop(request: web.Request) -> web.Response:
     logs.disable_logs_sending()
+
     return web.Response(status=204)
 
 

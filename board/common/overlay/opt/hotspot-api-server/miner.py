@@ -10,7 +10,7 @@ MINER_HEIGHT_CMD = '/opt/miner/bin/miner info height'
 MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d "|"'
 MINER_RESTART_CMD = 'service miner restart'
 REG_FILE = '/var/lib/reg.conf'
-NAT_FILE = '/data/etc/nat.conf'
+NAT_CONF_FILE = '/data/etc/nat.conf'
 
 
 def get_height() -> Optional[int]:
@@ -39,13 +39,13 @@ def get_region() -> Optional[str]:
 
 
 def get_nat_config() -> Dict[str, Any]:
-    nat = {
+    nat_config = {
         'external_ip': None,
         'external_port': None,
         'internal_port': None
     }
 
-    with open(NAT_FILE, 'rt') as f:
+    with open(NAT_CONF_FILE, 'rt') as f:
         for line in f:
             line = line.strip()
             try:
@@ -62,20 +62,20 @@ def get_nat_config() -> Dict[str, Any]:
                 except ValueError:
                     continue
 
-            nat[k] = v
+            nat_config[k] = v
 
-    return nat
+    return nat_config
 
 
 def set_nat_config(nat: Dict[str, Any]) -> None:
     logging.info('updating NAT config: %s', nat)
 
     # Use current values for missing entries
-    current_nat = get_nat_config()
-    for k, v in current_nat.items():
+    current_config = get_nat_config()
+    for k, v in current_config.items():
         nat.setdefault(k, v)
 
-    with open(NAT_FILE, 'wt') as f:
+    with open(NAT_CONF_FILE, 'wt') as f:
         for k, v in nat.items():
             if v is None:
                 continue
