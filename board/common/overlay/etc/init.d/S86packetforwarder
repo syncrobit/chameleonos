@@ -25,6 +25,28 @@ SX1301_MIX_GAIN=( 2  1  2  2  2  2  2  2  3  3  3  3  3  3  3  3)
 SX1301_DIG_GAIN=( 0  0  0  0  0  0  0  0  0  1  1  0  0  0  0  0)
 SX1302_PWR_IDX=(  4  5  6  7  8  9 10 11 12 13 14 15 16 17 19 20)
 
+declare -A SX1301_RSSI_OFFSET=( \
+    [AS923]=-166.0 \
+    [AU915]=-166.0 \
+    [CN470]=-176.0 \
+    [EU868]=-166.0 \
+    [IN865]=-166.0 \
+    [KR920]=-166.0 \
+    [RU864]=-166.0 \
+    [US915]=-166.0 \
+)
+
+declare -A SX1302_RSSI_OFFSET=( \
+    [AS923]=-215.4 \
+    [AU915]=-215.4 \
+    [CN470]=-207.0 \
+    [EU868]=-215.4 \
+    [IN865]=-215.4 \
+    [KR920]=-215.4 \
+    [RU864]=-215.4 \
+    [US915]=-215.4 \
+)
+
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
@@ -56,14 +78,15 @@ prepare_conf_json() {
     # $3 - reg
     source ${CONF}
     export PF_ANTENNA_GAIN
-    export PF_RSSI_OFFSET
     if [[ $2 == sx1301 ]]; then
         # TX power ranges from 12 to 27 dBm
         export PF_PA_GAIN=${SX1301_PA_GAIN[${PF_TX_POWER} - 12]}
         export PF_MIX_GAIN=${SX1301_MIX_GAIN[${PF_TX_POWER} - 12]}
         export PF_DIG_GAIN=${SX1301_DIG_GAIN[${PF_TX_POWER} - 12]}
+        export PF_RSSI_OFFSET=$(echo "${PF_RSSI_OFFSET} + ${SX1301_RSSI_OFFSET[$3]}" | bc)
     else  # Assuming $2 == sx1302
         export PF_PWR_IDX=${SX1302_PWR_IDX[${PF_TX_POWER} - 12]}
+        export PF_RSSI_OFFSET=$(echo "${PF_RSSI_OFFSET} + ${SX1302_RSSI_OFFSET[$3]}" | bc)
     fi
     cat $1 | envsubst > ${JSON_CONF}
 }
