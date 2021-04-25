@@ -54,7 +54,7 @@ def get_config() -> Dict[str, Any]:
 
 
 def set_config(config: Dict[str, Any]) -> None:
-    logging.info('updating PF config: %s', config)
+    logging.info('updating packet-forwarder config: %s', config)
 
     # Use current values for missing entries
     current_config = get_config()
@@ -72,4 +72,5 @@ def set_config(config: Dict[str, Any]) -> None:
 
 
 def restart() -> None:
-    subprocess.check_output(PF_RESTART_CMD, shell=True)
+    logging.info('restarting packet-forwarder')
+    subprocess.check_call(PF_RESTART_CMD, shell=True)

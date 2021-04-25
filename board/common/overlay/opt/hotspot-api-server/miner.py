@@ -2,6 +2,7 @@
 from typing import Any, Dict, Optional
 
 import logging
+import os
 import re
 import subprocess
 
@@ -46,6 +47,9 @@ def get_nat_config() -> Dict[str, Any]:
         'internal_port': None
     }
 
+    if not os.path.exists(NAT_CONF_FILE):
+        return nat_config
+
     with open(NAT_CONF_FILE, 'rt') as f:
         for line in f:
             line = line.strip()
@@ -87,4 +91,5 @@ def set_nat_config(nat: Dict[str, Any]) -> None:
 
 
 def restart() -> None:
-    subprocess.check_output(MINER_RESTART_CMD, shell=True)
+    logging.info('restarting miner')
+    subprocess.check_call(MINER_RESTART_CMD, shell=True)
