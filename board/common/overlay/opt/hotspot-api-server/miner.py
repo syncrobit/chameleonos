@@ -24,7 +24,7 @@ def get_height() -> Optional[int]:
 
 def get_listen_addr() -> Optional[str]:
     try:
-        return subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True).decode().strip()
+        return subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True).decode().strip() or None
 
     except Exception:
         pass
@@ -33,7 +33,8 @@ def get_listen_addr() -> Optional[str]:
 def get_region() -> Optional[str]:
     try:
         with open(REG_FILE, 'rt') as f:
-            return re.search(r'REGION=([a-zA-Z0-9])', f.read()).group(1)
+            return re.search(r'REGION=([a-zA-Z0-9]+)', f.read()).group(1)
+
     except Exception:
         pass
 
