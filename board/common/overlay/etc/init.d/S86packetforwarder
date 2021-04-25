@@ -10,7 +10,7 @@ USER_JSON_CONF="/data/etc/global_conf.json"
 
 SYS_CONF="/etc/packet_forwarder.conf"
 BOOT_CONF="/boot/packet_forwarder.conf"
-CONF="/var/lib/packet_forwarder.conf"
+CONF="/data/etc/packet_forwarder.conf"
 
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
