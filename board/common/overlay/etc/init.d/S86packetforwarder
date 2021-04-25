@@ -9,7 +9,6 @@ JSON_CONF="/var/run/global_conf.json"
 USER_JSON_CONF="/data/etc/global_conf.json"
 
 SYS_CONF="/etc/packet_forwarder.conf"
-BOOT_CONF="/boot/packet_forwarder.conf"
 CONF="/data/etc/packet_forwarder.conf"
 
 LOG="/var/log/packet_forwarder.log"
@@ -25,10 +24,41 @@ SX1301_MIX_GAIN=( 2  1  2  2  2  2  2  2  3  3  3  3  3  3  3  3)
 SX1301_DIG_GAIN=( 0  0  0  0  0  0  0  0  0  1  1  0  0  0  0  0)
 SX1302_PWR_IDX=(  4  5  6  7  8  9 10 11 12 13 14 15 16 17 19 20)
 
+declare -A SX1301_RSSI_OFFSET=( \
+    [AS923]=-166.0 \
+    [AU915]=-166.0 \
+    [CN470]=-176.0 \
+    [EU868]=-166.0 \
+    [IN865]=-166.0 \
+    [KR920]=-166.0 \
+    [RU864]=-166.0 \
+    [US915]=-166.0 \
+)
+
+declare -A SX1302_RSSI_OFFSET=( \
+    [AS923]=-215.4 \
+    [AU915]=-215.4 \
+    [CN470]=-207.0 \
+    [EU868]=-215.4 \
+    [IN865]=-215.4 \
+    [KR920]=-215.4 \
+    [RU864]=-215.4 \
+    [US915]=-215.4 \
+)
+
+declare -A DEF_TX_POWER=( \
+    [AS923]=27 \
+    [AU915]=27 \
+    [CN470]=27 \
+    [EU868]=14 \
+    [IN865]=27 \
+    [KR920]=27 \
+    [RU864]=27 \
+    [US915]=27 \
+)
+
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
-
-prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
 
 
 find_reg() {
@@ -54,18 +84,27 @@ prepare_conf_json() {
     # $1 - template
     # $2 - sx
     # $3 - reg
-    source ${CONF}
+    
+    template=$1
+    sx=$2
+    reg=$3
+
+    source ${SYS_CONF}  # Ensure defaults
+    PF_TX_POWER=${DEF_TX_POWER[${reg}]}
+    test -s ${CONF} && source ${CONF}
+
     export PF_ANTENNA_GAIN
-    export PF_RSSI_OFFSET
-    if [[ $2 == sx1301 ]]; then
+    if [[ ${sx} == sx1301 ]]; then
         # TX power ranges from 12 to 27 dBm
         export PF_PA_GAIN=${SX1301_PA_GAIN[${PF_TX_POWER} - 12]}
         export PF_MIX_GAIN=${SX1301_MIX_GAIN[${PF_TX_POWER} - 12]}
         export PF_DIG_GAIN=${SX1301_DIG_GAIN[${PF_TX_POWER} - 12]}
+        export PF_RSSI_OFFSET=$(echo "${PF_RSSI_OFFSET} + ${SX1301_RSSI_OFFSET[${reg}]}" | bc)
     else  # Assuming $2 == sx1302
         export PF_PWR_IDX=${SX1302_PWR_IDX[${PF_TX_POWER} - 12]}
+        export PF_RSSI_OFFSET=$(echo "${PF_RSSI_OFFSET} + ${SX1302_RSSI_OFFSET[${reg}]}" | bc)
     fi
-    cat $1 | envsubst > ${JSON_CONF}
+    cat ${template} | envsubst > ${JSON_CONF}
 }
 
 start() {
