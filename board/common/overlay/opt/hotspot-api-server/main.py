@@ -8,6 +8,7 @@ from typing import Awaitable, Callable
 
 from aiohttp import web
 
+import gatewayconfig
 import logs
 import miner
 import pf
@@ -157,6 +158,14 @@ async def set_config(request: web.Request) -> web.Response:
 async def reboot(request: web.Request) -> web.Response:
     loop = asyncio.get_event_loop()
     loop.call_later(2, system.reboot)
+
+    return web.Response(status=204)
+
+
+@router.post('/pair')
+@handle_auth
+async def pair(request: web.Request) -> web.Response:
+    gatewayconfig.enable_pair()
 
     return web.Response(status=204)
 
