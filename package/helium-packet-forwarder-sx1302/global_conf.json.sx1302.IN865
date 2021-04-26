@@ -3,7 +3,7 @@
         "spidev_path": "/dev/spidev0.0",
         "lorawan_public": true,
         "clksrc": 0,
-        "antenna_gain": ${PF_ANTENNA_GAIN}
+        "antenna_gain": ${PF_ANTENNA_GAIN},
         "full_duplex": false,
         "precision_timestamp": {
             "enable": false,
@@ -36,7 +36,7 @@
                 {"rf_power": 24, "pa_gain": 1, "pwr_idx": ${PF_PWR_IDX}},
                 {"rf_power": 25, "pa_gain": 1, "pwr_idx": ${PF_PWR_IDX}},
                 {"rf_power": 26, "pa_gain": 1, "pwr_idx": ${PF_PWR_IDX}},
-                {"rf_power": 27, "pa_gain": 1, "pwr_idx": ${PF_PWR_IDX}},
+                {"rf_power": 27, "pa_gain": 1, "pwr_idx": ${PF_PWR_IDX}}
             ]
         },
         "radio_1": {
