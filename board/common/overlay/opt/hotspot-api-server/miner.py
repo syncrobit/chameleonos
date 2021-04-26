@@ -11,6 +11,7 @@ MINER_HEIGHT_CMD = '/opt/miner/bin/miner info height'
 MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d "|"'
 MINER_RESTART_CMD = 'service miner restart'
 REG_FILE = '/var/lib/reg.conf'
+DEF_REGION = 'US915'
 NAT_CONF_FILE = '/data/etc/nat.conf'
 
 
@@ -31,13 +32,13 @@ def get_listen_addr() -> Optional[str]:
         pass
 
 
-def get_region() -> Optional[str]:
+def get_region() -> str:
     try:
         with open(REG_FILE, 'rt') as f:
             return re.search(r'REGION=([a-zA-Z0-9]+)', f.read()).group(1)
 
     except Exception:
-        pass
+        return DEF_REGION
 
 
 def get_nat_config() -> Dict[str, Any]:

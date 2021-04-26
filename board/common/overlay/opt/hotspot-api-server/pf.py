@@ -5,10 +5,15 @@ import logging
 import re
 import subprocess
 
+import miner
+
 
 PF_RESTART_CMD = 'service packetforwarder restart'
 PF_CONCENTRATOR_MODEL_CMD = 'ps aux | grep /opt/packet_forwarder/bin/lora_pkt_fwd_ | grep -v grep'
 CONF_FILE = '/data/etc/packet_forwarder.conf'
+SYS_CONF_FILE = '/etc/packet_forwarder.conf'
+DEF_TX_POWER = 27
+PF_STARTUP_SCRIPT = '/etc/init.d/S86packetforwarder'
 
 
 def get_concentrator_model() -> Optional[str]:
@@ -21,14 +26,33 @@ def get_concentrator_model() -> Optional[str]:
         pass
 
 
-def get_config() -> Dict[str, Any]:
-    config = {
-        'antenna_gain': None,
-        'rssi_offset': None,
-        'tx_power': None
-    }
+def get_def_tx_power(region: str) -> int:
+    with open(PF_STARTUP_SCRIPT, 'rt') as f:
+        data = f.read()
 
-    with open(CONF_FILE, 'rt') as f:
+    def_powers = re.search(r'DEF_TX_POWER=\((.*?)\)', data, flags=re.DOTALL).group(1).split()
+    def_powers = [i for i in def_powers if i.startswith('[')]
+    def_powers = [i.split('=', 1) for i in def_powers]
+    def_powers = {i[0][1:-1]: int(i[1]) for i in def_powers}
+
+    return def_powers.get(region)
+
+
+def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:
+    if conf_file is None:
+        config = get_config(SYS_CONF_FILE)
+        conf_file = CONF_FILE
+
+        config['tx_power'] = get_def_tx_power(miner.get_region())
+
+    else:
+        config = {
+            'antenna_gain': None,
+            'rssi_offset': None,
+            'tx_power': None
+        }
+
+    with open(conf_file, 'rt') as f:
         for line in f:
             line = line.strip()
             try:
