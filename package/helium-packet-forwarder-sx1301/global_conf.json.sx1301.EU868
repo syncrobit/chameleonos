@@ -87,113 +87,113 @@
         },
         "tx_lut_0": {
             "desc": "TX gain table, index 0",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": -6,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_1": {
             "desc": "TX gain table, index 1",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": -3,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_2": {
             "desc": "TX gain table, index 2",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 0,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_3": {
             "desc": "TX gain table, index 3",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 3,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_4": {
             "desc": "TX gain table, index 4",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 6,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_5": {
             "desc": "TX gain table, index 5",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 10,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_6": {
             "desc": "TX gain table, index 6",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 11,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_7": {
             "desc": "TX gain table, index 7",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 12,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_8": {
             "desc": "TX gain table, index 8",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 13,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_9": {
             "desc": "TX gain table, index 9",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 14,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_10": {
             "desc": "TX gain table, index 10",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 16,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_11": {
             "desc": "TX gain table, index 11",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 20,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_12": {
             "desc": "TX gain table, index 12",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 23,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_13": {
             "desc": "TX gain table, index 13",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 25,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_14": {
             "desc": "TX gain table, index 14",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 26,
             "dig_gain": ${PF_DIG_GAIN}
         },
         "tx_lut_15": {
             "desc": "TX gain table, index 15",
-            "pa_gain": ${PF_PA_GAIN}
-            "pa_gain": ${PF_MIX_GAIN}
+            "pa_gain": ${PF_PA_GAIN},
+            "mix_gain": ${PF_MIX_GAIN},
             "rf_power": 27,
             "dig_gain": ${PF_DIG_GAIN}
         }
