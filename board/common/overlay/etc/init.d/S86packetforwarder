@@ -89,10 +89,6 @@ prepare_conf_json() {
     sx=$2
     reg=$3
 
-    source ${SYS_CONF}  # Ensure defaults
-    PF_TX_POWER=${DEF_TX_POWER[${reg}]}
-    test -s ${CONF} && source ${CONF}
-
     export PF_ANTENNA_GAIN
     if [[ ${sx} == sx1301 ]]; then
         # TX power ranges from 12 to 27 dBm
@@ -139,8 +135,17 @@ start() {
     echo "REGION=${reg}" > ${REG_CONF}
     echo "REGION_PREFIX=${reg_prefix}" >> ${REG_CONF}
 
+    # User-editable configuration
+    source ${SYS_CONF}  # Ensure defaults
+    PF_TX_POWER=${DEF_TX_POWER[${reg}]}
+    test -s ${CONF} && source ${CONF}
+
     sx=$(find_sx)
-    prog=$(printf ${PROG_TEMPLATE} ${sx})
+    if [[ -n "${PF_PROG}" ]]; then
+        prog=${PF_PROG}
+    else
+        prog=$(printf ${PROG_TEMPLATE} ${sx})
+    fi
 
     # Prepare JSON conf
     if [[ -f ${USER_JSON_CONF} ]]; then
@@ -152,7 +157,7 @@ start() {
     fi
 
     # Must be run from the bin directory
-    cd $(dirname ${prog})
+    cd $(dirname ${PROG_TEMPLATE})
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${LIB_DIR}
     
     # stdbuf here forces line buffering, allowing real-time log
