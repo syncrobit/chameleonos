@@ -19,8 +19,8 @@ REG_CONF="/var/lib/reg.conf"
 DEF_REG="US915"
 
 # TX power:      12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
-SX1301_PA_GAIN=(  9 15 10 10 11 12 13 14  9 10 10 10 10 11 12 14)
-SX1301_MIX_GAIN=( 2  1  2  2  2  2  2  2  3  3  3  3  3  3  3  3)
+SX1301_MIX_GAIN=( 9 15 10 10 11 12 13 14  9 10 10 10 10 11 12 14)
+SX1301_PA_GAIN=(  2  1  2  2  2  2  2  2  3  3  3  3  3  3  3  3)
 SX1301_DIG_GAIN=( 0  0  0  0  0  0  0  0  0  1  1  0  0  0  0  0)
 SX1302_PWR_IDX=(  4  5  6  7  8  9 10 11 12 13 14 15 16 17 19 20)
 
@@ -168,9 +168,15 @@ start() {
 
 stop() {
     msg_begin "Stopping packet-forwarder"
-    
+
+    test -s ${CONF} && source ${CONF}
+
     sx=$(find_sx)
-    prog=$(printf ${PROG_TEMPLATE} ${sx})
+    if [[ -n "${PF_PROG}" ]]; then
+        prog=${PF_PROG}
+    else
+        prog=$(printf ${PROG_TEMPLATE} ${sx})
+    fi
     base_prog=$(basename ${prog})
     if killall -q ${base_prog}; then
         # Allow 2 seconds for a gracefulish shutdown
@@ -179,7 +185,7 @@ stop() {
     else
         msg_fail
     fi
-    
+
     # Kill any remainings with SIGKILL
     ps | grep -E '/opt/packet_forwarder' | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
 }
