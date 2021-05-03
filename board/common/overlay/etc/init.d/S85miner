@@ -46,7 +46,7 @@ watch_prog() {
 sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
     
-    if ! data=$(curl --fail -m 300 -s ${SYNC_URL}); then
+    if ! data=$(curl --fail -m 300 -sSL ${SYNC_URL}); then
         msg_fail "metadata download failed"
         return 1
     fi
@@ -62,7 +62,7 @@ sync_from_snapshot() {
         msg_fail "metadata parsing failed"
         return 1
     fi
-    if ! curl --fail -m 300 -sSL "${file}" -o /tmp/snapshot.bin; then
+    if ! curl --fail -m 900 -sSL "${file}" -o /tmp/snapshot.bin; then
         msg_fail "snapshot download failed"
         return 1
     fi
