@@ -12,9 +12,11 @@ NAT_CONF="/data/etc/nat.conf"
 
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
+NETWORK_TIMEOUT=3600
 MAX_LAG=250
 MIN_FREE_SPACE=2048 # MB
 SYNC_URL="https://msync.syncrob.it/"
+FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
 DEF_PORT=44158
 
 
@@ -27,8 +29,15 @@ free_space() {
     df -m /data | tail -n1 | tr -s ' ' | cut -d ' ' -f 4
 }
 
+get_lag() {
+    current_height=$(curl --silent https://api.helium.io/v1/blocks/height | jq .data.height)
+    test $? == 0 || return
+    our_height=$(${FULL_PROG} info height | awk '{print $2}')
+    test $? == 0 && [[ "${current_height}" =~ ^[0-9]+$ ]] && [[ "${our_height}" =~ ^[0-9]+$ ]] || return
+    expr ${current_height} - ${our_height}
+}
+
 watch_prog() {
-    count=0
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
@@ -40,6 +49,19 @@ watch_prog() {
             panic_action miner "low disk space"
             break
         fi
+    done
+}
+
+watch_lag() {
+    while true; do
+        sleep ${WATCH_LAG_INTERVAL}
+        lag=$(get_lag)
+        test -n "${lag}" || continue
+        if [[ ${lag} -le ${MAX_LAG} ]]; then
+            continue
+        fi
+        mkdir -p $(dirname ${FORCE_RESYNC_FILE}) && touch ${FORCE_RESYNC_FILE}
+        panic_action miner "lag is ${lag} > ${MAX_LAG}"
     done
 }
 
@@ -62,7 +84,7 @@ sync_from_snapshot() {
         msg_fail "metadata parsing failed"
         return 1
     fi
-    if ! curl --fail -m 900 --listen --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
+    if ! curl --fail -m 900 --silent --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
         msg_fail "snapshot download failed"
         return 1
     fi
@@ -76,21 +98,6 @@ sync_from_snapshot() {
     export NODETOOL_TIMEOUT=300000
     ${FULL_PROG} snapshot load /tmp/snapshot.bin &>/dev/null
     msg_done
-}
-
-watch_lag() {
-    while true; do
-        sleep ${WATCH_LAG_INTERVAL}
-        current_height=$(curl --silent https://api.helium.io/v1/blocks/height | jq .data.height)
-        test $? == 0 || continue
-        our_height=$(${FULL_PROG} info height | awk '{print $2}')
-        test $? == 0 || continue
-        dif=$(expr ${current_height} - ${our_height})
-        if [[ ${dif} -le ${MAX_LAG} ]]; then
-            continue
-        fi
-        panic_action miner "lag is ${dif} > ${MAX_LAG}"
-    done
 }
 
 start() {
@@ -109,6 +116,12 @@ start() {
     if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
         msg_begin "Removing miner data due to low space"
         msg_done "${free_mb} MB"
+        rm -rf /var/lib/miner
+    fi
+    
+    if [[ -f ${FORCE_RESYNC_FILE} ]]; then
+        msg_begin "Forcing miner data resync"
+        msg_done
         rm -rf /var/lib/miner
     fi
     
@@ -206,6 +219,7 @@ start() {
     
     if [[ "${sync_needed}" == "true" ]]; then
         if ! sync_from_snapshot; then
+            rm -rf /var/lib/miner
             panic_action miner "sync from snapshot failed"
             return 1
         fi
