@@ -94,6 +94,16 @@ watch_lag() {
 }
 
 start() {
+    # Wait for a network connection
+    msg_begin "Waiting for network connection"
+    connmand-wait-online --timeout=${NETWORK_TIMEOUT}
+    if [[ $? != 0 ]]; then
+        msg_fail "no network connection"
+        panic_action miner "no network connection"
+        return 1
+    fi
+    msg_done
+
     # If we don't have enough storage space, remove miner data and do a resync
     free_mb=$(free_space)
     if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
