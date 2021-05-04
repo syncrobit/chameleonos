@@ -46,7 +46,7 @@ watch_prog() {
 sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
     
-    if ! data=$(curl --fail -m 300 -sSL ${SYNC_URL}); then
+    if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
         msg_fail "metadata download failed"
         return 1
     fi
@@ -62,7 +62,7 @@ sync_from_snapshot() {
         msg_fail "metadata parsing failed"
         return 1
     fi
-    if ! curl --fail -m 900 -sSL "${file}" -o /tmp/snapshot.bin; then
+    if ! curl --fail -m 900 --listen --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
         msg_fail "snapshot download failed"
         return 1
     fi
@@ -81,7 +81,7 @@ sync_from_snapshot() {
 watch_lag() {
     while true; do
         sleep ${WATCH_LAG_INTERVAL}
-        current_height=$(curl -s https://api.helium.io/v1/blocks/height | jq .data.height)
+        current_height=$(curl --silent https://api.helium.io/v1/blocks/height | jq .data.height)
         test $? == 0 || continue
         our_height=$(${FULL_PROG} info height | awk '{print $2}')
         test $? == 0 || continue
@@ -149,7 +149,7 @@ start() {
         if [[ -n "${NAT_EXTERNAL_PORT}" ]]; then
             NAT_INTERNAL_PORT=${NAT_INTERNAL_PORT:-${DEF_PORT}}
             if [[ -z "${NAT_EXTERNAL_IP}" ]]; then
-                NAT_EXTERNAL_IP=$(curl -sSL --fail https://ifconfig.co)
+                NAT_EXTERNAL_IP=$(curl --silent --show-error --location-trusted --fail https://ifconfig.co)
             fi
             if [[ -z "${NAT_INTERNAL_IP}" ]]; then
                 eth_addr=$(

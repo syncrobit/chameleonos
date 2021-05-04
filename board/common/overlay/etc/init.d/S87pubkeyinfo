@@ -31,7 +31,7 @@ send_prov_info() {
     
     prov_info_json=$(echo "${prov_info_json}" | tr -d '\t\n ')
     
-    curl --insecure --fail -sSL "${PROV_REGISTER_URL}" \
+    curl --insecure --fail --silent --show-error --location-trusted "${PROV_REGISTER_URL}" \
          -H "Content-Type: application/json" \
          -H "Authorization: ${AUTH_TOKEN}" \
          -X POST -d "${prov_info_json}" >/dev/null
