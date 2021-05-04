@@ -101,16 +101,6 @@ sync_from_snapshot() {
 }
 
 start() {
-    # Wait for a network connection
-    msg_begin "Waiting for network connection"
-    connmand-wait-online --timeout=${NETWORK_TIMEOUT}
-    if [[ $? != 0 ]]; then
-        msg_fail "no network connection"
-        panic_action miner "no network connection"
-        return 1
-    fi
-    msg_done
-
     # If we don't have enough storage space, remove miner data and do a resync
     free_mb=$(free_space)
     if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
@@ -199,6 +189,7 @@ start() {
 
     export RELX_CONFIG_PATH
     
+    # We need the public key information for gateway config & more
     public_keys=$(${PROG} print_keys)
     if [[ $? != 0 ]]; then
         msg_fail "failed to print public key"
@@ -206,17 +197,26 @@ start() {
         return 1
     fi
     
-    test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
-    
-    # We need the public key information for gateway config & more
     echo $public_keys > /var/run/public_keys
+    
+    test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
+    
+    # Wait for a network connection
+    msg_begin "Waiting for network connection"
+    connmand-wait-online --timeout=${NETWORK_TIMEOUT}
+    if [[ $? != 0 ]]; then
+        msg_fail "no network connection"
+        panic_action miner "no network connection"
+        return 1
+    fi
+    msg_done "connected"
+
+    test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
 
     nice -n 10 ${PROG} foreground &>> ${LOG} &
     watch_prog &
     watch_lag &
 
-    test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
-    
     if [[ "${sync_needed}" == "true" ]]; then
         if ! sync_from_snapshot; then
             rm -rf /var/lib/miner
