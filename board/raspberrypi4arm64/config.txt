@@ -7,4 +7,7 @@ dtparam=audio=on
 dtoverlay=i2c-gpio
 dtoverlay=dwc2,dr_mode=host
 
+hdmi_force_hotplug=1
+hdmi_force_edid_audio=1
+
 arm_64bit=1
