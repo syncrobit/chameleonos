@@ -1,0 +1,41 @@
+#!/bin/bash
+
+PROG="/usr/bin/ledstrip"
+FADE_COLOR_FILE="/var/run/led_strip_fade_color"
+INITIAL_COLOR="white"
+LOG="/var/log/fade_forever.log"
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+function fade_forever() {
+    while true; do
+        test -f ${FADE_COLOR_FILE} || break  # Removing the file exits
+        color=$(cat ${FADE_COLOR_FILE})
+        if [[ -z "${color}" ]]; then  # Empty file skips
+            sleep 1
+            continue
+        fi
+        ledstrip fadein ${color}
+        ledstrip fadeout ${color}
+    done
+}
+
+case "$1" in
+    start)
+        msg_begin "Staring LED fade loop"
+        echo ${INITIAL_COLOR} > ${FADE_COLOR_FILE}
+        fade_forever &>${LOG}
+        ;;
+
+    stop)
+        msg_begin "Stopping LED fade loop"
+        rm -f ${FADE_COLOR_FILE}
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
+
+exit $?
