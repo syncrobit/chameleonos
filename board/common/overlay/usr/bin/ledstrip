@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+
+from rpi_ws281x import PixelStrip, Color
+
+
+LED_COUNT = 6
+LED_PIN = 18
+LED_FREQ_HZ = 800000
+LED_DMA = 10
+LED_INVERT = False
+LED_CHANNEL = 0
+LED_BRIGHTNESS = 178  # x/255
+
+FADE_DURATION = 1.0  # Seconds
+FADE_STEPS = 20
+
+COLOR_MAP = {
+    'off':     (0, 0, 0),
+    'red':     (255, 0, 0),
+    'green':   (0, 255, 0),
+    'blue':    (0, 0, 255),
+    'cyan':    (0, 255, 255),
+    'magenta': (255, 0, 255),
+    'yellow':  (255, 255, 0),
+    'white':   (255, 255, 255),
+}
+
+
+def exit_usage():
+    print(f'Usage: {sys.argv[0]} on <color>')
+    print(f'       {sys.argv[0]} off')
+    print(f'       {sys.argv[0]} fadein <color>')
+    print(f'       {sys.argv[0]} fadeout <color>')
+    print(f'       {sys.argv[0]} pattern <color0> <color1> <color2> <color3> <color4> <color5>')
+    print(f'Colors: red, green, blue, cyan, magenta, yellow, white, off')
+
+    sys.exit(-1)
+
+
+def arg_color_tuple(arg):
+    try:
+        return COLOR_MAP[arg]
+    
+    except KeyError:
+        exit_usage()
+
+
+def fade_color_tuple(color_tuple, factor):
+    return tuple(int(i * factor) for i in color_tuple)
+
+
+def cmd_on(strip, color_tuple):
+    for i in range(strip.numPixels()):
+        strip.setPixelColor(i, Color(*color_tuple))
+        strip.show()
+
+
+def cmd_off(strip):
+    for i in range(strip.numPixels()):
+        strip.setPixelColor(i, Color(*COLOR_MAP['off']))
+        strip.show()
+
+
+def cmd_fadein(strip, color_tuple):
+    sleep_duration = FADE_DURATION / FADE_STEPS
+    for e, s in enumerate(range(FADE_STEPS)):
+        color = Color(*fade_color_tuple(color_tuple, (e + 1) / FADE_STEPS))
+        for i in range(strip.numPixels()):
+            strip.setPixelColor(i, color)
+            strip.show()
+        
+        time.sleep(sleep_duration)
+
+
+def cmd_fadeout(strip, color_tuple):
+    sleep_duration = FADE_DURATION / FADE_STEPS
+    for e, s in enumerate(range(FADE_STEPS)):
+        color = Color(*fade_color_tuple(color_tuple, 1 - (e + 1) / FADE_STEPS))
+        for i in range(strip.numPixels()):
+            strip.setPixelColor(i, color)
+            strip.show()
+        
+        time.sleep(sleep_duration)
+
+
+def cmd_pattern(
+    strip,
+    color_tuple0,
+    color_tuple1,
+    color_tuple2,
+    color_tuple3,
+    color_tuple4,
+    color_tuple5,
+):
+    strip.setPixelColor(0, Color(*color_tuple0))
+    strip.setPixelColor(1, Color(*color_tuple1))
+    strip.setPixelColor(2, Color(*color_tuple2))
+    strip.setPixelColor(3, Color(*color_tuple3))
+    strip.setPixelColor(4, Color(*color_tuple4))
+    strip.setPixelColor(5, Color(*color_tuple5))
+    strip.show()
+
+
+def main():
+    if len(sys.argv) < 2:
+        exit_usage()
+    
+    strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+    strip.begin()
+
+    cmd = sys.argv[1]
+    if cmd == 'on':
+        if len(sys.argv) < 3:
+            exit_usage()
+
+        cmd_on(strip, arg_color_tuple(sys.argv[2]))
+
+    elif cmd == 'off':
+        cmd_off(strip)
+        
+    elif cmd == 'fadein':
+        if len(sys.argv) < 3:
+            exit_usage()
+
+        cmd_fadein(strip, arg_color_tuple(sys.argv[2]))
+
+    elif cmd == 'fadeout':
+        if len(sys.argv) < 3:
+            exit_usage()
+
+        cmd_fadeout(strip, arg_color_tuple(sys.argv[2]))
+    
+    elif cmd == 'pattern':
+        if len(sys.argv) < 8:
+            exit_usage()
+
+        cmd_pattern(
+            strip,
+            arg_color_tuple(sys.argv[2]),
+            arg_color_tuple(sys.argv[3]),
+            arg_color_tuple(sys.argv[4]),
+            arg_color_tuple(sys.argv[5]),
+            arg_color_tuple(sys.argv[6]),
+            arg_color_tuple(sys.argv[7]),
+        )
+    
+    else:
+        exit_usage()
+
+
+if __name__ == '__main__':
+    main()
