@@ -14,6 +14,12 @@ CONF="/data/etc/packet_forwarder.conf"
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
 
+FADE_COLOR_FILE="/var/run/led_strip_fade_color"
+FADE_COLOR_PENDING="green"
+LED_PROG="/usr/bin/ledstrip"
+LED_COLOR_OK="green"
+LED_COLOR_ERROR="red"
+
 REG_TIMEOUT=3600
 REG_CONF="/var/lib/reg.conf"
 DEF_REG="US915"
@@ -23,6 +29,7 @@ SX1301_MIX_GAIN=( 9 15 10 10 11 12 13 14  9 10 10 10 10 11 12 14)
 SX1301_PA_GAIN=(  2  1  2  2  2  2  2  2  3  3  3  3  3  3  3  3)
 SX1301_DIG_GAIN=( 0  0  0  0  0  0  0  0  0  1  1  0  0  0  0  0)
 SX1302_PWR_IDX=(  4  5  6  7  8  9 10 11 12 13 14 15 16 17 19 20)
+
 
 declare -A SX1301_RSSI_OFFSET=( \
     [AS923]=-166.0 \
@@ -111,12 +118,16 @@ start() {
         return
     fi
     
+    echo ${FADE_COLOR_PENDING} > ${FADE_COLOR_FILE}
+    
     count=0
     while true; do
         reg=$(find_reg)
         if [[ -z "${reg}" ]]; then
             count=$((count + 1))
             if [[ ${count} -gt ${REG_TIMEOUT} ]]; then
+                truncate -s0 ${FADE_COLOR_FILE}
+                ${LED_PROG} on ${LED_COLOR_ERROR}
                 msg_fail "no regulatory information"
                 panic_action packetforwarder "no regulatory information"
                 return 1
@@ -126,6 +137,8 @@ start() {
             break
         fi
     done
+    truncate -s0 ${FADE_COLOR_FILE}
+    ${LED_PROG} on ${LED_COLOR_OK}
     
     # Remember the region for future use
     reg_prefix="$(echo ${reg} | cut -b1-2 | tr A-Z a-z)."

@@ -10,6 +10,9 @@ ONLINE_TIMEOUT=20
 ONLINE_TIMEOUT_INITIAL=10
 ONLINE_TIMEOUT_CHECK=5
 ONLINE_HANDLER_SCRIPT="/usr/libexec/connman-online-handler"
+FADE_COLOR_FILE="/var/run/led_strip_fade_color"
+FADE_COLOR_OK="blue"
+FADE_COLOR_ERROR="red"
 
 
 test -x ${PROG} || exit 0
@@ -52,7 +55,13 @@ start() {
     test -x ${ONLINE_HANDLER_SCRIPT} && watch_online &> /var/log/online-handler.log &
 
     ${PROG_WO} --timeout=${timeout}
-    test $? == 0 && msg_done || msg_fail
+    if [[ $? == 0 ]]; then
+        echo ${FADE_COLOR_OK} > ${FADE_COLOR_FILE}
+        msg_done
+    else
+        echo ${FADE_COLOR_ERROR} > ${FADE_COLOR_FILE}
+        msg_fail
+    fi
 }
 
 stop() {

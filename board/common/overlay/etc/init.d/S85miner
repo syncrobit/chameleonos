@@ -18,6 +18,8 @@ MIN_FREE_SPACE=2048 # MB
 SYNC_URL="https://msync.syncrob.it/"
 FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
 DEF_PORT=44158
+FADE_COLOR_FILE="/var/run/led_strip_fade_color"
+FADE_COLOR_OK="blue"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -209,6 +211,7 @@ start() {
         panic_action miner "no network connection"
         return 1
     fi
+    echo ${FADE_COLOR_OK} > ${FADE_COLOR_FILE}
     msg_done "connected"
 
     test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
