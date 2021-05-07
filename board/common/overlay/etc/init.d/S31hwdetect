@@ -33,9 +33,16 @@ start() {
         lgw_reset_gpio=${OG_LGW_RESET_GPIO}
     fi
     
+    has_led_strip=false
+    if grep -q Compute /proc/device-tree/model &>/dev/null; then
+        # Assume all CM4-based units have LED strip
+        has_led_strip=true
+    fi
+    
     echo "HAS_GPS=${has_gps}" >> ${HW_CONF}
     echo "HAS_ECC=${has_ecc}" >> ${HW_CONF}
     echo "HAS_EXPANDER=${has_expander}" >> ${HW_CONF}
+    echo "HAS_LED_STRIP=${has_led_strip}" >> ${HW_CONF}
     echo "LGW_RESET_GPIO=${lgw_reset_gpio}" >> ${HW_CONF}
 
     msg_done
