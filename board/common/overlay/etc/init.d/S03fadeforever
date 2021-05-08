@@ -26,11 +26,13 @@ case "$1" in
         msg_begin "Staring LED fade loop"
         echo ${INITIAL_COLOR} > ${FADE_COLOR_FILE}
         fade_forever &>${LOG} &
+        msg_done
         ;;
 
     stop)
         msg_begin "Stopping LED fade loop"
         rm -f ${FADE_COLOR_FILE}
+        msg_done
         ;;
 
     *)
