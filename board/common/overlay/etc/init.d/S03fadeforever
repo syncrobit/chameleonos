@@ -16,8 +16,8 @@ function fade_forever() {
             sleep 1
             continue
         fi
-        ledstrip fadein ${color}
-        ledstrip fadeout ${color}
+        ${PROG} fadein ${color}
+        ${PROG} fadeout ${color}
     done
 }
 
