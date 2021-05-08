@@ -25,7 +25,7 @@ case "$1" in
     start)
         msg_begin "Staring LED fade loop"
         echo ${INITIAL_COLOR} > ${FADE_COLOR_FILE}
-        fade_forever &>${LOG}
+        fade_forever &>${LOG} &
         ;;
 
     stop)
