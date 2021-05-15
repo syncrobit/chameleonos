@@ -1,0 +1,76 @@
+diff -uNr miner-orig/config/sys.config miner-patched/config/sys.config
+--- miner-orig/config/sys.config	2021-05-13 02:18:37.000000000 +0300
++++ miner-patched/config/sys.config	2021-05-15 23:02:20.448512680 +0300
+@@ -42,7 +42,7 @@
+    {blessed_snapshot_block_hash,
+      <<62,60,211,231,202,64,190,6,57,42,6,194,142,137,213,114,227,198,155,51,247,198,27,34,28,33,168,136,129,218,141,42>>},
+    {port, 44158},
+-   {key, {ecc, [{key_slot, 0}, {onboarding_key_slot, 15}]}}, %% don't make this the last line in the stanza because sed and keep it on one line
++   {key, {ecc, [{key_slot, 0}, {onboarding_key_slot, 15}, {bus, "i2c-1"}, {address, 16#60}]}}, %% don't make this the last line in the stanza because sed and keep it on one line
+    {base_dir, "/var/data"},
+    {onboarding_dir, "/mnt/uboot"},
+    {num_consensus_members, 16},
+diff -uNr miner-orig/src/miner_ecc_worker.erl miner-patched/src/miner_ecc_worker.erl
+--- miner-orig/src/miner_ecc_worker.erl	2021-05-13 02:18:37.000000000 +0300
++++ miner-patched/src/miner_ecc_worker.erl	2021-05-16 10:08:09.488756094 +0300
+@@ -5,7 +5,7 @@
+          ecdh/1,
+          get_pid/0]).
+ 
+--export([start_link/1,
++-export([start_link/3,
+          init/1,
+          handle_call/3,
+          handle_cast/2,
+@@ -35,12 +35,12 @@
+ get_pid() ->
+     gen_server:call(?MODULE, get_pid).
+ 
+-start_link(KeySlot) ->
+-    gen_server:start_link({local, ?MODULE}, ?MODULE, [KeySlot], []).
++start_link(KeySlot, Bus, Address) ->
++    gen_server:start_link({local, ?MODULE}, ?MODULE, [KeySlot, Bus, Address], []).
+ 
+ 
+-init([KeySlot]) ->
+-    {ok, ECCHandle} = ecc508:start_link(),
++init([KeySlot, Bus, Address]) ->
++    {ok, ECCHandle} = ecc508:start_link(Bus, Address),
+     {ok, #state{ecc_handle=ECCHandle, key_slot=KeySlot}}.
+ 
+ 
+diff -uNr miner-orig/src/miner_keys.erl miner-patched/src/miner_keys.erl
+--- miner-orig/src/miner_keys.erl	2021-05-13 02:18:37.000000000 +0300
++++ miner-patched/src/miner_keys.erl	2021-05-15 23:03:33.565289436 +0300
+@@ -71,11 +71,13 @@
+ keys({ecc, Props}) when is_list(Props) ->
+     KeySlot0 = proplists:get_value(key_slot, Props, 0),
+     OnboardingKeySlot = proplists:get_value(onboarding_key_slot, Props, 15),
++    Bus = proplists:get_value(bus, Props, "i2c-1"),
++    Address = proplists:get_value(address, Props, 16#60),
+     {ok, ECCPid} = case whereis(miner_ecc_worker) of
+                        undefined ->
+                            %% Create a temporary ecc link to get the public key and
+                            %% onboarding keys for the given slots as well as the
+-                           ecc508:start_link();
++                           ecc508:start_link(Bus, Address);
+                        _ECCWorker ->
+                            %% use the existing ECC pid
+                            miner_ecc_worker:get_pid()
+diff -uNr miner-orig/src/miner_sup.erl miner-patched/src/miner_sup.erl
+--- miner-orig/src/miner_sup.erl	2021-05-13 02:18:37.000000000 +0300
++++ miner-patched/src/miner_sup.erl	2021-05-15 23:12:02.602498339 +0300
+@@ -58,10 +58,12 @@
+         {ecc, Props} when is_list(Props) ->
+             #{ pubkey := PublicKey,
+                key_slot := KeySlot,
++               bus := Bus,
++               address := Address,
+                ecdh_fun := ECDHFun,
+                sig_fun := SigFun
+              } = miner_keys:keys({ecc, Props}),
+-            ECCWorker = [?WORKER(miner_ecc_worker, [KeySlot])];
++            ECCWorker = [?WORKER(miner_ecc_worker, [KeySlot, Bus, Address])];
+         {PublicKey, ECDHFun, SigFun} ->
+             ECCWorker = [],
+             ok
