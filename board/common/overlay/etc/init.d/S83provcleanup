@@ -11,13 +11,6 @@ start() {
     rm -f /var/log/post-upgrade.log
     rm -rf /var/log/gateway_mfr
     
-    if [[ -s /var/run/provision_ok_gpio ]]; then
-        source /var/lib/provision_ok_gpio
-        gpio.sh ${GPIO_NO} ${GPIO_VAL}
-    fi
-
-    rm -f /var/lib/provision_ok_gpio
-    
     msg_done
 }
 
