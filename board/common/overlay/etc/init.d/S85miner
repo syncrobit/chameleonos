@@ -89,7 +89,7 @@ sync_from_snapshot() {
         msg_fail "metadata parsing failed"
         return 1
     fi
-    if ! curl --fail -m 900 --silent --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
+    if ! curl --fail -m 600 --silent --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
         msg_fail "snapshot download failed"
         return 1
     fi
