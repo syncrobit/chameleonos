@@ -5,7 +5,7 @@ source /etc/init.d/base
 #BASE_URL="https://fwd.%ssyncrob.it"  # Use if service can't do region redirection
 BASE_URL="https://fwd.syncrob.it"
 REG_CONF="/var/lib/reg.conf"
-MIN_UPTIME=600
+MIN_UPTIME=3600
 
 test -s ${REG_CONF} && source ${REG_CONF}
 BASE_URL=$(printf "${BASE_URL}" "${REGION_PREFIX}")
