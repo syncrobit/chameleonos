@@ -21,12 +21,13 @@ start() {
     # Detect I2C peripherals
     has_expander=false
     has_gps=false
-    has_ecc=false
+    ecc_address=
     i2c_output=$(i2cdetect -y 1 | awk -F: '{print $2}')
     grep -q 20 <<< "${i2c_output}" && has_expander=true
     grep -q 42 <<< "${i2c_output}" && has_gps=true
-    grep -q 60 <<< "${i2c_output}" && has_ecc=true
-    
+    grep -q 58 <<< "${i2c_output}" && ecc_address=0x58
+    grep -q 60 <<< "${i2c_output}" && ecc_address=0x60
+
     lgw_reset_gpio=${DEFAULT_LGW_RESET_GPIO}
     if [[ ${has_gps} == true ]]; then
         # OG models have GPS
@@ -40,7 +41,7 @@ start() {
     fi
     
     echo "HAS_GPS=${has_gps}" >> ${HW_CONF}
-    echo "HAS_ECC=${has_ecc}" >> ${HW_CONF}
+    echo "ECC_ADDRESS=${ecc_address}" >> ${HW_CONF}
     echo "HAS_EXPANDER=${has_expander}" >> ${HW_CONF}
     echo "HAS_LED_STRIP=${has_led_strip}" >> ${HW_CONF}
     echo "LGW_RESET_GPIO=${lgw_reset_gpio}" >> ${HW_CONF}

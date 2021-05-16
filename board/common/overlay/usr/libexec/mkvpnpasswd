@@ -7,36 +7,22 @@ import os
 import sys
 import time
 
-import pyatecc
-
-
-ECC_SLOT = 0
-RETRIES = 10
-
-
-def get_unit_serial_number():
-    with open('/proc/cpuinfo', 'rt') as f:
-        for line in f:
-            if line.startswith('Serial'):
-                return line.strip()[-8:]
-    
-    raise RuntimeError('Could not read CPU serial number')
+import chamutils
 
 
 def make_password(user_swarm_key=None):
     now = int(time.time())
-    cpu_serial_number = get_unit_serial_number()
+    cpu_serial_number = chamutils.get_unit_serial_number()
     if user_swarm_key:
         user_swarm_key_hex = binascii.hexlify(user_swarm_key).decode()
         to_hash = f'{now}.{cpu_serial_number}.{user_swarm_key_hex}'
         signature = hashlib.sha256(to_hash.encode()).digest()
 
     else:
-        atecc = pyatecc.ATECC(1)
-        ecc_serial_number = atecc.serial_number.lower()
+        ecc_serial_number = chamutils.get_ecc_serial_number()
         to_hash = f'{now}.{cpu_serial_number}.{ecc_serial_number}'
         to_sign = hashlib.sha256(to_hash.encode()).digest()
-        signature = atecc.ecdsa_sign(ECC_SLOT, to_sign)
+        signature = chamutils.ecc_sign(to_sign)
 
     signature_b32 = base64.b32encode(signature).decode()
     password = f'{now}.{signature_b32}'
@@ -52,15 +38,6 @@ if __name__ == '__main__':
         password = make_password(open(user_swarm_key_file, 'rb').read())
 
     else:
-        for _ in range(RETRIES):
-            try:
-                password = make_password()
-                break
-            
-            except Exception:
-                time.sleep(0.5)
-
-        else:
-            raise RuntimeError('Timeout when talking to ECC')
+        password = make_password()
 
     print(password)

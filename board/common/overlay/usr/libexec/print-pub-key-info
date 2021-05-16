@@ -4,14 +4,11 @@ import binascii
 import os
 import subprocess
 import sys
-import time
 import re
 
-import base58
-import pyatecc
+import chamutils
 
 
-RETRIES = 10
 PUB_KEYS_FILE = '/var/run/public_keys'
 MINER_CMD = '/opt/miner/bin/miner'
 
@@ -31,11 +28,6 @@ def get_pub_key_hex():
     return binascii.hexlify(bytes(values))[2:].decode()
 
 
-def get_ecc_sn():
-    atecc = pyatecc.ATECC(1)
-    return atecc.serial_number.lower()
-
-
 if __name__ == '__main__':
     ecc_sn = 'unknown'
 
@@ -43,16 +35,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         user_swarm_key_file = sys.argv[1]
     if not user_swarm_key_file or not os.path.exists(user_swarm_key_file):
-        for _ in range(RETRIES):
-            try:
-                ecc_sn = get_ecc_sn()
-                break
-            
-            except Exception:
-                time.sleep(0.5)
-
-        else:
-            raise RuntimeError('Timeout when talking to ECC')
+        ecc_sn = chamutils.get_ecc_serial_number()
 
     pub_key_hex = get_pub_key_hex()
     print(f'{ecc_sn} {pub_key_hex}')
