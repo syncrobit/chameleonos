@@ -9,6 +9,7 @@ MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
 SYS_CONF="/opt/miner/releases/0.1.0/sys.config"
 USER_CONF="/data/etc/miner_sys.config"
 NAT_CONF="/data/etc/nat.conf"
+HARDWARE_CONF="/var/run/hardware.conf"
 
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
@@ -25,6 +26,8 @@ FADE_COLOR_OK="blue"
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
 test -s ${NAT_CONF} && source ${NAT_CONF}
+
+source ${HARDWARE_CONF}
 
 
 free_space() {
@@ -137,16 +140,15 @@ start() {
     export ERL_CRASH_DUMP="/var/log/miner"
     export ERL_FULLSWEEP_AFTER=5
     export HOME=/var/run
+    export RELX_CONFIG_PATH="/var/run/miner_sys.config"
     ulimit -n 8192
-    
-    RELX_CONFIG_PATH="/var/run/miner_sys.config"
     
     # Use custom config, if present
     if [[ -s ${USER_CONF} ]]; then
         cp ${USER_CONF} ${RELX_CONFIG_PATH}
     else
         cp ${SYS_CONF} ${RELX_CONFIG_PATH}
-
+        
         # If user swarm key is present, configure miner to use it instead of ECC
         if [[ -s ${USER_SWARM_KEY} ]]; then
             sed -ri 's/(.*key_slot.*)/%%\1/' ${RELX_CONFIG_PATH}
@@ -159,6 +161,13 @@ start() {
             # Copy user swarm key to miner swarm key location
             mkdir -p $(dirname ${MINER_SWARM_KEY})
             cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
+            
+        # Configure ECC address and slot
+        else
+            ECC_SLOT=0
+            test ${ECC_ADDRESS} == 0x58 && ECC_SLOT=2
+            sed -ri "s/key_slot, [[:digit:]]+/key_slot, ${ECC_SLOT}/" ${RELX_CONFIG_PATH}
+            sed -ri "s/address, 16#[[:digit:]]+/address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
         fi
 
         if [[ -n "${NAT_EXTERNAL_PORT}" ]]; then
@@ -189,8 +198,6 @@ start() {
         fi
     fi
 
-    export RELX_CONFIG_PATH
-    
     # We need the public key information for gateway config & more
     public_keys=$(${PROG} print_keys)
     if [[ $? != 0 ]]; then
