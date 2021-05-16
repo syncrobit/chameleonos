@@ -41,7 +41,7 @@ diff -uNr miner-orig/src/miner_ecc_worker.erl miner-patched/src/miner_ecc_worker
  
 diff -uNr miner-orig/src/miner_keys.erl miner-patched/src/miner_keys.erl
 --- miner-orig/src/miner_keys.erl	2021-05-13 02:18:37.000000000 +0300
-+++ miner-patched/src/miner_keys.erl	2021-05-15 23:03:33.565289436 +0300
++++ miner-patched/src/miner_keys.erl	2021-05-16 16:42:58.925046824 +0300
 @@ -71,11 +71,13 @@
  keys({ecc, Props}) when is_list(Props) ->
      KeySlot0 = proplists:get_value(key_slot, Props, 0),
@@ -57,9 +57,18 @@ diff -uNr miner-orig/src/miner_keys.erl miner-patched/src/miner_keys.erl
                         _ECCWorker ->
                             %% use the existing ECC pid
                             miner_ecc_worker:get_pid()
+@@ -101,6 +103,8 @@
+ 
+     #{ pubkey => PubKey,
+        key_slot => KeySlot,
++       bus => Bus,
++       address => Address,
+        %% The signing and ecdh functions will use an actual
+        %% worker against a named process.
+        ecdh_fun => fun(PublicKey) ->
 diff -uNr miner-orig/src/miner_sup.erl miner-patched/src/miner_sup.erl
 --- miner-orig/src/miner_sup.erl	2021-05-13 02:18:37.000000000 +0300
-+++ miner-patched/src/miner_sup.erl	2021-05-15 23:12:02.602498339 +0300
++++ miner-patched/src/miner_sup.erl	2021-05-16 16:43:13.468185033 +0300
 @@ -58,10 +58,12 @@
          {ecc, Props} when is_list(Props) ->
              #{ pubkey := PublicKey,
