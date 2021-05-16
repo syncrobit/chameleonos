@@ -149,6 +149,10 @@ start() {
     else
         cp ${SYS_CONF} ${RELX_CONFIG_PATH}
         
+        # Adjust dirs
+        sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
+        sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
+        
         # If user swarm key is present, configure miner to use it instead of ECC
         if [[ -s ${USER_SWARM_KEY} ]]; then
             sed -ri 's/(.*key_slot.*)/%%\1/' ${RELX_CONFIG_PATH}
@@ -169,7 +173,7 @@ start() {
             sed -ri "s/key_slot, [[:digit:]]+/key_slot, ${ECC_SLOT}/" ${RELX_CONFIG_PATH}
             sed -ri "s/address, 16#[[:digit:]]+/address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
         fi
-
+        
         if [[ -n "${NAT_EXTERNAL_PORT}" ]]; then
             NAT_INTERNAL_PORT=${NAT_INTERNAL_PORT:-${DEF_PORT}}
             if [[ -z "${NAT_EXTERNAL_IP}" ]]; then
