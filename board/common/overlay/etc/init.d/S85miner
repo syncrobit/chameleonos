@@ -206,12 +206,17 @@ start() {
         msg_fail "failed to print public key"
         panic_action miner "failed to print public key"
         return 1
-    fi
-    
+    fi    
     echo $public_keys > /var/run/public_keys
     
+    # Start the miner
+    nice -n 10 ${PROG} foreground &>> ${LOG} &
+    watch_prog &
+    watch_lag &
+
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
-    
+    test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
+
     # Wait for a network connection
     msg_begin "Waiting for network connection"
     connmand-wait-online --timeout=${NETWORK_TIMEOUT}
@@ -222,12 +227,6 @@ start() {
     fi
     echo ${FADE_COLOR_OK} > ${FADE_COLOR_FILE}
     msg_done "connected"
-
-    test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
-
-    nice -n 10 ${PROG} foreground &>> ${LOG} &
-    watch_prog &
-    watch_lag &
 
     if [[ "${sync_needed}" == "true" ]]; then
         if ! sync_from_snapshot; then
