@@ -1,10 +1,12 @@
 #!/bin/bash
 
 HW_CONF=/var/run/hardware.conf
+USER_HW_CONF=/data/etc/hardware.conf
 
 EXPANDER_GPIO=13
 DEFAULT_LGW_RESET_GPIO=17
 OG_LGW_RESET_GPIO=25
+DEFAULT_ECC_SLOT=0
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
@@ -19,32 +21,42 @@ start() {
     truncate -s0 ${HW_CONF}
 
     # Detect I2C peripherals
-    has_expander=false
-    has_gps=false
-    ecc_address=
+    HAS_EXPANDER=false
+    HAS_GPS=false
+    ECC_ADDRESS=
     i2c_output=$(i2cdetect -y 1 | awk -F: '{print $2}')
-    grep -q 20 <<< "${i2c_output}" && has_expander=true
-    grep -q 42 <<< "${i2c_output}" && has_gps=true
-    grep -q 58 <<< "${i2c_output}" && ecc_address=0x58
-    grep -q 60 <<< "${i2c_output}" && ecc_address=0x60
+    grep -q 20 <<< "${i2c_output}" && HAS_EXPANDER=true
+    grep -q 42 <<< "${i2c_output}" && HAS_GPS=true
+    grep -q 58 <<< "${i2c_output}" && ECC_ADDRESS=0x58
+    grep -q 60 <<< "${i2c_output}" && ECC_ADDRESS=0x60
 
-    lgw_reset_gpio=${DEFAULT_LGW_RESET_GPIO}
-    if [[ ${has_gps} == true ]]; then
-        # OG models have GPS
-        lgw_reset_gpio=${OG_LGW_RESET_GPIO}
+    LGW_RESET_GPIO=${DEFAULT_LGW_RESET_GPIO}
+    if [[ ${HAS_GPS} == true ]]; then
+        # OG models have GPS and use a different GPIO for reset
+        LGW_RESET_GPIO=${OG_LGW_RESET_GPIO}
     fi
     
-    has_led_strip=false
+    HAS_LED_STRIP=false
     if grep -q Compute /proc/device-tree/model &>/dev/null; then
         # Assume all CM4-based units have LED strip
-        has_led_strip=true
+        HAS_LED_STRIP=true
     fi
     
-    echo "HAS_GPS=${has_gps}" >> ${HW_CONF}
-    echo "ECC_ADDRESS=${ecc_address}" >> ${HW_CONF}
-    echo "HAS_EXPANDER=${has_expander}" >> ${HW_CONF}
-    echo "HAS_LED_STRIP=${has_led_strip}" >> ${HW_CONF}
-    echo "LGW_RESET_GPIO=${lgw_reset_gpio}" >> ${HW_CONF}
+    # Set the ECC slot number
+    ECC_SLOT=${DEFAULT_ECC_SLOT}
+    if [[ ${ECC_ADDRESS} == 0x58 ]]; then
+        ECC_SLOT=2  # Some ECC models are on 0x58 and have slots 0 and 1 preprovisioned
+    fi
+    
+    # User settings override detected ones
+    test -s && source ${USER_HW_CONF}
+    
+    echo "HAS_GPS=${HAS_GPS}" >> ${HW_CONF}
+    echo "ECC_ADDRESS=${ECC_ADDRESS}" >> ${HW_CONF}
+    echo "ECC_SLOT=${ECC_SLOT}" >> ${HW_CONF}
+    echo "HAS_EXPANDER=${HAS_EXPANDER}" >> ${HW_CONF}
+    echo "HAS_LED_STRIP=${HAS_LED_STRIP}" >> ${HW_CONF}
+    echo "LGW_RESET_GPIO=${LGW_RESET_GPIO}" >> ${HW_CONF}
 
     msg_done
 }
