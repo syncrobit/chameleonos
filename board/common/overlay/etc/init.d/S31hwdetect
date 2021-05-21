@@ -49,7 +49,7 @@ start() {
     fi
     
     # User settings override detected ones
-    test -s && source ${USER_HW_CONF}
+    test -s ${USER_HW_CONF} && source ${USER_HW_CONF}
     
     echo "HAS_GPS=${HAS_GPS}" >> ${HW_CONF}
     echo "ECC_ADDRESS=${ECC_ADDRESS}" >> ${HW_CONF}
