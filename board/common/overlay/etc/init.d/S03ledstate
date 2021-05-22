@@ -1,0 +1,108 @@
+#!/bin/bash
+
+LED_STRIP="/usr/bin/ledstrip"
+LOG="/var/log/led_state.log"
+STATE_FILE="/var/run/led_state"
+PAIRING_FILE="/var/run/pairing"
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+declare -A STATE_COLORS=( \
+    [powered_up]=white \
+    [ip_ready]=yellow \
+    [helium_syncing]=orange \
+    [helium_ready]=green \
+    [lora_ready]=green \
+    [updating_firmware]=cyan \
+    [panic]=red \
+    [rebooting]=magenta \
+)
+
+declare -A STATE_PATTERNS=( \
+    [powered_up]=fade \
+    [ip_ready]=fade \
+    [helium_syncing]=progress \
+    [helium_ready]=fade \
+    [lora_ready]=steady \
+    [updating_firmware]=fade \
+    [panic]=fade \
+    [rebooting]=fade \
+)
+
+PAIRING_COLOR=blue
+
+
+function get_state() {
+    if [[ -s /tmp/rcK.pid ]] && kill -0 $(cat /tmp/rcK.pid) &>/dev/null; then
+        echo "rebooting"
+    elif [[ -f /var/run/panic_generated ]]; then
+        echo "panic"
+    elif [[ $(fwupdate status) != "idle" ]]; then
+        echo "updating_firmware"
+    elif netstat -anup | grep -q "1680.*pkt_fwd"; then
+        echo "lora_ready"
+    elif [[ -s /var/run/miner_ready ]]; then
+        echo "helium_ready"
+    elif ps aux | grep snapshot | grep -qv grep; then
+        echo "helium_syncing"
+    elif [[ -e /var/run/connman/resolv.conf ]] && connmand-wait-online --timeout=0 &> /dev/null; then
+        echo "ip_ready"
+    else
+        echo "powered_up"
+    fi
+    return 0
+}
+
+function get_fixed_colors() {
+    pairing=off
+    test -f ${PAIRING_FILE} && pairing=${PAIRING_COLOR}
+    echo "off off off off off ${pairing}"
+}
+
+function state_loop() {
+    renice -10 ${BASHPID}  # Run LEDs with high prio
+    echo > ${STATE_FILE}
+    while true; do
+        test -f ${STATE_FILE} || break  # Removing the file exits loop
+        old_state=$(cat ${STATE_FILE})
+        new_state=$(get_state)
+        if [[ "${old_state}" != "${new_state}" ]]; then
+            # Only write new state to file if changed, to prevent unnecessary (e)MMC writes
+            echo "${new_state}" > ${STATE_FILE}
+            echo "state is ${new_state}"
+        fi
+        color=${STATE_COLORS[${new_state}]}
+        pattern=${STATE_PATTERNS[${new_state}]}
+        
+        if [[ "${pattern}" == "fade" ]]; then
+            ${LED_STRIP} fadein ${color} $(get_fixed_colors)
+            ${LED_STRIP} fadeout ${color} $(get_fixed_colors)
+        elif [[ "${pattern}" == "progress" ]]; then
+            ${LED_STRIP} progresslr ${color} $(get_fixed_colors)
+            usleep 100000
+        else  # Assuming "steady"
+            ${LED_STRIP} on ${color} $(get_fixed_colors)
+        fi
+    done
+}
+
+case "$1" in
+    start)
+        msg_begin "Staring LED state manager"
+        state_loop &>>${LOG} &
+        msg_done
+        ;;
+
+    stop)
+        msg_begin "Stopping LED state manager"
+        rm -f ${STATE_FILE}
+        msg_done
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
+
+exit $?

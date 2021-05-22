@@ -18,6 +18,8 @@ LED_BRIGHTNESS = 178  # x/255
 FADE_DURATION = 1.0  # Seconds
 FADE_STEPS = 20
 
+PROGRESS_STEP_DURATION = 0.15  # Seconds
+
 COLOR_MAP = {
     'off':     (0, 0, 0),
     'red':     (255, 0, 0),
@@ -26,17 +28,21 @@ COLOR_MAP = {
     'cyan':    (0, 255, 255),
     'magenta': (255, 0, 255),
     'yellow':  (255, 255, 0),
+    'orange':  (255, 50, 0),
     'white':   (255, 255, 255),
 }
 
 
 def exit_usage():
-    print(f'Usage: {sys.argv[0]} on <color>')
+    print(f'Usage: {sys.argv[0]} on <color> [color0] [color1] [color2] [color3] [color4] [color5]')
     print(f'       {sys.argv[0]} off')
-    print(f'       {sys.argv[0]} fadein <color>')
-    print(f'       {sys.argv[0]} fadeout <color>')
+    print(f'       {sys.argv[0]} fadein <color> [color0] [color1] [color2] [color3] [color4] [color5]')
+    print(f'       {sys.argv[0]} fadeout <color> [color0] [color1] [color2] [color3] [color4] [color5]')
+    print(f'       {sys.argv[0]} progresslr <color> [color0] [color1] [color2] [color3] [color4] [color5]')
+    print(f'       {sys.argv[0]} progressrl <color> [color0] [color1] [color2] [color3] [color4] [color5]')
     print(f'       {sys.argv[0]} pattern <color0> <color1> <color2> <color3> <color4> <color5>')
-    print(f'Colors: red, green, blue, cyan, magenta, yellow, white, off')
+    print(f'Colors: red, green, blue, cyan, magenta, yellow, orange, white, off')
+    print(f'Optional colors [color0]..[color5] will be steady if set')
 
     sys.exit(-1)
 
@@ -47,6 +53,17 @@ def arg_color_tuple(arg):
     
     except KeyError:
         exit_usage()
+
+
+def arg_color_tuples(args):
+    while len(args) < LED_COUNT:
+        args.append('off')
+    
+    return [arg_color_tuple(a) for a in args]
+
+
+def off_none_color_tuples(color_tuples):
+    return [c if c != COLOR_MAP['off'] else None for c in color_tuples]
 
 
 def fade_color_tuple(color_tuple, factor):
@@ -65,43 +82,71 @@ def cmd_off(strip):
         strip.show()
 
 
-def cmd_fadein(strip, color_tuple):
+def cmd_fadein(strip, color_tuple, fixed_color_tuples):
     sleep_duration = FADE_DURATION / FADE_STEPS
+    fixed_color_tuples = off_none_color_tuples(fixed_color_tuples)
     for e, s in enumerate(range(FADE_STEPS)):
         color = Color(*fade_color_tuple(color_tuple, (e + 1) / FADE_STEPS))
         for i in range(strip.numPixels()):
-            strip.setPixelColor(i, color)
-            strip.show()
-        
+            if fixed_color_tuples[i]:
+                strip.setPixelColor(i, Color(*fixed_color_tuples[i]))
+            else:
+                strip.setPixelColor(i, color)
+
+        strip.show()
         time.sleep(sleep_duration)
 
 
-def cmd_fadeout(strip, color_tuple):
+def cmd_fadeout(strip, color_tuple, fixed_color_tuples):
     sleep_duration = FADE_DURATION / FADE_STEPS
+    fixed_color_tuples = off_none_color_tuples(fixed_color_tuples)
     for e, s in enumerate(range(FADE_STEPS)):
         color = Color(*fade_color_tuple(color_tuple, 1 - (e + 1) / FADE_STEPS))
         for i in range(strip.numPixels()):
-            strip.setPixelColor(i, color)
-            strip.show()
+            if fixed_color_tuples[i]:
+                strip.setPixelColor(i, Color(*fixed_color_tuples[i]))
+            else:
+                strip.setPixelColor(i, color)
         
+        strip.show()
         time.sleep(sleep_duration)
 
 
-def cmd_pattern(
-    strip,
-    color_tuple0,
-    color_tuple1,
-    color_tuple2,
-    color_tuple3,
-    color_tuple4,
-    color_tuple5,
-):
-    strip.setPixelColor(0, Color(*color_tuple0))
-    strip.setPixelColor(1, Color(*color_tuple1))
-    strip.setPixelColor(2, Color(*color_tuple2))
-    strip.setPixelColor(3, Color(*color_tuple3))
-    strip.setPixelColor(4, Color(*color_tuple4))
-    strip.setPixelColor(5, Color(*color_tuple5))
+def cmd_progresslr(strip, color_tuple, fixed_color_tuples):
+    color = Color(*color_tuple)
+    off_color = Color(*COLOR_MAP['off'])
+    fixed_color_tuples = off_none_color_tuples(fixed_color_tuples)
+    for step in range(strip.numPixels()):
+        for i in range(strip.numPixels()):
+            if fixed_color_tuples[i]:
+                strip.setPixelColor(i, Color(*fixed_color_tuples[i]))
+            else:
+                strip.setPixelColor(i, [off_color, color][i == step])
+
+        strip.show()
+        if step < strip.numPixels() - 1:
+            time.sleep(PROGRESS_STEP_DURATION)
+
+
+def cmd_progressrl(strip, color_tuple, fixed_color_tuples):
+    color = Color(*color_tuple)
+    off_color = Color(*COLOR_MAP['off'])
+    fixed_color_tuples = off_none_color_tuples(fixed_color_tuples)
+    for step in reversed(range(strip.numPixels())):
+        for i in range(strip.numPixels()):
+            if fixed_color_tuples[i]:
+                strip.setPixelColor(i, Color(*fixed_color_tuples[i]))
+            else:
+                strip.setPixelColor(i, [off_color, color][i == step])
+
+        strip.show()
+        if step > 0:
+            time.sleep(PROGRESS_STEP_DURATION)
+
+
+def cmd_pattern(strip, color_tuples):
+    for i in range(strip.numPixels()):
+        strip.setPixelColor(i, Color(*color_tuples[i]))
     strip.show()
 
 
@@ -126,13 +171,41 @@ def main():
         if len(sys.argv) < 3:
             exit_usage()
 
-        cmd_fadein(strip, arg_color_tuple(sys.argv[2]))
+        cmd_fadein(
+            strip,
+            arg_color_tuple(sys.argv[2]),
+            arg_color_tuples(sys.argv[3:])
+        )
 
     elif cmd == 'fadeout':
         if len(sys.argv) < 3:
             exit_usage()
 
-        cmd_fadeout(strip, arg_color_tuple(sys.argv[2]))
+        cmd_fadeout(
+            strip,
+            arg_color_tuple(sys.argv[2]),
+            arg_color_tuples(sys.argv[3:])
+        )
+    
+    elif cmd == 'progresslr':
+        if len(sys.argv) < 3:
+            exit_usage()
+
+        cmd_progresslr(
+            strip,
+            arg_color_tuple(sys.argv[2]),
+            arg_color_tuples(sys.argv[3:])
+        )
+    
+    elif cmd == 'progressrl':
+        if len(sys.argv) < 3:
+            exit_usage()
+
+        cmd_progressrl(
+            strip,
+            arg_color_tuple(sys.argv[2]),
+            arg_color_tuples(sys.argv[3:])
+        )
     
     elif cmd == 'pattern':
         if len(sys.argv) < 8:
@@ -140,12 +213,7 @@ def main():
 
         cmd_pattern(
             strip,
-            arg_color_tuple(sys.argv[2]),
-            arg_color_tuple(sys.argv[3]),
-            arg_color_tuple(sys.argv[4]),
-            arg_color_tuple(sys.argv[5]),
-            arg_color_tuple(sys.argv[6]),
-            arg_color_tuple(sys.argv[7]),
+            arg_color_tuples(sys.argv[2:])
         )
     
     else:

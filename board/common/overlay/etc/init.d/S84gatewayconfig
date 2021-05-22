@@ -5,6 +5,7 @@ PROG="bin/gateway_config"
 FULL_PROG=${WORK_DIR}/${PROG}
 LOG="/var/log/gateway_config/startup.log"
 HCI_DIR="/sys/kernel/debug/bluetooth/hci0"
+PAIRING_FILE="/var/run/pairing"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -24,6 +25,18 @@ setup_bluetooth() {
 
     # Since we don't have a button, just enable pairing at boot, with a short delay
     (/bin/sleep 5 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
+}
+
+watch_advertise_status() {
+    cd ${WORK_DIR}
+    while true; do
+        if [[ $(${PROG} advertise status 2>/dev/null) == on ]]; then
+            touch ${PAIRING_FILE}
+        else
+            rm -f ${PAIRING_FILE}
+        fi
+        sleep 1
+    done
 }
 
 start() {
@@ -47,6 +60,7 @@ start() {
     export HOME=/var/run
 
     ${PROG} foreground &>> ${LOG} &
+    watch_advertise_status &>> ${LOG} &
 
     msg_done
 }

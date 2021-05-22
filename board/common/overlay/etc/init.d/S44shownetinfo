@@ -1,8 +1,5 @@
 #!/bin/bash
 
-FADE_COLOR_FILE="/var/run/led_strip_fade_color"
-FADE_COLOR_SHUTDOWN="magenta"
-
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
@@ -37,7 +34,7 @@ case "$1" in
         ;;
 
     stop)
-        echo ${FADE_COLOR_SHUTDOWN} > ${FADE_COLOR_FILE}
+        true
         ;;
 
     *)

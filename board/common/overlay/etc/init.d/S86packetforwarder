@@ -14,15 +14,10 @@ CONF="/data/etc/packet_forwarder.conf"
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
 
-FADE_COLOR_FILE="/var/run/led_strip_fade_color"
-FADE_COLOR_PENDING="green"
-LED_PROG="/usr/bin/ledstrip"
-LED_COLOR_OK="green"
-LED_COLOR_ERROR="red"
-
 REG_TIMEOUT=3600
 REG_CONF="/var/lib/reg.conf"
 DEF_REG="US915"
+MINER_READY_FILE="/var/run/miner_ready"
 
 # TX power:      12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
 SX1301_MIX_GAIN=( 9 15 10 10 11 12 13 14  9 10 10 10 10 11 12 14)
@@ -118,27 +113,23 @@ start() {
         return
     fi
     
-    echo ${FADE_COLOR_PENDING} > ${FADE_COLOR_FILE}
-    
     count=0
     while true; do
         reg=$(find_reg)
         if [[ -z "${reg}" ]]; then
             count=$((count + 1))
             if [[ ${count} -gt ${REG_TIMEOUT} ]]; then
-                truncate -s0 ${FADE_COLOR_FILE}
-                ${LED_PROG} on ${LED_COLOR_ERROR}
                 msg_fail "no regulatory information"
                 panic_action packetforwarder "no regulatory information"
                 return 1
             fi
             sleep 1
         else
+            # At this point we know miner is ready
+            touch ${MINER_READY_FILE} 
             break
         fi
     done
-    truncate -s0 ${FADE_COLOR_FILE}
-    ${LED_PROG} on ${LED_COLOR_OK}
     
     # Remember the region for future use
     reg_prefix="$(echo ${reg} | cut -b1-2 | tr A-Z a-z)."
