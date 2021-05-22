@@ -40,7 +40,7 @@ send_prov_info() {
 start() {
     msg_begin "Saving public key info"
     
-    info=$(${PROG} ${USER_SWARM_KEY})
+    info=$(${PROG} ${USER_SWARM_KEY} || ${PROG} ${USER_SWARM_KEY} || ${PROG} ${USER_SWARM_KEY})
     info=(${info})
     ecc_sn=${info[0]}
     pub_key_hex=${info[1]}
