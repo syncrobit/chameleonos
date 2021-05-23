@@ -6,6 +6,7 @@ CONF="/data/etc/openvpn"
 
 LOG="/var/log/openvpn.log"
 PROG="/usr/sbin/openvpn"
+PROG_ST="/sbin/sshtunnel"
 
 WATCH_CONF="/data/etc/watch.conf"
 
@@ -41,30 +42,26 @@ running() {
 }
 
 watch() {
-    count=0
-    NETWATCH_RETRIES=$((${NETWATCH_RETRIES} - 1))
     while true; do
         sleep ${NETWATCH_INTERVAL}
-        if running; then
-            count=0
-        else
-            if [[ ${count} -lt ${NETWATCH_RETRIES} ]]; then
-                logger -t openvpn "dead"
-                count=$((${count} + 1))
-                continue
-            else
-                panic_action openvpn "service dead"
-                break
-            fi
+        if ! running; then
+            logger -t openvpn "dead, restarting"
+            start_openvpn
+            logger -t sshtunnel "starting"
+            ${PROG_ST} start
         fi
     done
+}
+
+start_openvpn() {
+    ${PROG} --config ${CONF}/client.conf --cd ${CONF} &>>/var/log/openvpn.log &
 }
 
 start() {
     msg_begin "Starting openvpn"
     modprobe tun
-
-    ${PROG} --config ${CONF}/client.conf --cd ${CONF} &>>/var/log/openvpn.log &
+    
+    start_openvpn
     test $? == 0 && msg_done || msg_fail
     
     if [[ "${LINK_WATCH}" == "true" ]]; then

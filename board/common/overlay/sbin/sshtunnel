@@ -1,0 +1,42 @@
+#!/bin/bash
+
+SSH_SERVER=revtun.sbinternal.net
+SSH_PORT=2304
+SSH_USER=root
+
+RPI_SN=$(cat /proc/cpuinfo | grep Serial | cut -d : -f 2 | tr -d ' ')
+RPI_SN_PART=${RPI_SN: -4}
+TUNNEL_PORT=$(printf "%d" 0x${RPI_SN_PART})
+
+
+function ssh_reverse_tunnel() {
+    while true; do
+        ssh -N -R${TUNNEL_PORT}:127.0.0.1:22 -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_SERVER} -p${SSH_PORT}
+        sleep 30
+    done
+}
+
+start() {
+    chmod go-rwx /data/etc/ssh/id_rsa*
+    ssh_reverse_tunnel &>/var/log/ssh_reverse_tunnel.log &
+    echo $! > /var/run/ssh_reverse_tunnel.pid
+}
+
+stop() {
+    if [[ -s /var/run/ssh_reverse_tunnel.pid ]]; then
+        kill $(cat /var/run/ssh_reverse_tunnel.pid) 2>/dev/null
+    fi
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+        
+    stop)
+        ;;
+        
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
