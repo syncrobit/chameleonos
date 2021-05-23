@@ -42,13 +42,17 @@ running() {
 }
 
 watch() {
+    tunnel_started=false
     while true; do
         sleep ${NETWATCH_INTERVAL}
         if ! running; then
             logger -t openvpn "dead, restarting"
             start_openvpn
-            logger -t sshtunnel "starting"
-            ${PROG_ST} start
+            if [[ ${tunnel_started} == false ]]; then
+                tunnel_started=true
+                logger -t sshtunnel "starting"
+                ${PROG_ST} start
+            fi
         fi
     done
 }
