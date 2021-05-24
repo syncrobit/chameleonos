@@ -3,6 +3,7 @@
 import asyncio
 import base64
 import logging
+import os
 
 from typing import Awaitable, Callable
 
@@ -186,9 +187,15 @@ async def logs_stop(request: web.Request) -> web.Response:
     return web.Response(status=204)
 
 
+@router.get('/')
+async def index(request: web.Request) -> web.FileResponse:
+    return web.FileResponse(os.path.join(settings.STATIC_PATH, 'index.html'))
+
+
 def make_app() -> web.Application:
     app = web.Application()
     app.add_routes(router)
+    app.add_routes([web.static('/static', settings.STATIC_PATH)])
 
     return app
 
