@@ -11,8 +11,7 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 declare -A STATE_COLORS=( \
     [powered_up]=white \
     [ip_ready]=yellow \
-    [helium_syncing]=orange \
-    [helium_ready]=green \
+    [miner_syncing]=orange \
     [lora_ready]=green \
     [updating_firmware]=cyan \
     [panic]=red \
@@ -22,8 +21,7 @@ declare -A STATE_COLORS=( \
 declare -A STATE_PATTERNS=( \
     [powered_up]=fade \
     [ip_ready]=fade \
-    [helium_syncing]=progress \
-    [helium_ready]=fade \
+    [miner_syncing]=progress \
     [lora_ready]=steady \
     [updating_firmware]=fade \
     [panic]=fade \
@@ -42,11 +40,9 @@ function get_state() {
         echo "updating_firmware"
     elif netstat -anup | grep -q "1680.*pkt_fwd"; then
         echo "lora_ready"
-    elif [[ -s /var/run/miner_ready ]]; then
-        echo "helium_ready"
     elif ps aux | grep snapshot | grep -qv grep; then
-        echo "helium_syncing"
-    elif [[ -e /var/run/connman/resolv.conf ]] && connmand-wait-online --timeout=0 &> /dev/null; then
+        echo "miner_syncing"
+    elif [[ -e /var/run/connman/resolv.conf ]] && connmand-wait-online --timeout=1 &> /dev/null; then
         echo "ip_ready"
     else
         echo "powered_up"
