@@ -36,7 +36,7 @@ function get_state() {
         echo "rebooting"
     elif [[ -f /var/run/panic_generated ]]; then
         echo "panic"
-    elif [[ $(fwupdate status) != "idle" ]]; then
+    elif ! [[ $(fwupdate status) =~ ^idle|error.*$ ]]; then
         echo "updating_firmware"
     elif netstat -anup | grep -q "1680.*pkt_fwd"; then
         echo "lora_ready"
