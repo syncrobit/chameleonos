@@ -3,6 +3,7 @@
 GOV="ondemand"
 CPUFREQDIR="/sys/devices/system/cpu/cpu0/cpufreq"
 GOVDIR="/sys/devices/system/cpu/cpufreq/${GOV}"
+MAX_FREQ=1000000
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -14,6 +15,7 @@ configure() {
         echo 100000 > ${GOVDIR}/sampling_rate
         echo 50 > ${GOVDIR}/sampling_down_factor
         echo 1 > ${GOVDIR}/io_is_busy
+        echo ${MAX_FREQ} > ${CPUFREQDIR}/scaling_max_freq
     fi
 }
 
