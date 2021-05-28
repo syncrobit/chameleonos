@@ -7,6 +7,8 @@ SSH_USER=root
 RPI_SN=$(cat /proc/cpuinfo | grep Serial | cut -d : -f 2 | tr -d ' ')
 RPI_SN_PART=${RPI_SN: -4}
 TUNNEL_PORT=$(printf "%d" 0x${RPI_SN_PART})
+LOG_FILE=/var/log/ssh_reverse_tunnel.log
+PID_FILE=/var/run/ssh_reverse_tunnel.pid
 
 
 function ssh_reverse_tunnel() {
@@ -18,14 +20,21 @@ function ssh_reverse_tunnel() {
 
 start() {
     chmod go-rwx /data/etc/ssh/id_rsa*
-    ssh_reverse_tunnel &>/var/log/ssh_reverse_tunnel.log &
-    echo $! > /var/run/ssh_reverse_tunnel.pid
+    ssh_reverse_tunnel &>${LOG_FILE} &
+    echo $! > ${PID_FILE}
 }
 
 stop() {
-    if [[ -s /var/run/ssh_reverse_tunnel.pid ]]; then
-        kill $(cat /var/run/ssh_reverse_tunnel.pid) 2>/dev/null
+    if [[ -s ${PID_FILE} ]]; then
+        kill $(cat ${PID_FILE}) 2>/dev/null
     fi
+    ps | grep sshtunnel | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
+    ps | grep ssh | grep ${SSH_SERVER} | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
+}
+
+status() {
+    test -s ${PID_FILE} || return 1
+    kill -0 $(cat ${PID_FILE}) 2>/dev/null
 }
 
 case "$1" in
@@ -34,9 +43,19 @@ case "$1" in
         ;;
         
     stop)
+        stop
         ;;
-        
+    
+    restart)
+        stop
+        start
+        ;;
+    
+    status)
+        status
+        ;;
+
     *)
-        echo "Usage: $0 {start|stop}"
+        echo "Usage: $0 {start|stop|restart|status}"
         exit 1
 esac

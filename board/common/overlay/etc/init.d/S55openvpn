@@ -15,6 +15,8 @@ NETWATCH_RETRIES=3
 NETWATCH_INTERVAL=20
 
 REG_CONF="/var/lib/reg.conf"
+VPNPASSWD_SCRIPT="/etc/init.d/S54vpnpasswd"
+VPNPASSWD_MIN_INTERVAL=3600  # Seconds
 
 
 test -x ${PROG} || exit 0
@@ -37,22 +39,42 @@ SERVER_HOST=$(printf "${SERVER_HOST}" "${REGION_PREFIX}")
 sed -ri "s/remote.*1194/remote ${SERVER_HOST} 1194/" ${CONF}/client.conf
 
 
+uptime_seconds() {
+    cat /proc/uptime | grep -oE '^[[:digit:]]+'
+}
+
 running() {
-    killall -0 openvpn &> /dev/null
+    (killall -0 openvpn && ip link show tun0) &> /dev/null 
 }
 
 watch() {
-    tunnel_started=false
+    last_vpnpasswd_uptime=0
+    dead_count=0
     while true; do
         sleep ${NETWATCH_INTERVAL}
         if ! running; then
-            logger -t openvpn "dead, restarting"
-            start_openvpn
-            if [[ ${tunnel_started} == false ]]; then
-                tunnel_started=true
-                logger -t sshtunnel "starting"
-                ${PROG_ST} start
+            logger -t openvpn "dead, restarting (count=${dead_count})"
+            up=$(uptime_seconds)
+
+            # Don't regenerate VPN password too often
+            if [[ $((${up} - ${last_vpnpasswd_uptime})) -gt ${VPNPASSWD_MIN_INTERVAL} ]]; then
+                ${VPNPASSWD_SCRIPT} start
+                last_vpnpasswd_uptime=${up}
             fi
+
+            start_openvpn
+
+            # Start SSH tunnel if openvpn is successively found dead
+            if [[ ${dead_count} -gt ${NETWATCH_RETRIES} ]]; then
+                if ! ${PROG_ST} status; then
+                    logger -t sshtunnel "starting"
+                    ${PROG_ST} start
+                fi
+            fi
+
+            dead_count=$((dead_count + 1))
+        else
+            dead_count=0
         fi
     done
 }
