@@ -13,9 +13,11 @@ HARDWARE_CONF="/var/run/hardware.conf"
 
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
+WATCH_LAG_INTERVAL_STARTUP=300
 NETWORK_TIMEOUT=3600
 MAX_LAG=250
 MIN_FREE_SPACE=2048 # MB
+MIN_FREE_SPACE_LEEWAY=512 # MB
 SYNC_URL="https://msync.syncrob.it/"
 FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
 DEF_PORT=44158
@@ -41,6 +43,9 @@ get_lag() {
 }
 
 watch_prog() {
+    # During normal running, we add an extra leeway when checking for free space,
+    # to make sure the free space check at next reboot will fail and do a resync.
+    min_free_space_watch=$((${MIN_FREE_SPACE} + ${MIN_FREE_SPACE_LEEWAY})) # MB
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
@@ -48,7 +53,7 @@ watch_prog() {
             break
         fi
         free_mb=$(free_space)
-        if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
+        if [[ "${free_mb}" -lt ${min_free_space_watch} ]]; then
             panic_action miner "low disk space"
             break
         fi
@@ -56,8 +61,16 @@ watch_prog() {
 }
 
 watch_lag() {
+    startup=true
     while true; do
-        sleep ${WATCH_LAG_INTERVAL}
+        if [[ ${startup} == true ]]; then
+            # Sleep for a smaller amount of time at startup so that we detect unsynced miner earlier
+            sleep ${WATCH_LAG_INTERVAL_STARTUP}
+            startup=false
+        else
+            sleep ${WATCH_LAG_INTERVAL}
+        fi
+        
         lag=$(get_lag)
         test -n "${lag}" || continue
         if [[ ${lag} -le ${MAX_LAG} ]]; then
