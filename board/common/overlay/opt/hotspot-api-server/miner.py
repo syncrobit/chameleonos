@@ -10,6 +10,7 @@ import subprocess
 MINER_HEIGHT_CMD = '/opt/miner/bin/miner info height'
 MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d "|"'
 MINER_RESTART_CMD = 'service miner restart'
+MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
 DEF_REGION = 'US915'
 NAT_CONF_FILE = '/data/etc/nat.conf'
@@ -17,7 +18,7 @@ NAT_CONF_FILE = '/data/etc/nat.conf'
 
 def get_height() -> Optional[int]:
     try:
-        info_height = subprocess.check_output(MINER_HEIGHT_CMD, shell=True)
+        info_height = subprocess.check_output(MINER_HEIGHT_CMD, shell=True, timeout=MINER_TIMEOUT)
         return int(info_height.decode().split()[1])
 
     except Exception:
@@ -26,7 +27,8 @@ def get_height() -> Optional[int]:
 
 def get_listen_addr() -> Optional[str]:
     try:
-        return subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True).decode().strip() or None
+        output = subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True, timeout=MINER_TIMEOUT)
+        return output.decode().strip() or None
 
     except Exception:
         pass
@@ -93,4 +95,8 @@ def set_nat_config(nat: Dict[str, Any]) -> None:
 
 def restart() -> None:
     logging.info('restarting miner')
-    subprocess.check_call(MINER_RESTART_CMD, shell=True)
+    try:
+        subprocess.check_call(MINER_RESTART_CMD, shell=True, timeout=MINER_TIMEOUT)
+
+    except Exception:
+        pass
