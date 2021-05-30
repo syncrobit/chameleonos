@@ -14,6 +14,7 @@ MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
 DEF_REGION = 'US915'
 NAT_CONF_FILE = '/data/etc/nat.conf'
+FORCE_RESYNC_FILE = '/var/lib/miner/force_resync'
 
 
 def get_height() -> Optional[int]:
@@ -91,6 +92,14 @@ def set_nat_config(nat: Dict[str, Any]) -> None:
             k = f'NAT_{k.upper()}'
             line = f'{k}={v}\n'
             f.write(line)
+
+
+def resync() -> None:
+    logging.info('forcing miner resync')
+
+    if os.path.exists(os.path.dirname(FORCE_RESYNC_FILE)):
+        with open(FORCE_RESYNC_FILE, 'w'):
+            pass
 
 
 def restart() -> None:

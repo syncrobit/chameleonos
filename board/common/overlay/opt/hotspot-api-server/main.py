@@ -171,6 +171,15 @@ async def pair(request: web.Request) -> web.Response:
     return web.Response(status=204)
 
 
+@router.post('/resync')
+@handle_auth
+async def resync(request: web.Request) -> web.Response:
+    miner.resync()
+    miner.restart()
+
+    return web.Response(status=204)
+
+
 @router.post('/logs/start')
 @handle_auth
 async def logs_start(request: web.Request) -> web.Response:
