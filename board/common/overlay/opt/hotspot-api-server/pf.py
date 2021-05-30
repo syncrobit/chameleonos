@@ -2,6 +2,7 @@
 from typing import Any, Dict, Optional
 
 import logging
+import os
 import re
 import subprocess
 
@@ -51,6 +52,9 @@ def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:
             'rssi_offset': None,
             'tx_power': None
         }
+
+    if not os.path.exists(conf_file):
+        return config
 
     with open(conf_file, 'rt') as f:
         for line in f:
