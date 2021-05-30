@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-HELIUM_MINER_VERSION = 2021.05.28.0_GA
+HELIUM_MINER_VERSION = 2021.05.29.0_GA
 HELIUM_MINER_SITE = $(call github,helium,miner,$(HELIUM_MINER_VERSION))
 HELIUM_MINER_LICENSE = Apache-2.0
 HELIUM_MINER_LICENSE_FILES = LICENSE
