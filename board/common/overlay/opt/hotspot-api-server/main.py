@@ -11,6 +11,7 @@ from aiohttp import web
 
 import cpufreq
 import gatewayconfig
+import ledstrip
 import logs
 import miner
 import pf
@@ -108,10 +109,13 @@ async def get_stats(request: web.Request) -> web.Response:
 @handle_auth
 async def get_config(request: web.Request) -> web.Response:
     cpu_freq_config = cpufreq.get_config()
+    led_strip_config = ledstrip.get_config()
     nat_config = miner.get_nat_config()
     pf_config = pf.get_config()
     return web.json_response({
         'cpu_freq_max': cpu_freq_config['max'],
+        'led_brightness': led_strip_config['brightness'],
+        'led_ok_color': led_strip_config['ok_color'],
         'nat_external_ip': nat_config['external_ip'],
         'nat_external_port': nat_config['external_port'],
         'nat_internal_port': nat_config['internal_port'],
@@ -136,6 +140,15 @@ async def set_config(request: web.Request) -> web.Response:
     if cpu_freq_config:
         cpufreq.set_config(cpu_freq_config)
         cpufreq.restart()
+
+    led_strip_config = {}
+    for field in ('brightness', 'ok_color'):
+        if f'led_{field}' in config:
+            led_strip_config[field] = config[f'led_{field}']
+
+    if led_strip_config:
+        ledstrip.set_config(led_strip_config)
+        ledstrip.restart()
 
     nat_config = {}
     for field in ('external_ip', 'external_port', 'internal_port'):
