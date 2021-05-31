@@ -13,7 +13,6 @@ LED_FREQ_HZ = 800000
 LED_DMA = 10
 LED_INVERT = False
 LED_CHANNEL = 0
-LED_BRIGHTNESS = 178  # x/255
 
 FADE_DURATION = 1.0  # Seconds
 FADE_STEPS = 20
@@ -34,13 +33,14 @@ COLOR_MAP = {
 
 
 def exit_usage():
-    print(f'Usage: {sys.argv[0]} on <color> [color0] [color1] [color2] [color3] [color4] [color5]')
-    print(f'       {sys.argv[0]} off')
-    print(f'       {sys.argv[0]} fadein <color> [color0] [color1] [color2] [color3] [color4] [color5]')
-    print(f'       {sys.argv[0]} fadeout <color> [color0] [color1] [color2] [color3] [color4] [color5]')
-    print(f'       {sys.argv[0]} progresslr <color> [color0] [color1] [color2] [color3] [color4] [color5]')
-    print(f'       {sys.argv[0]} progressrl <color> [color0] [color1] [color2] [color3] [color4] [color5]')
-    print(f'       {sys.argv[0]} pattern <color0> <color1> <color2> <color3> <color4> <color5>')
+    print(f'Usage: {sys.argv[0]} on <brightness> <color>')
+    print(f'       {sys.argv[0]} off <brightness>')
+    print(f'       {sys.argv[0]} fadein <brightness> <color> [color0] [color1] [color2] [color3] [color4] [color5]')
+    print(f'       {sys.argv[0]} fadeout <brightness> <color> [color0] [color1] [color2] [color3] [color4] [color5]')
+    print(f'       {sys.argv[0]} progresslr <brightness> <color> [color0] [color1] [color2] [color3] [color4] [color5]')
+    print(f'       {sys.argv[0]} progressrl <brightness> <color> [color0] [color1] [color2] [color3] [color4] [color5]')
+    print(f'       {sys.argv[0]} pattern <brightness> <color0> <color1> <color2> <color3> <color4> <color5>')
+    print(f'Brightness: 0..100')
     print(f'Colors: red, green, blue, cyan, magenta, yellow, orange, white, off')
     print(f'Optional colors [color0]..[color5] will be steady if set')
 
@@ -150,70 +150,81 @@ def cmd_pattern(strip, color_tuples):
     strip.show()
 
 
+def make_led_strip(brightness):
+    strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, int(brightness * 2.55), LED_CHANNEL)
+    strip.begin()
+    
+    return strip
+
+
 def main():
     if len(sys.argv) < 2:
         exit_usage()
-    
-    strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    strip.begin()
 
     cmd = sys.argv[1]
     if cmd == 'on':
-        if len(sys.argv) < 3:
+        if len(sys.argv) < 4:
             exit_usage()
 
-        cmd_on(strip, arg_color_tuple(sys.argv[2]))
+        strip = make_led_strip(int(sys.argv[2]))
+        cmd_on(strip, arg_color_tuple(sys.argv[3]))
 
     elif cmd == 'off':
+        strip = make_led_strip(0)
         cmd_off(strip)
         
     elif cmd == 'fadein':
-        if len(sys.argv) < 3:
+        if len(sys.argv) < 4:
             exit_usage()
 
+        strip = make_led_strip(int(sys.argv[2]))
         cmd_fadein(
             strip,
-            arg_color_tuple(sys.argv[2]),
-            arg_color_tuples(sys.argv[3:])
+            arg_color_tuple(sys.argv[3]),
+            arg_color_tuples(sys.argv[4:])
         )
 
     elif cmd == 'fadeout':
-        if len(sys.argv) < 3:
+        if len(sys.argv) < 4:
             exit_usage()
 
+        strip = make_led_strip(int(sys.argv[2]))
         cmd_fadeout(
             strip,
-            arg_color_tuple(sys.argv[2]),
-            arg_color_tuples(sys.argv[3:])
+            arg_color_tuple(sys.argv[3]),
+            arg_color_tuples(sys.argv[4:])
         )
     
     elif cmd == 'progresslr':
-        if len(sys.argv) < 3:
+        if len(sys.argv) < 4:
             exit_usage()
 
+        strip = make_led_strip(int(sys.argv[2]))
         cmd_progresslr(
             strip,
-            arg_color_tuple(sys.argv[2]),
-            arg_color_tuples(sys.argv[3:])
+            arg_color_tuple(sys.argv[3]),
+            arg_color_tuples(sys.argv[4:])
         )
     
     elif cmd == 'progressrl':
-        if len(sys.argv) < 3:
+        if len(sys.argv) < 4:
             exit_usage()
 
+        strip = make_led_strip(int(sys.argv[2]))
         cmd_progressrl(
             strip,
-            arg_color_tuple(sys.argv[2]),
-            arg_color_tuples(sys.argv[3:])
+            arg_color_tuple(sys.argv[3]),
+            arg_color_tuples(sys.argv[4:])
         )
     
     elif cmd == 'pattern':
-        if len(sys.argv) < 8:
+        if len(sys.argv) < 9:
             exit_usage()
 
+        strip = make_led_strip(int(sys.argv[2]))
         cmd_pattern(
             strip,
-            arg_color_tuples(sys.argv[2:])
+            arg_color_tuples(sys.argv[3:])
         )
     
     else:
