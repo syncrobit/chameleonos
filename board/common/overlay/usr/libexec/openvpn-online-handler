@@ -1,3 +1,4 @@
 #!/bin/bash
 
+sleep 2
 /usr/libexec/connman-online-handler true &>> /var/log/online-handler.log

@@ -27,7 +27,7 @@ if [[ "${ONLINE}" == true ]]; then
         \"ip_addr_vpn\":\"${addr_tun0}\"
     }"
 
-    curl --insecure --silent --show-error --location-trusted "${API_ENDPOINT_URL}" \
+    curl --fail --insecure --silent --show-error --location-trusted "${API_ENDPOINT_URL}" \
          -H "Content-Type: application/json" \
          -H "Authorization: ${AUTH_TOKEN}" \
          -X POST -d "${payload}" >/dev/null
