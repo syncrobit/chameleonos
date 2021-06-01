@@ -47,6 +47,14 @@ running() {
     (killall -0 openvpn && ip link show tun0) &> /dev/null 
 }
 
+start_openvpn() {
+    ${PROG} --config ${CONF}/client.conf --cd ${CONF} &>>/var/log/openvpn.log &
+}
+
+stop_openvpn() {
+    killall $(basename ${PROG}) &>/dev/null
+}
+
 watch() {
     last_vpnpasswd_uptime=0
     dead_count=0
@@ -62,6 +70,7 @@ watch() {
                 last_vpnpasswd_uptime=${up}
             fi
 
+            stop_openvpn
             start_openvpn
 
             # Start SSH tunnel if openvpn is successively found dead
@@ -79,10 +88,6 @@ watch() {
     done
 }
 
-start_openvpn() {
-    ${PROG} --config ${CONF}/client.conf --cd ${CONF} &>>/var/log/openvpn.log &
-}
-
 start() {
     msg_begin "Starting openvpn"
     modprobe tun
@@ -97,7 +102,7 @@ start() {
 
 stop() {
     msg_begin "Stopping openvpn"
-    killall $(basename ${PROG}) &>/dev/null
+    stop_openvpn
     ps | grep $(basename ${PROG}) | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
     msg_done
 }
