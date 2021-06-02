@@ -42,6 +42,10 @@ get_lag() {
     expr ${current_height} - ${our_height}
 }
 
+force_sync() {
+    mkdir -p $(dirname ${FORCE_RESYNC_FILE}) && touch ${FORCE_RESYNC_FILE}
+}
+
 watch_prog() {
     # During normal running, we add an extra leeway when checking for free space,
     # to make sure the free space check at next reboot will fail and do a resync.
@@ -49,6 +53,7 @@ watch_prog() {
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
+            force_sync
             panic_action miner "service dead"
             break
         fi
@@ -76,7 +81,7 @@ watch_lag() {
         if [[ ${lag} -le ${MAX_LAG} ]]; then
             continue
         fi
-        mkdir -p $(dirname ${FORCE_RESYNC_FILE}) && touch ${FORCE_RESYNC_FILE}
+        force_sync
         panic_action miner "lag is ${lag} > ${MAX_LAG}"
     done
 }
