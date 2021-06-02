@@ -24,6 +24,8 @@ function prepare_payload() {
     hotspot_name=$(cat /var/run/hotspot_name)
     test -r /var/lib/reg.conf && source /var/lib/reg.conf
     swarm_key_mode=$(test -s /var/lib/user_swarm_key && echo true || echo false)
+    time=$(date +%s)
+    concentrator_model=$(ps aux | grep /opt/packet_forwarder/bin/lora_pkt_fwd_ | grep -oE 'sx13.*' 2>/dev/null)
 
     payload="{
         \"cpu_usage\":${cpu_usage},
@@ -35,6 +37,7 @@ function prepare_payload() {
         \"miner_height\":${miner_height},
         \"miner_listen_addr\":\"${miner_listen_addr}\",
         \"hotspot_name\":\"${hotspot_name}\",
+        \"concentrator_model\":\"${concentrator_model}\"
         \"region\":\"${REGION}\",
         \"fw_version\":\"${OS_VERSION}\",
         \"ecc_sn\":\"${ecc_sn}\",
@@ -43,7 +46,8 @@ function prepare_payload() {
         \"pub_key\":\"${pub_key}\",
         \"eth_mac\":\"${eth_mac}\",
         \"wlan_mac\":\"${wlan_mac}\",
-        \"uptime\":${uptime}
+        \"uptime\":${uptime},
+        \"time\":${time}
     }"
 
     payload=$(echo ${payload} | tr -d '\t\n ')
