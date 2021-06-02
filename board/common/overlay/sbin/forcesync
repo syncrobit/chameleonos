@@ -1,0 +1,8 @@
+#!/bin/bash
+
+FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
+
+
+mkdir -p $(dirname ${FORCE_RESYNC_FILE})
+touch ${FORCE_RESYNC_FILE}
+service miner restart
