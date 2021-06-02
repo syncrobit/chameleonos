@@ -15,6 +15,7 @@ REG_FILE = '/var/lib/reg.conf'
 DEF_REGION = 'US915'
 NAT_CONF_FILE = '/data/etc/nat.conf'
 FORCE_RESYNC_FILE = '/var/lib/miner/force_resync'
+SWARM_KEY_FILE = '/var/lib/user_swarm_key'
 
 
 def get_height() -> Optional[int]:
@@ -42,6 +43,10 @@ def get_region() -> str:
 
     except Exception:
         return DEF_REGION
+
+
+def is_swarm_key_mode() -> bool:
+    return os.path.exists(SWARM_KEY_FILE)
 
 
 def get_nat_config() -> Dict[str, Any]:

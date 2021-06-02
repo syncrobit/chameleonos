@@ -4,6 +4,7 @@ import asyncio
 import base64
 import logging
 import os
+import time
 
 from typing import Awaitable, Callable
 
@@ -84,11 +85,13 @@ async def get_summary(request: web.Request) -> web.Response:
         'region': miner.get_region(),
         'fw_version': system.get_fw_version(),
         'ecc_sn': pubkey.get_ecc_sn(),
+        'swarm_key_mode': miner.is_swarm_key_mode(),
         'address': pubkey.get_address(),
         'pub_key': pubkey.get_pub_key_hex(),
         'eth_mac': system.get_eth_mac(),
         'wlan_mac': system.get_wlan_mac(),
-        'uptime': system.get_uptime()
+        'uptime': system.get_uptime(),
+        'time': int(time.time())
     })
 
 
