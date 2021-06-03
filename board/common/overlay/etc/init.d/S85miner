@@ -118,6 +118,9 @@ sync_from_snapshot() {
         msg_fail "invalid checksum"
         return 1
     fi
+    
+    # Avoid panic reboots during snapshot load
+    panic_inhibit
 
     # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
     export NODETOOL_TIMEOUT=300000
