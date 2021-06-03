@@ -197,7 +197,8 @@ stop() {
     fi
 
     # Kill any remainings with SIGKILL
-    ps | grep -E '/opt/packet_forwarder' | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
+    ps | grep '/opt/packet_forwarder' | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
+    ps | grep $(basename $0) | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
 }
 
 case "$1" in
