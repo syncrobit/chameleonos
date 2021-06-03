@@ -90,8 +90,8 @@ sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
     
     # Kill any existing sync session
-    ps aux | grep curl | grep snapshot.bin | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
-    ps aux | grep 'snapshot load' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
+    ps aux | grep curl | grep snapshot.bin | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
+    ps aux | grep 'snapshot load' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
     
     if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
         msg_fail "metadata download failed"
