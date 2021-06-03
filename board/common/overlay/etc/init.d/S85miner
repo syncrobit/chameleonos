@@ -89,6 +89,10 @@ watch_lag() {
 sync_from_snapshot() {
     msg_begin "Synchronizing miner data"
     
+    # Kill any existing sync session
+    ps aux | grep curl | grep snapshot.bin | cut -d ' ' -f 1 | xargs -r kill
+    ps aux | grep 'snapshot load' | cut -d ' ' -f 1 | xargs -r kill
+    
     if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
         msg_fail "metadata download failed"
         return 1
