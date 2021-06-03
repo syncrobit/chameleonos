@@ -117,13 +117,13 @@ start() {
     while true; do
         reg=$(find_reg)
         if [[ -z "${reg}" ]]; then
-            count=$((count + 1))
+            count=$((count + 60))
             if [[ ${count} -gt ${REG_TIMEOUT} ]]; then
                 msg_fail "no regulatory information"
                 panic_action packetforwarder "no regulatory information"
                 return 1
             fi
-            sleep 1
+            sleep 60
         else
             # At this point we know miner is ready
             touch ${MINER_READY_FILE} 
