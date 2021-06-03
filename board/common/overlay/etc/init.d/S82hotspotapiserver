@@ -4,6 +4,7 @@ PROG="/opt/hotspot-api-server/main.py"
 PYTHON="/usr/bin/python"
 LOG="/var/log/hotspot-api-server.log"
 CONF="/etc/hotspot-api-server.conf"
+USER_CONF="/data/etc/hotspot-api-server.conf"
 
 source /etc/init.d/base
 
@@ -13,6 +14,7 @@ start() {
     
     set -a
     source ${CONF}
+    test -s ${USER_CONF} && source ${USER_CONF}
     set +a
     ${PYTHON} ${PROG} &>${LOG} &
 
