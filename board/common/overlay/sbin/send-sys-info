@@ -12,8 +12,14 @@ function prepare_payload() {
     mem_info=($(free -m | grep '^Mem:' | tr -s ' ' | cut -d ' ' -f 2,3))
     storage_info=($(df -m /data | tail -n 1 | tr -s ' ' | cut -d ' ' -f 2,3))
     temperature=$(echo $(cat /sys/class/thermal/thermal_zone0/temp)/1000 | bc)
-    miner_height=$(/opt/miner/bin/miner info height | tr '\t' ' ' | tr -s ' ' | cut -d ' ' -f 2)
-    miner_listen_addr=$(/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d '|')
+    # Don't bother miner while syncing
+    if ps aux | grep snapshot | grep -qv grep; then
+        miner_height="null"
+        miner_listen_addr=""
+    else
+        miner_height=$(/opt/miner/bin/miner info height | tr '\t' ' ' | tr -s ' ' | cut -d ' ' -f 2)
+        miner_listen_addr=$(/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d '|')
+    fi
     test $? == 0 || miner_height="null"
     uptime=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
     test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
