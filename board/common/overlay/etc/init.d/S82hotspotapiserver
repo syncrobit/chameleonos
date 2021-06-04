@@ -5,33 +5,15 @@ PYTHON="/usr/bin/python"
 LOG="/var/log/hotspot-api-server.log"
 CONF="/etc/hotspot-api-server.conf"
 USER_CONF="/data/etc/hotspot-api-server.conf"
-PUBLIC_PORT=18181
 
 source /etc/init.d/base
 
-has_public_ip() {
-    addr_wlan0=$(ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
-                 cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
-    addr_eth0=$(ip addr show dev eth0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
-                cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
-    test -n "${addr_wlan0}" && addr=${addr_wlan0} || addr=${addr_eth0}
-    
-    if [[ "${addr}" =~ ^10\. ]]; then
-        return 1
-    elif [[ "${addr}" =~ ^172\. ]]; then  # Not really RFC1918!
-        return 1
-    elif [[ "${addr}" =~ ^192\.168\. ]]; then
-        return 1
-    fi
-}
 
 start() {
     msg_begin "Starting hotspot API server"
     
     set -a
     source ${CONF}
-    # Override default port 80 when on public IP
-    has_public_ip && PORT=${PUBLIC_PORT}
     test -s ${USER_CONF} && source ${USER_CONF}
     set +a
     ${PYTHON} ${PROG} &>${LOG} &
