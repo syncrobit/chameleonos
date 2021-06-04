@@ -10,6 +10,20 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 test -s ${REG_CONF} && source ${REG_CONF}
 API_ENDPOINT_URL=$(printf "${API_ENDPOINT_URL}" "${REGION_PREFIX}")
 
+is_public_ip() {
+    addr=$1
+
+    test -n "${addr}" || return 1
+
+    if [[ "${addr}" =~ ^10\. ]]; then
+        return 1
+    elif [[ "${addr}" =~ ^172\. ]]; then  # Not really RFC1918!
+        return 1
+    elif [[ "${addr}" =~ ^192\.168\. ]]; then
+        return 1
+    fi
+}
+
 if [[ "${ONLINE}" == true ]]; then
     addr_wlan0=$(ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
                  cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
@@ -19,6 +33,17 @@ if [[ "${ONLINE}" == true ]]; then
                 cut -d ' ' -f 2 | sed 'N;s/\n/, /' | head -n1)
 
     test -n "${addr_wlan0}" && addr=${addr_wlan0} || addr=${addr_eth0}
+    
+    # Block HTTP traffic if on public IP
+    if is_public_ip "${addr}"; then
+        if ! iptables -C INPUT -i eth0 -p tcp --dport 80 -j DROP &>/dev/null; then
+            msg_begin "Blocking HTTP traffic"
+            iptables -A INPUT -i eth0 -p tcp --dport 80 -j DROP
+            iptables -A INPUT -i wlan0 -p tcp --dport 80 -j DROP
+            msg_done
+        fi
+    fi
+
     msg_begin "Sending local IP address \"${addr}\", VPN IP address \"${addr_tun0}\""
 
     payload="{
