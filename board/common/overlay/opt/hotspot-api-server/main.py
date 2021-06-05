@@ -17,6 +17,7 @@ import logs
 import miner
 import pf
 import pubkey
+import sbapi
 import settings
 import system
 import user
@@ -103,15 +104,8 @@ async def get_net_test(request: web.Request) -> web.Response:
 
 @router.get('/stats')
 async def get_stats(request: web.Request) -> web.Response:
-    # TODO: implement stats module
-    return web.json_response({
-        'blockchain_height': 0,
-        'rewards_1d': 0,
-        'rewards_7d': 0,
-        'rewards_30d': 0,
-        'rewards_365d': 0,
-        'oracle_price': 0
-    })
+    stats = await sbapi.get_stats(pubkey.get_address())
+    return web.json_response(stats)
 
 
 @router.get('/config')
