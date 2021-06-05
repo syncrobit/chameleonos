@@ -95,6 +95,12 @@ async def get_summary(request: web.Request) -> web.Response:
     })
 
 
+@router.get('/nettest')
+async def get_net_test(request: web.Request) -> web.Response:
+    net_test = system.net_test()
+    return web.json_response(net_test)
+
+
 @router.get('/stats')
 async def get_stats(request: web.Request) -> web.Response:
     # TODO: implement stats module

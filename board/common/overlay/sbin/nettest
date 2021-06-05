@@ -27,13 +27,13 @@ function test_speed() {
 }
 
 function test_latency() {
-    latency=$(ping -A -c 5 8.8.8.8 | tail -n 1 | cut -d '/' -f 4)
-    echo "Latency: ${latency} s"
+    latency=$(ping -A -c 5 8.8.8.8 | tail -n 1 | cut -d '/' -f 4 | cut -d '.' -f 1)
+    echo "Latency: ${latency} ms"
 }
 
 function test_public_ip() {
     ip=$(curl -s https://ipv4.icanhazip.com/)
-    echo "Outoing public IP: ${ip}"
+    echo "Public IP: ${ip}"
 }
 
 echo "Testing network connection... "

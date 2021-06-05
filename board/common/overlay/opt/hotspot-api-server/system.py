@@ -4,7 +4,7 @@ import os
 import psutil
 import subprocess
 
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 
 ETH_MAC_FILE = '/sys/class/net/eth0/address'
@@ -12,6 +12,7 @@ WLAN_MAC_FILE = '/sys/class/net/wlan0/address'
 FW_VERSION_CMD = '/sbin/fwupdate current'
 UPTIME_CMD = 'cat /proc/uptime | grep -oE "^[[:digit:]]+"'
 REBOOT_CMD = '/sbin/reboot'
+NET_TEST_CMD = '/sbin/nettest'
 DATA_DIR = '/data'
 
 
@@ -79,3 +80,36 @@ def get_storage_info() -> Tuple[int, int]:
 
 def get_temperature() -> int:
     return int(psutil.sensors_temperatures()['cpu_thermal'][0].current)
+
+
+def net_test() -> Dict[str, Any]:
+    result = {
+        'download_speed': None,
+        'latency': None,
+        'public_ip': None
+    }
+
+    try:
+        output = subprocess.check_output(NET_TEST_CMD, shell=True).decode().strip()
+
+    except Exception:
+        return result
+
+    for line in output.split('\n'):
+        parts = line.split(':', 1)
+        if len(parts) < 2:
+            continue
+
+        key, value = parts
+        key = key.strip().lower().replace(' ', '_')
+        value = value.strip()
+
+        # Decode numeric values
+        if key in ('download_speed', 'latency'):
+            value = float(value.split()[0]) or None
+            if value > 10:
+                value = int(value)
+
+        result[key] = value
+
+    return result
