@@ -231,6 +231,7 @@ async def logs_stop(request: web.Request) -> web.Response:
 
 
 @router.get('/')
+@handle_auth
 async def index(request: web.Request) -> web.FileResponse:
     return web.FileResponse(os.path.join(settings.STATIC_PATH, 'index.html'))
 
