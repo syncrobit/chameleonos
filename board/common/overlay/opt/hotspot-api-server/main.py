@@ -2,6 +2,7 @@
 
 import asyncio
 import base64
+import datetime
 import logging
 import os
 import time
@@ -71,7 +72,7 @@ async def get_summary(request: web.Request) -> web.Response:
     mem_used, mem_total = system.get_mem_info()
     storage_used, storage_total = system.get_storage_info()
 
-    return web.json_response({
+    summary = {
         'serial_number': system.get_rpi_sn(),
         'cpu_usage': system.get_cpu_usage(),
         'mem_used': mem_used,
@@ -93,7 +94,33 @@ async def get_summary(request: web.Request) -> web.Response:
         'wlan_mac': system.get_wlan_mac(),
         'uptime': system.get_uptime(),
         'time': int(time.time())
-    })
+    }
+
+    if request.query.get('pretty') == 'true':
+        blockchain_height = await miner.get_blockchain_height()
+        lag = blockchain_height - (summary['miner_height'] or 0)
+
+        summary['Serial Number'] = summary.pop('serial_number')
+        summary['CPU Usage'] = f"{summary.pop('cpu_usage')} %"
+        summary['Memory Usage'] = f"{summary.pop('mem_used')}/{summary.pop('mem_total')} MB"
+        summary['Storage Usage'] = f"{summary.pop('storage_used')}/{summary.pop('storage_total')} MB"
+        summary['Temperature'] = f"{summary.pop('temperature')} C"
+        summary['Miner Height'] = f"{summary.pop('miner_height')}/{blockchain_height} (lag is {lag})"
+        summary['Miner Listen Address'] = summary.pop('miner_listen_addr')
+        summary['Hotspot Name'] = summary.pop('hotspot_name')
+        summary['Concentrator Model'] = summary.pop('concentrator_model')
+        summary['Region'] = summary.pop('region')
+        summary['Firmware Version'] = summary.pop('fw_version')
+        summary['ECC Serial Number'] = summary.pop('ecc_sn')
+        summary['Swarm Key Mode'] = summary.pop('swarm_key_mode')
+        summary['Address'] = summary.pop('address')
+        summary['Public Key'] = summary.pop('pub_key')
+        summary['Ethernet MAC'] = summary.pop('eth_mac')
+        summary['Wi-Fi MAC'] = summary.pop('wlan_mac')
+        summary['Uptime'] = str(datetime.timedelta(seconds=summary.pop('uptime')))
+        summary['Date/Time'] = f"{str(datetime.datetime.utcfromtimestamp(summary.pop('time')))} (UTC)"
+
+    return web.json_response(summary)
 
 
 @router.get('/nettest')

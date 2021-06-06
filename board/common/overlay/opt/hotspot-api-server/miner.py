@@ -1,6 +1,7 @@
 
 from typing import Any, Dict, Optional
 
+import aiohttp
 import logging
 import os
 import re
@@ -25,6 +26,13 @@ def get_height() -> Optional[int]:
 
     except Exception:
         pass
+
+
+async def get_blockchain_height() -> int:
+    url = 'https://api.helium.io/v1/blocks/height'
+    async with aiohttp.ClientSession() as client:
+        async with client.request(method='GET', url=url) as response:
+            return (await response.json())['data']['height']
 
 
 def get_listen_addr() -> Optional[str]:

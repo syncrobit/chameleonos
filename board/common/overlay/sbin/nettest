@@ -23,17 +23,17 @@ function test_speed() {
 
     speed=$(printf "%.1f" ${speed})
 
-    echo "Download speed: ${speed} kB/s"
+    echo "Download Speed: ${speed} kB/s"
 }
 
 function test_latency() {
     latency=$(ping -A -c 5 8.8.8.8 | tail -n 1 | cut -d '/' -f 4 | cut -d '.' -f 1)
-    echo "Latency: ${latency} ms"
+    echo "Latency:        ${latency} ms"
 }
 
 function test_public_ip() {
     ip=$(curl -s https://ipv4.icanhazip.com/)
-    echo "Public IP: ${ip}"
+    echo "Public IP:      ${ip}"
 }
 
 echo "Testing network connection... "
