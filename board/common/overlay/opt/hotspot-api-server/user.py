@@ -5,7 +5,7 @@ import os
 
 CREDENTIALS_FILE = '/var/lib/api_credentials'
 DEFAULT_USERNAME = 'admin'
-DEFAULT_PASSWORD = 'syncrob.it'
+DEFAULT_PASSWORD = 'admin'
 
 
 def verify_credentials(username: str, password: str) -> bool:
