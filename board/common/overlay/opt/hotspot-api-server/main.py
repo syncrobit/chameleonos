@@ -208,7 +208,7 @@ async def set_config(request: web.Request) -> web.Response:
     if restart_pf:
         pf.restart()
 
-    return web.Response(status=204)
+    return await get_config(request)
 
 
 @router.post('/reboot')
