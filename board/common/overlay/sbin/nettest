@@ -32,7 +32,7 @@ function test_latency() {
 }
 
 function test_public_ip() {
-    ip=$(curl -s https://ipv4.icanhazip.com/)
+    ip=$(curl -4 -s https://ipv4.icanhazip.com/)
     echo "Public IP:      ${ip}"
 }
 
