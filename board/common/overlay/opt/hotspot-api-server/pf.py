@@ -13,8 +13,8 @@ PF_RESTART_CMD = 'service packetforwarder restart'
 PF_CONCENTRATOR_MODEL_CMD = 'ps aux | grep /opt/packet_forwarder/bin/lora_pkt_fwd_ | grep -v grep'
 CONF_FILE = '/data/etc/packet_forwarder.conf'
 SYS_CONF_FILE = '/etc/packet_forwarder.conf'
-DEF_TX_POWER = 27
 PF_STARTUP_SCRIPT = '/etc/init.d/S86packetforwarder'
+PF_TIMEOUT = 10  # Seconds
 
 
 def get_concentrator_model() -> Optional[str]:
@@ -84,6 +84,12 @@ def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:
 def set_config(config: Dict[str, Any]) -> None:
     logging.info('updating packet-forwarder config: %s', config)
 
+    # Use default values for null entries
+    default_config = get_config(SYS_CONF_FILE)
+    for k, v in config.items():
+        if v is None:
+            config[k] = default_config[k]
+
     # Use current values for missing entries
     current_config = get_config()
     for k, v in current_config.items():
@@ -101,4 +107,4 @@ def set_config(config: Dict[str, Any]) -> None:
 
 def restart() -> None:
     logging.info('restarting packet-forwarder')
-    subprocess.check_call(PF_RESTART_CMD, shell=True)
+    subprocess.check_call(PF_RESTART_CMD, shell=True, timeout=PF_TIMEOUT)

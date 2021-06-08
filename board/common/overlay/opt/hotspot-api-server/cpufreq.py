@@ -54,6 +54,12 @@ def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:
 def set_config(config: Dict[str, Any]) -> None:
     logging.info('updating cpufreq config: %s', config)
 
+    # Use default values for null entries
+    default_config = get_config(SYS_CONF_FILE)
+    for k, v in config.items():
+        if v is None:
+            config[k] = default_config[k]
+
     # Use current values for missing entries
     current_config = get_config()
     for k, v in current_config.items():
