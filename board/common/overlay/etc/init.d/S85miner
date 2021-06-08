@@ -202,11 +202,11 @@ start() {
             fi
             if [[ -z "${NAT_INTERNAL_IP}" ]]; then
                 eth_addr=$(
-                    ip addr show dev eth0 2>/dev/null | grep inet | tr -s ' ' | sed -r 's/^\s+//' | \
+                    ip addr show dev eth0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
                     cut -d ' ' -f 2 | grep -iv fe80 | sed 'N;s/\n/, /'
                 )
                 wlan_addr=$(
-                    ip addr show dev wlan0 2>/dev/null | grep inet | tr -s ' ' | sed -r 's/^\s+//' | \
+                    ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
                     cut -d ' ' -f 2 | grep -iv fe80 | sed 'N;s/\n/, /'
                 )
                 addr=${eth_addr:-${wlan_addr}}
