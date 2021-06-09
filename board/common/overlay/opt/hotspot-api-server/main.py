@@ -140,6 +140,12 @@ async def get_stats(request: web.Request) -> web.Response:
     return web.json_response(stats)
 
 
+@router.get('/activity')
+async def get_activity(request: web.Request) -> web.Response:
+    activity = await sbapi.get_activity(pubkey.get_address())
+    return web.json_response(activity)
+
+
 @router.get('/config')
 @handle_auth
 async def get_config(request: web.Request) -> web.Response:

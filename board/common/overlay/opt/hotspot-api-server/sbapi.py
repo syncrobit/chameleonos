@@ -37,3 +37,7 @@ async def get_stats(address: str) -> Dict[str, Any]:
             stats[k] = float(v)
 
     return stats
+
+
+async def get_activity(address: str) -> Dict[str, Any]:
+    return await api_request('POST', '/activity', body={'gw_addr': address})
