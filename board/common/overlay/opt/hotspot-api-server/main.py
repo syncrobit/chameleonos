@@ -228,6 +228,16 @@ async def set_config(request: web.Request) -> web.Response:
     return await get_config(request)
 
 
+@router.post('/verify_password')
+async def verify_password(request: web.Request) -> web.Response:
+    data = await request.json()
+    password = data.get('password', '')
+    if not user.verify_credentials(user.DEFAULT_USERNAME, password):
+        raise web.HTTPBadRequest(body='password is invalid')
+
+    return web.Response(status=204)
+
+
 @router.post('/reboot')
 @handle_auth
 async def reboot(request: web.Request) -> web.Response:
