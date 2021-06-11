@@ -74,7 +74,7 @@ def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:
                     v = float(v)
 
                 except ValueError:
-                    continue
+                    pass
 
             config[k] = v
 
