@@ -160,7 +160,9 @@ $(document).ready(function(){
                     $('.modal').remove();
                 });   
                 console.log(data);
-                $('.modal-append').find('#inputBrightness').bootstrapSlider().on('slideStop', function(ev) { 
+                $('.modal-append').find('#inputBrightness')
+                    .attr('data-slider-value', data.led_brightness)
+                    .bootstrapSlider().on('slideStop', function(ev) { 
                     $.ajax({
                         type: 'PATCH',
                         url: '/config',
@@ -171,8 +173,6 @@ $(document).ready(function(){
                         contentType: 'application/merge-patch+json',
                         complete: function(xhr, statusText){}
                     }); 
-
-                    $('.modal-append').find('#inputBrightness').bootstrapSlider('setValue', data.led_brightness, true);
                 });
                 
                 $('.modal-append').on("click", '.btn-led', function(e){

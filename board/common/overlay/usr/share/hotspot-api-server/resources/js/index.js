@@ -84,6 +84,7 @@ $(document).ready(function(){
           $('.daily-earnings').html(data.rewards_1d + " HNT")
           $('.weekly-earnings').html(data.rewards_7d + " HNT");
           $('.is-sync').html((miner_height < (data.blockchain_height - 250)) ? 'Out of Sync' : 'Synced');
+          $('.difference').html(calculateDifference(data.rewards_7d, data.last_week) + '%');
         })
       });
     });
@@ -135,4 +136,13 @@ function formatBytes(bytes, decimals = 2) {
 
 function formatNumber(num) {
   return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+}
+
+function calculateDifference(now, lastweek){
+  
+  var percent = (((now-lastweek)/now) * 100.0).toFixed(2);
+  percent     = +percent || 0
+  var icon    = (now > lastweek) ? '<i class="fa fa-caret-up"></i>' : '<i class="fa fa-caret-down"></i>';
+  
+  return icon + '<b>' + percent + '</b>';
 }
