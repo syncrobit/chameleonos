@@ -367,6 +367,25 @@ $(document).ready(function(){
             $('.modal-append').find('.progress-bar').animate({ width: '0%'});  
         });
     })
+
+    //Factory Reset
+    $('.facotry-reset').click(function(e){
+        e.preventDefault();
+        var html = getModal('factory-reset');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+            $('#fab-reset-modal').modal('show').on('hidden.bs.modal', function () {
+                $('.modal').remove();
+            });
+
+            $('.fab-reset').click(function(){
+                $.post( "/factory-reset", function( data ) {});
+                $('.modal-append #reboot-modal .modal-body')
+                .html('<strong>Wiping Unit!</strong><br>' + 
+                      'Unit will automatically reboot. If you are using wifi please use the app to re-configure wifi settings.');
+            });
+        }
+    });
 });
 
 function getModal(modalName){
