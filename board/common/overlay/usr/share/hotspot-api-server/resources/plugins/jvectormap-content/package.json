@@ -1,0 +1,43 @@
+{
+  "_from": "jvectormap-content",
+  "_id": "jvectormap-content@0.1.0",
+  "_inBundle": false,
+  "_integrity": "sha512-bYpafo99afMSWzk9HljvOuSjn2OYC7eUTI8CnkQrIB3mseT1cEpw8CEhBLmAG7QYDLYdA35Q8YdaoWiRDQH/yw==",
+  "_location": "/jvectormap-content",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "jvectormap-content",
+    "name": "jvectormap-content",
+    "escapedName": "jvectormap-content",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/jvectormap-content/-/jvectormap-content-0.1.0.tgz",
+  "_shasum": "878caf0370dc3b97da8df97be91180e3a230e1ee",
+  "_spec": "jvectormap-content",
+  "_where": "/Users/ngunguoksiong/Sites/bootstrap/vueStudio/template/vueStudio_v1.0/template_html",
+  "bugs": {
+    "url": "https://github.com/alex-pex/jvectormap/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "files": [
+    "*.js"
+  ],
+  "gitHead": "595027bb0a369965cdb46e0bdde408ad4c21896e",
+  "homepage": "https://github.com/alex-pex/jvectormap#readme",
+  "license": "MIT",
+  "name": "jvectormap-content",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex-pex/jvectormap.git"
+  },
+  "version": "0.1.0"
+}

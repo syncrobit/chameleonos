@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Dashboard :: SyncroB.it</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Local Dashboard" />
+	<meta name="author" content="SyncroB.it" />
+	<link rel="icon" href="/resources/img/favicon.png" type="image/x-icon"/>
+
+	<!-- ================== BEGIN core-css ================== -->
+	<link href="/resources/css/app.min.css" rel="stylesheet" />
+	<!-- ================== END core-css ================== -->
+
+    <link href="/resources/plugins/bootstrap-slider/dist/css/bootstrap-slider.min.css" rel="stylesheet" />
+	
+</head>
+<body>
+	<!-- BEGIN #app -->
+	<div id="app" class="app">
+		<!-- BEGIN #header -->
+		<div id="header" class="app-header">
+			<!-- BEGIN mobile-toggler -->
+			<div class="mobile-toggler">
+				<button type="button" class="menu-toggler" data-toggle="sidebar-mobile">
+					<span class="bar"></span>
+					<span class="bar"></span>
+				</button>
+			</div>
+			<!-- END mobile-toggler -->
+			
+			<!-- BEGIN brand -->
+			<div class="brand">
+				<div class="desktop-toggler">
+					<button type="button" class="menu-toggler" data-toggle="sidebar-minify">
+						<span class="bar"></span>
+						<span class="bar"></span>
+					</button>
+				</div>
+				
+				<a href="https://syncrob.it/" class="brand-logo">
+					<span class="sb-logo">SyncroB.it</span>
+				</a>
+			</div>
+			<!-- END brand -->
+			
+			<!-- BEGIN menu -->
+			<div class="menu">
+				<div class="menu-search">
+					
+				</div>
+                <!---
+				<div class="menu-item dropdown">
+					<a href="#" data-toggle="dropdown" data-display="static" class="menu-link">
+						<div class="menu-icon"><i class="fa fa-bell nav-icon"></i></div>
+						<div class="menu-label">3</div>
+					</a>
+					<div class="dropdown-menu dropdown-menu-right dropdown-notification">
+						<h6 class="dropdown-header text-gray-900 mb-1">Notifications</h6>
+						<a href="#" class="dropdown-notification-item">
+							<div class="dropdown-notification-icon">
+								<i class="fa fa-receipt fa-lg fa-fw text-success"></i>
+							</div>
+							<div class="dropdown-notification-info">
+								<div class="title">Your store has a new order for 2 items totaling $1,299.00</div>
+								<div class="time">just now</div>
+							</div>
+							<div class="dropdown-notification-arrow">
+								<i class="fa fa-chevron-right"></i>
+							</div>
+						</a>
+						<a href="#" class="dropdown-notification-item">
+							<div class="dropdown-notification-icon">
+								<i class="far fa-user-circle fa-lg fa-fw text-muted"></i>
+							</div>
+							<div class="dropdown-notification-info">
+								<div class="title">3 new customer account is created</div>
+								<div class="time">2 minutes ago</div>
+							</div>
+							<div class="dropdown-notification-arrow">
+								<i class="fa fa-chevron-right"></i>
+							</div>
+						</a>
+						<a href="#" class="dropdown-notification-item">
+							<div class="dropdown-notification-icon">
+								<img src="/resources/img/icon/android.svg" alt="" width="26" />
+							</div>
+							<div class="dropdown-notification-info">
+								<div class="title">Your android application has been approved</div>
+								<div class="time">5 minutes ago</div>
+							</div>
+							<div class="dropdown-notification-arrow">
+								<i class="fa fa-chevron-right"></i>
+							</div>
+						</a>
+						<a href="#" class="dropdown-notification-item">
+							<div class="dropdown-notification-icon">
+								<img src="/resources/img/icon/paypal.svg" alt="" width="26" />
+							</div>
+							<div class="dropdown-notification-info">
+								<div class="title">Paypal payment method has been enabled for your store</div>
+								<div class="time">10 minutes ago</div>
+							</div>
+							<div class="dropdown-notification-arrow">
+								<i class="fa fa-chevron-right"></i>
+							</div>
+						</a>
+						<div class="p-2 text-center mb-n1">
+							<a href="#" class="text-gray-800 text-decoration-none">See all</a>
+						</div>
+					</div>
+				</div>
+                -->
+				<div class="menu-item dropdown">
+					<a href="#" data-toggle="dropdown" data-display="static" class="menu-link">
+						<div class="menu-img">
+                            <div class="width-50 height-50 mw-100 mh-100 bg-primary-transparent-2 rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="fa fa-user fa-lg text-primary"></i>
+                            </div>
+						</div>
+						<div class="menu-text">
+                            admin@<span class="sb-serial"></span>
+                            <b class="caret"></b>
+                        </div>
+					</a>
+					<div class="dropdown-menu dropdown-menu-right mr-lg-3">
+						<a class="dropdown-item d-flex align-items-center change-pass" href="#">
+                            Change Password <i class="fa fa-key fa-fw ml-auto text-gray-400 f-s-16"></i>
+                        </a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item d-flex align-items-center" href="#">
+                            Log Out <i class="fa fa-toggle-off fa-fw ml-auto text-gray-400 f-s-16"></i>
+                        </a>
+					</div>
+				</div>
+			</div>
+			<!-- END menu -->
+		</div>
+		<!-- END #header -->
+		
+		<!-- BEGIN #sidebar -->
+		<div id="sidebar" class="app-sidebar">
+			<!-- BEGIN scrollbar -->
+			<div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
+				<!-- BEGIN menu -->
+				<div class="menu">
+					<div class="menu-header">Navigation</div>
+					<div class="menu-item active">
+						<a href="/" class="menu-link">
+							<span class="menu-icon"><i class="fa fa-tachometer-alt"></i></span>
+							<span class="menu-text">Overview</span>
+						</a>
+					</div>
+					<div class="menu-item">
+						<a href="#" class="menu-link lora-settings">
+							<span class="menu-icon"><i class="fa fa-wifi"></i></span>
+							<span class="menu-text">LoRa Settings</span>
+						</a>
+					</div>
+					<div class="menu-item has-sub">
+						<a href="#" class="menu-link">
+							<span class="menu-icon"><i class="fa fa-cogs"></i></span>
+							<span class="menu-text">GateWay Settings</span>
+							<span class="menu-caret"><b class="caret"></b></span>
+						</a>
+						<div class="menu-submenu">
+							<div class="menu-item ">
+								<a href="#" class="menu-link led-settings">
+									<span class="menu-text">Led Settings</span>
+								</a>
+							</div>
+							<div class="menu-item">
+								<a href="#" class="menu-link sys-config">
+									<span class="menu-text">System Settings</span>
+								</a>
+							</div>
+                            <div class="menu-item">
+								<a href="#" class="menu-link network-config">
+									<span class="menu-text">Network</span>
+								</a>
+							</div>
+                            <div class="menu-item">
+								<a href="#" class="menu-link facotry-reset">
+									<span class="menu-text">Factory Reset</span>
+								</a>
+							</div>
+						</div>
+					</div>
+                    <div class="menu-item has-sub">
+						<a href="#" class="menu-link">
+							<span class="menu-icon"><i class="fa fa-server"></i></span>
+							<span class="menu-text">System Actions</span>
+							<span class="menu-caret"><b class="caret"></b></span>
+						</a>
+						<div class="menu-submenu">
+                            <div class="menu-item">
+								<a href="#" class="menu-link enable-pairing">
+									<span class="menu-text">Enable Pairing</span>
+                                    <i class="fas fa-spinner fa-spin pairing-spinner" style="display: none;"></i>
+								</a>
+							</div>
+                            <div class="menu-item">
+								<a href="#" class="menu-link force-resync">
+									<span class="menu-text">Resync</span>
+								</a>
+							</div>
+                            <div class="menu-item">
+								<a href="#" class="menu-link unit-reboot">
+									<span class="menu-text">Reboot</span>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- END menu -->
+			</div>
+			<!-- END scrollbar -->
+			
+			<!-- BEGIN mobile-sidebar-backdrop -->
+			<button class="app-sidebar-mobile-backdrop" data-dismiss="sidebar-mobile"></button>
+			<!-- END mobile-sidebar-backdrop -->
+		</div>
+		<!-- END #sidebar -->
+		
+		<!-- BEGIN #content -->
+		<div id="content" class="app-content">
+			<h1 class="page-header mb-3">
+				Hi, Admin. <small>Here's what's happening with your gateway today.</small>
+			</h1>
+			
+			<!-- BEGIN row -->
+			<div class="row">
+				<!-- BEGIN col-6 -->
+				<div class="col-xl-6">
+					<!-- BEGIN card -->
+					<div class="card text-white-transparent-7 mb-3 overflow-hidden">
+						<!-- BEGIN card-img-overlay -->
+						<div class="card-img-overlay d-block d-lg-none bg-blue rounded"></div>
+						<!-- END card-img-overlay -->
+						
+						<!-- BEGIN card-img-overlay -->
+						<div class="card-img-overlay d-none d-md-block bg-blue rounded" style="background-image: url(/resources/img/bg/wave-bg.png); background-position: right bottom; background-repeat: no-repeat; background-size: 100%;"></div>
+						<!-- END card-img-overlay -->
+						
+						<!-- BEGIN card-img-overlay -->
+						<div class="card-img-overlay d-none d-md-block bottom-0 top-auto">
+							<div class="row">
+								<div class="col-md-8 col-xl-6"></div>
+								<div class="col-md-4 col-xl-6 mb-n2">
+									<img src="/resources/img/page/dashboard.svg" alt="" class="d-block ml-n3 mb-5" style="max-height: 310px" />
+								</div>
+							</div>
+						</div>
+						<!-- END card-img-overlay -->
+						
+						<!-- BEGIN card-body -->
+						<div class="card-body position-relative">
+							<!-- BEGIN row -->
+							<div class="row">
+								<!-- BEGIN col-8 -->
+								<div class="col-md-8">
+									<!-- stat-top -->
+									<div class="d-flex">
+										<div class="mr-auto">
+											<h5 class="text-white-transparent-8 mb-3">Weekly Earning</h5>
+											<h3 class="text-white mt-n1 mb-1 weekly-earnings">... HNT</h3>
+											<p class="mb-1 text-white-transparent-6 text-truncate">
+												<i class="fa fa-caret-up"></i> <b>32%</b> increase compare to last week
+											</p>
+										</div>
+									</div>
+									
+									<hr class="hr-transparent bg-white-transparent-2 mt-3 mb-3" />
+									
+									<!-- stat-bottom -->
+									<div class="row">
+										<div class="col-6 col-lg-5">
+											<div class="mt-1">
+												<div>24 Hour Earnings</div>
+												<div class="font-weight-600 text-white daily-earnings">... HNT</div>
+											</div>
+										</div>
+										<div class="col-6 col-lg-5">
+											<div class="mt-1">
+												<div>30 Days Earnings</div>
+												<div class="font-weight-600 text-white monthly-earnings">... HNT</div>
+											</div>
+										</div>
+									</div>
+									
+									<hr class="hr-transparent bg-white-transparent-2 mt-3 mb-3" />
+									<div class="mt-1">
+                                        &nbsp;
+                                    </div>
+									<div class="mt-3 mb-2">
+										<a href="#" class="btn btn-yellow btn-rounded btn-sm pl-5 pr-5 pt-2 pb-2 fs-14px font-weight-600 explorer-view" target="_blank">
+                                            <i class="fa fa-globe mr-2 ml-n2"></i> View in Explorer</a>
+									</div>
+								</div>
+								<!-- END col-8 -->
+								
+								<!-- BEGIN col-4 -->
+								<div class="col-md-4 d-none d-md-block" style="min-height: 380px;"></div>
+								<!-- END col-4 -->
+							</div>
+							<!-- END row -->
+						</div>
+						<!-- END card-body -->
+					</div>
+					<!-- END card -->
+				</div>
+				<!-- END col-6 -->
+				
+				<!-- BEGIN col-6 -->
+				<div class="col-xl-6">
+					<!-- BEGIN row -->
+					<div class="row">
+						<!-- BEGIN col-6 -->
+						<div class="col-sm-6">
+							<!-- BEGIN card -->
+								<div class="card bg-gradient-cyan-blue position-relative mb-3">
+                                    <div class="card-body d-flex align-items-center text-white ">
+                                        <div class="flex-fill">
+                                        <div class="mb-1">CPU Usage</div>
+                                        <h2 class="cpu-usage">...</h2>
+                                        <div><strong>Temperature:</strong> <span class="temperature"></span></div>
+                                        </div>
+                                        <div class="opacity-5">
+                                        <i class="fas fa-microchip fa-4x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+							<!-- END card -->
+							
+							<!-- BEGIN card -->
+							<div class="card bg-gradient-custom-pink position-relative mb-3">
+                                <div class="card-body d-flex align-items-center text-white ">
+                                    <div class="flex-fill">
+                                    <div class="mb-1">Storage</div>
+                                    <h2 class="storage-usage">...</h2>
+                                    <div><strong>Percentage used:</strong> <span class="storage-per-used"></span></div>
+                                    </div>
+                                    <div class="opacity-5">
+                                    <i class="fas fa-hdd fa-4x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END card -->
+                            <!-- BEGIN card -->
+							<div class="card bg-gradient-custom-orange position-relative mb-3">
+                                <div class="card-body d-flex align-items-center text-white">
+                                    <div class="flex-fill">
+                                    <div class="mb-1">BlockChain Height</div>
+                                    <h2 class="chain-height">...</h2>
+                                    <div>&nbsp;</div>
+                                    </div>
+                                    <div class="opacity-5">
+                                    <i class="fas fa-cubes fa-4x"></i>
+                                    </div>
+                                </div>
+                            </div>
+							<!-- END card -->
+						</div>
+						<!-- END col-6 -->
+						
+						<!-- BEGIN col-6 -->
+						<div class="col-sm-6">
+							<!-- BEGIN card -->
+                            <div class="card bg-gradient-custom-indigo position-relative mb-3">
+							    <div class="card-body d-flex align-items-center text-white ">
+                                    <div class="flex-fill">
+                                    <div class="mb-1">Memory</div>
+                                    <h2 class="memory_usge">...</h2>
+                                    <div><strong>Percentage used:</strong> <span class="mem-per-used"></span></div>
+                                    </div>
+                                    <div class="opacity-5">
+                                    <i class="fas fa-memory fa-4x"></i>
+                                    </div>
+                                </div>
+                            </div>
+							<!-- END card -->
+							
+							<!-- BEGIN card -->
+							<div class="card bg-gradient-custom-teal position-relative mb-3">
+                                <div class="card-body d-flex align-items-center text-white">
+                                    <div class="flex-fill">
+                                    <div class="mb-1">Miner Height</div>
+                                    <h2 class="miner_height">...</h2>
+                                    <div><strong>Status:</strong> <span class="is-sync"></span></div>
+                                    </div>
+                                    <div class="opacity-5">
+                                    <i class="fas fa-cubes fa-4x"></i>
+                                    </div>
+                                </div>
+                            </div>
+							<!-- END card -->
+                            <!-- BEGIN card -->
+							<div class="card bg-gradient-gray position-relative mb-3">
+                                <div class="card-body d-flex align-items-center text-white">
+                                    <div class="flex-fill">
+                                    <div class="mb-1">Oracle Price</div>
+                                    <h2 class="oracle-price">...</h2>
+                                    <div>&nbsp;</div>
+                                    </div>
+                                    <div class="opacity-5">
+                                    <i class="fas fa-hand-holding-usd fa-4x"></i>
+                                    </div>
+                                </div>
+                            </div>
+							<!-- END card -->
+						</div>
+						<!-- BEGIN col-6 -->
+					</div>
+					<!-- END row -->
+				</div>
+				<!-- END col-6 -->
+			</div>
+			<!-- END row -->
+			
+			<!-- BEGIN row -->
+			<div class="row">
+                <div class="col-xl-6">
+				<!-- BEGIN card -->
+                <div class="card mb-3">
+                    <!-- BEGIN card-body -->
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">Summary</h5>
+                                <div class="fs-13px">Gateway report</div>
+                            </div>
+                            <a href="#" class="text-muted refresh-summary"><i class="refresh-icon fa fa-redo"></i></a>
+                        </div>
+                        <dl class="row" style="min-height: 340px;">
+                            <dt class="col-sm-3">Serial Number</dt>
+                            <dd class="col-sm-9 sb-serial"></dd>
+                            <dt class="col-sm-3">Firmware Version</dt>
+                            <dd class="col-sm-9 fw-version"></dd>
+                            <dt class="col-sm-3">Miner Name</dt>
+                            <dd class="col-sm-9 miner-name"></dd>
+                            <dt class="col-sm-3">Miner Address</dt>
+                            <dd class="col-sm-9 miner-address"></dd>
+                            <dt class="col-sm-3">Region</dt>
+                            <dd class="col-sm-9 miner-region"></dd>
+                            <dt class="col-sm-3">Concentrator Model</dt>
+                            <dd class="col-sm-9 concentrator-model"></dd>
+                            <dt class="col-sm-3">ETH Mac</dt>
+                            <dd class="col-sm-9 eth-mac"></dd>
+                            <dt class="col-sm-3">WLAN Mac</dt>
+                            <dd class="col-sm-9 wlan-mac"></dd>
+                            <dt class="col-sm-3">Listen Address</dt>
+                            <dd class="col-sm-9 listen-addr"></dd>
+                            <dt class="col-sm-3">Relayed</dt>
+                            <dd class="col-sm-9 relayed"></dd>
+                            <dt class="col-sm-3">Current time</dt>
+                            <dd class="col-sm-9 current-time"></dd>
+                            <dt class="col-sm-3">Uptime</dt>
+                            <dd class="col-sm-9 uptime"></dd>
+                        </dl>
+                        
+                    </div>
+                    <!-- END card-body -->
+                </div>
+                <!-- END card -->
+					<!-- END row -->
+				</div>
+				<!-- END col-6 -->
+				
+				<!-- BEGIN col-6 -->
+				<div class="col-xl-6">
+					<!-- BEGIN card -->
+					<div class="card mb-3">
+						<!-- BEGIN card-body -->
+						<div class="card-body">
+							<div class="d-flex mb-3">
+								<div class="flex-grow-1">
+									<h5 class="mb-1">Activity</h5>
+									<div class="fs-13px">Last 10 rewards</div>
+								</div>
+								<a href="#" data-toggle="dropdown" class="text-muted"><i class="fa fa-redo"></i></a>
+							</div>
+							<div id="activity">
+                                <div class="no-activity">
+                                    <i class="fas fa-chart-bar fa-10x"></i>
+                                    <span>No Activity...</span>
+                                </div>
+                            </div>
+						</div>
+						<!-- END card-body -->
+					</div>
+					<!-- END card -->
+				</div>	
+				<!-- END col-6 -->
+			</div>
+			<!-- END row -->
+			
+            <!-- START #toast -->
+            <div class="toasts-container">
+                
+            </div>    
+            <!-- END #toast -->
+            <!-- START #modal-->
+            <div class="modal-append"></div>
+            <!-- END #modal-->
+		</div>
+		<!-- END #content -->
+		
+		<!-- BEGIN btn-scroll-top -->
+		<a href="#" data-click="scroll-top" class="btn-scroll-top fade"><i class="fa fa-arrow-up"></i></a>
+		<!-- END btn-scroll-top -->
+	</div>
+	<!-- END #app -->
+	
+	<!-- ================== BEGIN core-js ================== -->
+	<script src="/resources/js/app.min.js"></script>
+	<!-- ================== END core-js ================== -->
+	
+	<!-- ================== BEGIN page-js ================== -->
+    <script src="/resources/plugins/moment/min/moment.min.js"></script>
+    <script src="/resources/plugins/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="/resources/plugins/bootstrap-slider/dist/bootstrap-slider.min.js"></script>
+    <script src="/resources/js/common.js"></script>
+	<script src="/resources/js/index.js"></script>
+	<!-- ================== END page-js ================== -->
+</body>
+</html>

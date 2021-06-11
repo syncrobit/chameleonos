@@ -1,0 +1,60 @@
+<div class="modal fade show" id="lora-config-modal" aria-modal="true" style="padding-right: 15px;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="lora-settings-form">
+        <div class="modal-header">
+          <h5 class="modal-title">Lora Settings</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger">
+            <strong>Warning!</strong> By modifying these values your device may not comply with local laws or perform as intented.
+          </div>
+          <div class="form-group row">
+            <label for="inputAntennaGain" class="col-sm-3 col-form-label">Antenna Gain</label>
+            <div class="col-sm-9">
+              <div class="input-group flex-nowrap">
+                <input type="text" class="form-control" id="inputAntennaGain" name="inputAntennaGain" placeholder="2.3">
+                <div class="input-group-append">
+                  <span class="input-group-text" style="width:55.53px">dBi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputRssiOffset" class="col-sm-3 col-form-label">Rssi Offset</label>
+            <div class="col-sm-9">
+              <div class="input-group flex-nowrap">
+                <input type="text" class="form-control" id="inputRssiOffset" name="inputRssiOffset"  placeholder="-215.4">
+                <div class="input-group-append">
+                  <span class="input-group-text">dBm</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputTxPower" class="col-sm-3 col-form-label">Tx Power</label>
+            <div class="col-sm-9">
+              <div class="input-group flex-nowrap">
+                <input type="number" class="form-control" id="inputTxPower" name="inputTxPower" placeholder="14" max="27" onKeyDown="return false">
+                <div class="input-group-append">
+                  <span class="input-group-text" style="width:55.53px">dB</span>
+                </div>
+              </div>
+              <small id="inputTxPower" class="form-text text-muted">
+                Max Value 27dB
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary restore-default-lora">Restore Defaults</button>
+          <button type="button" class="btn btn-default close-modal" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary save-lora-settings">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

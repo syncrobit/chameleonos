@@ -1,0 +1,34 @@
+<div class="modal fade show" id="change-default-modal" aria-modal="true" style="padding-right: 15px;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" id="change-default-form">
+          <div class="modal-header">
+            <h5 class="modal-title">Change Default Password</h5>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning">
+              You are currently using the default password for login. Please update your pasword to access the dashboard.
+            </div>
+              <div class="form-group row">
+                <label for="inputNewPass" class="col-sm-4 col-form-label">New Password</label>
+                <div class="col-sm-8">
+                    <input type="password" class="form-control" name="inputNewPass" id="inputNewPass">
+                    <small id="passwordHelpBlock" class="form-text text-muted">
+                      Your password must not contain spaces or emoji.
+                    </small>
+                </div>
+              </div> 
+              <div class="form-group row">
+                <label for="inputRNewPass" class="col-sm-4 col-form-label">Re-type Password</label>
+                <div class="col-sm-8">
+                    <input type="password" class="form-control" name="inputRNewPass" id="inputRNewPass">
+                </div>
+              </div> 
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary save-password">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
