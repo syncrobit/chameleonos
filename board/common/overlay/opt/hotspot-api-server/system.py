@@ -15,6 +15,20 @@ REBOOT_CMD = '/sbin/reboot'
 NET_TEST_CMD = '/sbin/nettest'
 DATA_DIR = '/data'
 
+LOG_DIR = '/var/log'
+MINER_DATA_DIR = '/var/lib/miner'
+FACTORY_RESET_SERVICES = ['miner', 'packetforwarder', 'gatewayconfig', 'connman']
+FACTORY_RESET_CONF_FILES = [
+    '/var/lib/reg.conf',
+    '/data/etc/nat.conf',
+    '/data/etc/packet_forwarder.conf'
+    '/data/etc/ledstrip.conf'
+]
+FACTORY_RESET_CONNMAN_PATH_PREFIXES = [
+    '/var/lib/connman/wifi_*',
+    '/var/lib/connman/ethernet_*'
+]
+
 
 def get_rpi_sn() -> str:
     with open('/proc/cpuinfo', 'rt') as f:
@@ -26,6 +40,35 @@ def get_rpi_sn() -> str:
 
 
 def reboot() -> None:
+    logging.info('rebooting')
+    os.system(REBOOT_CMD)
+
+
+def factory_reset() -> None:
+    logging.info('factory resetting')
+
+    for service in FACTORY_RESET_SERVICES:
+        try:
+            logging.info('stopping %s', service)
+            subprocess.check_output(f'service {service} stop', shell=True)
+
+        except Exception:
+            pass
+
+    for file in FACTORY_RESET_CONF_FILES:
+        logging.info('removing %s', file)
+        os.system(f'rm -f {file}')
+
+    logging.info('removing network settings')
+    for prefix in FACTORY_RESET_CONNMAN_PATH_PREFIXES:
+        os.system(f'rm -rf {prefix}')
+
+    logging.info('removing log files')
+    os.system(f'rm -rf {LOG_DIR}/*')
+
+    logging.info('removing miner data')
+    os.system(f'rm -rf {MINER_DATA_DIR}')
+
     logging.info('rebooting')
     os.system(REBOOT_CMD)
 

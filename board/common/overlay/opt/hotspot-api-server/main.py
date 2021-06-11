@@ -247,6 +247,15 @@ async def reboot(request: web.Request) -> web.Response:
     return web.Response(status=204)
 
 
+@router.post('/factory_reset')
+@handle_auth
+async def reboot(request: web.Request) -> web.Response:
+    loop = asyncio.get_event_loop()
+    loop.call_later(2, system.factory_reset)
+
+    return web.Response(status=204)
+
+
 @router.post('/pair')
 @handle_auth
 async def pair(request: web.Request) -> web.Response:
