@@ -1,0 +1,38 @@
+<div class="modal fade show" id="sys-settings-modal" aria-modal="true" style="padding-right: 15px;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" id="sys-settings-form">
+          <div class="modal-header">
+            <h5 class="modal-title">System Settings</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger">
+              <strong>Warning!</strong> By modifying these values your device may overheat or get damaged.
+            </div>
+            <div class="form-group row">
+              <label for="inputCPUFreq" class="col-sm-3 col-form-label">CPU Frequency</label>
+            <div class="col-sm-9">
+              <div class="input-group flex-nowrap">
+                <input type="number" class="form-control" id="inputCPUFreq" name="inputCPUFreq" placeholder="1500000" min="600000" max="1500000" step="100000" onKeyDown="return false">
+                <div class="input-group-append">
+                  <span class="input-group-text" style="width:55.53px">kHz</span>
+                </div>
+              </div>
+              <small id="inputTxPower" class="form-text text-muted">
+                Max Value 1500000kHz
+              </small>
+            </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary sys-restore-defaults">Restore Defaults</button>
+            <button type="button" class="btn btn-default close-modal" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary save-sys-settings">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>

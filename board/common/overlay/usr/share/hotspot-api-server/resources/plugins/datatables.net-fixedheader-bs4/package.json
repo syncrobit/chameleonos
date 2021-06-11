@@ -1,0 +1,58 @@
+{
+  "_from": "datatables.net-fixedheader-bs4@^3.1.7",
+  "_id": "datatables.net-fixedheader-bs4@3.1.7",
+  "_inBundle": false,
+  "_integrity": "sha512-ahaiBOJ7OeJSMLUll7zXA03j1dvuHC3BvlCQhDZkG+vDrfGFdldd6zOhjPRdHZpmLArGGB6V270Rml8Yst3opg==",
+  "_location": "/datatables.net-fixedheader-bs4",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "datatables.net-fixedheader-bs4@^3.1.7",
+    "name": "datatables.net-fixedheader-bs4",
+    "escapedName": "datatables.net-fixedheader-bs4",
+    "rawSpec": "^3.1.7",
+    "saveSpec": null,
+    "fetchSpec": "^3.1.7"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/datatables.net-fixedheader-bs4/-/datatables.net-fixedheader-bs4-3.1.7.tgz",
+  "_shasum": "13e86e203a62b616f28883562f862e4c585729e8",
+  "_spec": "datatables.net-fixedheader-bs4@^3.1.7",
+  "_where": "/Users/ngunguoksiong/Sites/bootstrap/vueStudio/template/vueStudio_v1.0/template_html",
+  "author": {
+    "name": "SpryMedia Ltd",
+    "url": "http://datatables.net"
+  },
+  "bugs": {
+    "url": "https://datatables.net/forums"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "datatables.net-bs4": "^1.10.15",
+    "datatables.net-fixedheader": "3.1.7",
+    "jquery": ">=1.7"
+  },
+  "deprecated": false,
+  "description": "FixedHeader for DataTables with styling for [Bootstrap 4](http://getbootstrap.com/)",
+  "files": [
+    "css/**/*.css",
+    "js/**/*.js"
+  ],
+  "homepage": "https://datatables.net",
+  "keywords": [
+    "fixed headers",
+    "sticky",
+    "DataTables",
+    "jQuery",
+    "table",
+    "Bootstrap 4"
+  ],
+  "license": "MIT",
+  "main": "js/fixedHeader.bootstrap4.js",
+  "name": "datatables.net-fixedheader-bs4",
+  "style": "css/fixedHeader.bootstrap4.css",
+  "version": "3.1.7"
+}
