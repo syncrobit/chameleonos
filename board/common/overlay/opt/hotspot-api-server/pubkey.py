@@ -6,7 +6,6 @@ import re
 
 PUB_KEY_HEX_FILE = '/var/run/public_key_hex'
 PUB_KEYS_FILE = '/var/run/public_keys'
-HOTSPOT_NAME_FILE = '/var/run/hotspot_name'
 ECC_SN_FILE = '/var/run/ecc_sn'
 
 
@@ -30,8 +29,8 @@ def get_address() -> Optional[str]:
 
 def get_name() -> Optional[str]:
     try:
-        with open(HOTSPOT_NAME_FILE, 'rt') as f:
-            return f.read().strip()
+        with open(PUB_KEYS_FILE, 'rt') as f:
+            return re.search(r'\w+-\w+-\w+', f.read()).group()
 
     except Exception:
         pass
