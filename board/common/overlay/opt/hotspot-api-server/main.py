@@ -302,7 +302,6 @@ async def html_page(request: web.Request) -> web.FileResponse:
 
 
 @router.get('/')
-@handle_auth
 async def html_index(request: web.Request) -> web.FileResponse:
     return web.FileResponse(os.path.join(settings.HTML_PATH, 'index.html'))
 
