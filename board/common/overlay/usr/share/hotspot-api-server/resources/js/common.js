@@ -386,6 +386,24 @@ $(document).ready(function(){
             });
         }
     });
+
+    //Logs
+    $('.logs-show').click(function(e){
+        e.preventDefault();
+        var log = $(this).data('id');
+        var html = getModal('logs');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+
+            $.get( "/logs/" + log, function( data ) {
+                $( ".log-content" ).html( data );
+                $('#logs-modal').modal('show').on('hidden.bs.modal', function () {
+                    $('.modal').remove();
+                });
+            });
+        }
+    });
+    
 });
 
 function getModal(modalName){
