@@ -114,6 +114,8 @@ def resync() -> None:
         with open(FORCE_RESYNC_FILE, 'w'):
             pass
 
+    restart()
+
 
 def restart() -> None:
     logging.info('restarting miner')

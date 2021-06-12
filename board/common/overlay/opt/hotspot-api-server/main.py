@@ -268,8 +268,8 @@ async def pair(request: web.Request) -> web.Response:
 @router.post('/resync')
 @handle_auth
 async def resync(request: web.Request) -> web.Response:
-    miner.resync()
-    miner.restart()
+    loop = asyncio.get_event_loop()
+    loop.call_later(2, miner.resync)
 
     return web.Response(status=204)
 
