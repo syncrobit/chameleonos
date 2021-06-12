@@ -268,8 +268,8 @@ async def pair(request: web.Request) -> web.Response:
 @router.post('/resync')
 @handle_auth
 async def resync(request: web.Request) -> web.Response:
-    miner.resync()
-    miner.restart()
+    loop = asyncio.get_event_loop()
+    loop.call_later(2, miner.resync)
 
     return web.Response(status=204)
 
@@ -288,6 +288,25 @@ async def logs_stop(request: web.Request) -> web.Response:
     logs.disable_logs_sending()
 
     return web.Response(status=204)
+
+
+@router.get(r'/logs/{name:[a-zA-Z0-9_.-]+}')
+@handle_auth
+async def get_log(request: web.Request) -> web.Response:
+    name = request.match_info['name']
+    max_lines = request.query.get('max_lines')
+    if max_lines:
+        try:
+            max_lines = int(max_lines)
+
+        except ValueError:
+            max_lines = None
+
+    content = logs.get_log(name, max_lines)
+    if content is None:
+        raise web.HTTPNotFound()
+
+    return web.Response(content_type='text/plain', body=content)
 
 
 @router.get(r'/{path:[a-zA-Z0-9_/-]+}')

@@ -104,17 +104,23 @@ function stop() {
     msg_begin "Stopping LED state manager"
     rm -f ${STATE_FILE}
 
-    # Wait for state loop to exit
     if [[ -s ${PID_FILE} ]]; then
         pid=$(cat ${PID_FILE})
+        
+        # Wait for state loop to exit
         count=0
         while kill -0 ${pid} 2>/dev/null && [[ ${count} -lt 30 ]]; do
             usleep 100000
             count=$((count + 1))
         done
-        kill ${pid} &>/dev/null
+        
+        # Kill any remaining process with SIGKILL
+        kill -9 ${pid} &>/dev/null
+        ps | grep $(basename ${LED_STRIP}) | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
+        ps | grep ledstate | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
         rm -f ${PID_FILE}
     fi
+
     msg_done
 }
 
