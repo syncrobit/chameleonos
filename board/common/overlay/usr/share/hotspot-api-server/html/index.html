@@ -16,6 +16,10 @@
 	
 </head>
 <body>
+	<div class="preloader">
+		<div class="spinner-grow text-light"></div>
+		<span class="loader-text">Loading...</span>
+	  </div>
 	<!-- BEGIN #app -->
 	<div id="app" class="app">
 		<!-- BEGIN #header -->
@@ -207,6 +211,31 @@
                             <div class="menu-item">
 								<a href="#" class="menu-link unit-reboot">
 									<span class="menu-text">Reboot</span>
+								</a>
+							</div>
+						</div>
+					</div>
+					<div class="menu-item has-sub">
+						<a href="#" class="menu-link">
+							<span class="menu-icon"><i class="fa fa-file-alt"></i></span>
+							<span class="menu-text">Logs</span>
+							<span class="menu-caret"><b class="caret"></b></span>
+						</a>
+						<div class="menu-submenu">
+                            <div class="menu-item">
+								<a href="#" class="menu-link pktfwd-logs">
+									<span class="menu-text">Packet forwarder logs</span>
+                                    <i class="fas fa-spinner fa-spin pairing-spinner" style="display: none;"></i>
+								</a>
+							</div>
+                            <div class="menu-item">
+								<a href="#" class="menu-link miner-logs">
+									<span class="menu-text">Miner logs</span>
+								</a>
+							</div>
+                            <div class="menu-item">
+								<a href="#" class="menu-link sys-logs">
+									<span class="menu-text">System logs</span>
 								</a>
 							</div>
 						</div>

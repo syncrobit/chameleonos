@@ -75,7 +75,7 @@ $(document).ready(function(){
         $('.listen-addr').html((data.miner_listen_addr == null) ? 'N/A' : data.miner_listen_addr);
         $('.miner_height').html((data.miner_height == null) ? '0' : formatNumber(data.miner_height));
         $('.relayed').html((data.miner_listen_addr == null) ? 'N/A' : (/\/p2p/i.test(data.miner_listen_addr)) ? 'Yes' : 'No')
-        miner_height = data.miner_height;
+        miner_height = (data.miner_height === null) ? 0: data.miner_height;
       }).done(function(){
         $.get( "/stats", function( data ) {
           $('.chain-height').html(formatNumber(data.blockchain_height));
@@ -83,7 +83,7 @@ $(document).ready(function(){
           $('.monthly-earnings').html(data.rewards_30d + " HNT");
           $('.daily-earnings').html(data.rewards_1d + " HNT")
           $('.weekly-earnings').html(data.rewards_7d + " HNT");
-          $('.is-sync').html((miner_height < (data.blockchain_height - 250)) ? 'Out of Sync' : 'Synced');
+          $('.is-sync').html((miner_height < (data.blockchain_height.replace(/,/g, '') - 250)) ? 'Out of Sync' : 'Synced');
           $('.difference').html(calculateDifference(data.rewards_7d, data.last_week) + '%');
         })
       });

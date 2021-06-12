@@ -36,9 +36,9 @@ $(document).ready(function(){
 
     $('.modal-append').on('click', '.resync-now', function(){
         $.post( "/resync", function( data ) {});
-        $('.modal-append #reboot-modal .modal-body').html('<strong>Unit is resyncing!</strong><br>' + 
+        $('.modal-append #resync-modal .modal-body').html('<strong>Unit is resyncing!</strong><br>' + 
                                                           'Your unit is currently resyncing please allow up to 30 minutes for the unit to finish resyncing'  +
-                                                          'You can now close this window.'
+                                                          '<br>You can now close this window.'
                                                           );
         $(this).prop("disabled", true);
     });
@@ -380,7 +380,7 @@ $(document).ready(function(){
 
             $('.fab-reset').click(function(){
                 $.post( "/factory-reset", function( data ) {});
-                $('.modal-append #reboot-modal .modal-body')
+                $('.modal-append #fab-reset-modal .modal-body')
                 .html('<strong>Wiping Unit!</strong><br>' + 
                       'Unit will automatically reboot. If you are using wifi please use the app to re-configure wifi settings.');
             });
@@ -460,3 +460,7 @@ function formErrorDisplay(errorMap, errorList){
 	  $element.addClass("is-invalid");
   });
 }
+
+Pace.on("done", function(){
+    $('.preloader').fadeOut('slow');
+});
