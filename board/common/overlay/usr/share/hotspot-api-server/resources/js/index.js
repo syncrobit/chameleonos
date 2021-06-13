@@ -1,4 +1,5 @@
 $(document).ready(function(){
+  var miner_height;
     //Check if Password is default
     $.ajax({
       url: "/verify_password",
@@ -48,7 +49,6 @@ $(document).ready(function(){
     });
 
     //Quick Summary
-    var miner_height;
     $.get( "/summary?quick=true", function( data ) {
       $('.sb-serial').html("cham-" + data.serial_number);
       $('.fw-version').html(data.fw_version);
@@ -87,39 +87,64 @@ $(document).ready(function(){
           $('.difference').html(calculateDifference(data.rewards_7d, data.last_week) + '%');
         })
       });
+
     });
 
-
-
-      $('.refresh-summary').click(function(e){
-        e.preventDefault();
+    $('.refresh-summary').click(function(e){
+      e.preventDefault();
         
-        var button = $('.refresh-icon');
-        button.addClass('fa-spin');
-        $.get( "/summary", function( data ) {
-          $('.miner-name').html((data.hotspot_name == null) ? 'N/A' : data.hotspot_name);
-          $('.miner-region').html((data.region == null) ? 'N/A' : data.region);
-          $('.concentrator-model').html((data.concentrator_model == null) ? 'N/A' :data.concentrator_model);
-          $('.listen-addr').html((data.miner_listen_addr == null) ? 'N/A' : data.miner_listen_addr);
-          $('.current-time').html(moment.unix(data.time).utc().format('YYYY-MM-DD H:m:s') + " UTC");
-          button.removeClass('fa-spin');
-        });
+      var button = $('.refresh-icon');
+      button.addClass('fa-spin');
+      $.get( "/summary", function( data ) {
+        $('.miner-name').html((data.hotspot_name == null) ? 'N/A' : data.hotspot_name);
+        $('.miner-region').html((data.region == null) ? 'N/A' : data.region);
+        $('.concentrator-model').html((data.concentrator_model == null) ? 'N/A' :data.concentrator_model);
+        $('.listen-addr').html((data.miner_listen_addr == null) ? 'N/A' : data.miner_listen_addr);
+        $('.current-time').html(moment.unix(data.time).utc().format('YYYY-MM-DD H:m:s') + " UTC");
+        $('.relayed').html((data.miner_listen_addr == null) ? 'N/A' : (/\/p2p/i.test(data.miner_listen_addr)) ? 'Yes' : 'No')
+        button.removeClass('fa-spin');
       });
+    });
 
-      function convertime(time) {
-        var sec_num = parseInt(time, 10); // don't forget the second param
-        var days    = Math.floor(sec_num / 86400);
-        var hours   = Math.floor(sec_num / 3600);
-        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-        var seconds = sec_num - (hours * 3600) - (minutes * 60);
-        
-        if (days    < 10) {days    = "0"+days;}
-        if (hours   < 10) {hours   = "0"+hours;}
-        if (minutes < 10) {minutes = "0"+minutes;}
-        if (seconds < 10) {seconds = "0"+seconds;}
-        var time    = days+" days " +hours+':'+minutes+':'+seconds;
-        return time;
-      }
+    //Activity
+    function getActivity(){
+      $.get( "/activity", function( data ) {
+        if(data.length > 0){
+          $('#activity').html('<table class="table">' +
+                              '<thead class="thead-dark">' +
+                              '<tr>' +
+                              '<th scope="col">Block</th>' +
+                              '<th scope="col">Time</th>' +
+                              '<th scope="col">Type</th>' +
+                              '<th scope="col">Amount</th>' +
+                              '</tr>' +
+                              '</thead>' +
+                              '<tbody>');
+          $.each(data, function(index, element) {
+            $('#activity').append('<tr>' +
+                                  '<th scope="row">' + formatNumber(data.block) + '</th>' +
+                                  '<td>' + moment.unix(data.time).utc().format('YYYY-MM-DD H:m:s') + ' UTC</td>' +
+                                  '<td>' + data.type + '</td>' +
+                                  '<td>' + formatNumber(data.amount) + ' HNT</td>' +
+                                  '</tr>');               
+            });
+          
+          $('#activity').append('</tbody>' +
+                                '</table>');
+        }
+      });
+    }
+
+    getActivity();
+
+    $('.refresh-activity').click(function(e){
+      e.preventDefault();
+      $('.activity-icon').addClass('fa-spin');
+      setTimeout(function() {
+        $('.activity-icon').removeClass("fa-spin");
+      }, 800);
+      getActivity();
+    });
 });
 
 function formatBytes(bytes, decimals = 2) {
@@ -145,4 +170,19 @@ function calculateDifference(now, lastweek){
   var icon    = (now > lastweek) ? '<i class="fa fa-caret-up"></i>' : '<i class="fa fa-caret-down"></i>';
   
   return icon + '<b>' + percent + '</b>';
+}
+
+function convertime(time) {
+  var sec_num = parseInt(time, 10); // don't forget the second param
+  var days    = Math.floor(sec_num / 86400);
+  var hours   = Math.floor(sec_num / 3600);
+  var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+  var seconds = sec_num - (hours * 3600) - (minutes * 60);
+    
+  if (days    < 10) {days    = "0"+days;}
+  if (hours   < 10) {hours   = "0"+hours;}
+  if (minutes < 10) {minutes = "0"+minutes;}
+  if (seconds < 10) {seconds = "0"+seconds;}
+  var time    = days+" days " +hours+':'+minutes+':'+seconds;
+  return time;
 }

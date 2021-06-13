@@ -134,13 +134,8 @@ $(document).ready(function(){
         if(html !== undefined){
             $.get("/config", function( data ) {
                 $('.modal-append').html(html);
-               
-                if(data.led_ok_color != "off"){
-                    $('.modal-append').find('#powerSwitch').prop("checked", true);
-                }else{
-                    $('.modal-append').find('#powerSwitch').prop("checked", false);
-                }
-
+                $('.modal-append').find('#powerSwitch').prop("checked", (data.led_ok_color != "off") ? true : false);
+    
                 $('.modal-append').on("click", "#powerSwitch", function(){
                     $switch = $(this);
                     $.ajax({
@@ -283,7 +278,53 @@ $(document).ready(function(){
                     $('.modal').remove();
                 }); 
                 
-                
+                $('.modal-append').find('#network-settings-form').validate({
+                    rules: {
+                        inputNatExt: {
+                            digits: true
+                        },
+                        inputNatInt: {
+                            digits: true
+                        },
+                    },
+                    showErrors: formErrorDisplay,
+                    submitHandler: function (ev) {
+                      $('#network-settings-modal').modal('hide');
+                        $.ajax({
+                            type: 'PATCH',
+                            url: '/config',
+                            data: JSON.stringify({
+                                nat_external_ip: $('.modal-append').find('#inputPublicIP').val(),
+                                nat_external_port: $('.modal-append').find('#inputNatExt').val(),
+                                nat_internal_port: $('.modal-append').find('#inputNatInt').val()
+                            }),
+                            processData: false,
+                            contentType: 'application/merge-patch+json',
+                            complete: function(xhr, statusText){
+                                toastAppend('net-settings-not', 'Network settings succefully applied.');
+                            }
+                        }); 
+                    }
+                });
+
+                $('.restore-network-settings').click(function(e){
+                    e.preventDefault();
+                    $('#network-settings-modal').modal('hide');
+                    $.ajax({
+                        type: 'PATCH',
+                        url: '/config',
+                        data: JSON.stringify({
+                            nat_external_ip: null,
+                            nat_external_port: null,
+                            nat_internal_port: null
+                        }),
+                        processData: false,
+                        contentType: 'application/merge-patch+json',
+                        complete: function(xhr, statusText){
+                            toastAppend('net-settings-not', 'Network settings default values applied.');
+                        }
+                    }); 
+                });
             });
         }
     });
@@ -353,8 +394,6 @@ $(document).ready(function(){
           });
     });
 
-
-
     //Speed Test
     $('.modal-append').on("click", ".speed-test", function(){
         $('.modal-append').find('.speed-results').html('');
@@ -401,6 +440,40 @@ $(document).ready(function(){
                     $('.modal').remove();
                 });
             });
+        }
+    });
+
+    //Remote Support
+    $('.remote-support').click(function(e){
+        e.preventDefault();
+        var html = getModal('remote-support');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+            $.get( "/config", function( data ) {
+                $('.modal-append').find('#remoteSwitch').prop("checked", data.remote_enabled);
+                $('#remote-support-modal').modal('show').on('hidden.bs.modal', function () {
+                    $('.modal').remove();
+                });
+                $('.modal-append').on('click', '#remoteSwitch', function(){
+                    $switch = $(this);
+                    $.ajax({
+                        type: 'PATCH',
+                        url: '/config',
+                        data: JSON.stringify({
+                            remote_enabled: ($switch.is(':checked')) ? true : false
+                          
+                        }),
+                        processData: false,
+                        contentType: 'application/merge-patch+json',
+                        complete: function(xhr, statusText){
+                            toastAppend('rs-settings-not', 'Remote support changes applied.');
+                        }
+                     });
+
+                });
+            });
+            
+            
         }
     });
     
