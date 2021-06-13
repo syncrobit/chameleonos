@@ -163,7 +163,8 @@ async def get_config(request: web.Request) -> web.Response:
         'nat_internal_port': nat_config['internal_port'],
         'pf_antenna_gain': pf_config['antenna_gain'],
         'pf_rssi_offset': pf_config['rssi_offset'],
-        'pf_tx_power': pf_config['tx_power']
+        'pf_tx_power': pf_config['tx_power'],
+        'remote_enabled': remote.is_enabled()
     })
 
 
@@ -220,6 +221,9 @@ async def set_config(request: web.Request) -> web.Response:
 
         user.set_password(user.DEFAULT_USERNAME, config['password'])
         request._skip_auth = True
+
+    if 'remote_enabled' in config:
+        remote.set_enabled(config['remote_enabled'])
 
     if restart_miner:
         miner.restart()
@@ -308,20 +312,6 @@ async def get_log(request: web.Request) -> web.Response:
         raise web.HTTPNotFound()
 
     return web.Response(content_type='text/plain', body=content)
-
-
-@router.get('/remote_enabled')
-@handle_auth
-async def get_remote_enabled(request: web.Request) -> web.Response:
-    return web.json_response(remote.is_enabled())
-
-
-@router.patch('/remote_enabled')
-@handle_auth
-async def set_remote_enabled(request: web.Request) -> web.Response:
-    remote.set_enabled(bool(await request.json()))
-
-    return web.json_response(remote.is_enabled())
 
 
 @router.get(r'/{path:[a-zA-Z0-9_/-]+}')
