@@ -9,7 +9,7 @@ DEFAULT_PASSWORD = 'admin'
 
 
 def verify_credentials(username: str, password: str) -> bool:
-    if os.path.exists(CREDENTIALS_FILE):
+    if os.path.exists(CREDENTIALS_FILE) and os.path.getsize(CREDENTIALS_FILE) > 0:
         with open(CREDENTIALS_FILE, 'rt') as f:
             actual_username, actual_password = f.readline().strip().split(':', 1)
 
