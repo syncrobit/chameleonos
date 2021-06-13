@@ -18,6 +18,7 @@ import logs
 import miner
 import pf
 import pubkey
+import remote
 import sbapi
 import settings
 import system
@@ -307,6 +308,20 @@ async def get_log(request: web.Request) -> web.Response:
         raise web.HTTPNotFound()
 
     return web.Response(content_type='text/plain', body=content)
+
+
+@router.get('/remote_enabled')
+@handle_auth
+async def get_remote_enabled(request: web.Request) -> web.Response:
+    return web.json_response(remote.is_enabled())
+
+
+@router.patch('/remote_enabled')
+@handle_auth
+async def set_remote_enabled(request: web.Request) -> web.Response:
+    remote.set_enabled(bool(await request.json()))
+
+    return web.json_response(remote.is_enabled())
 
 
 @router.get(r'/{path:[a-zA-Z0-9_/-]+}')
