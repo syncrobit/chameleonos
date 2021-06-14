@@ -26,7 +26,7 @@ payload="{
     \"reported_by\":\"${service}\"
 }"
 
-curl --silent --show-error --locaton-trusted "${API_ENDPOINT_URL}" \
+curl --silent --show-error --location-trusted "${API_ENDPOINT_URL}" \
      -H "Content-Type: application/json" \
      -H "Authorization: ${AUTH_TOKEN}" \
      -X POST -d "${payload}" >/dev/null
