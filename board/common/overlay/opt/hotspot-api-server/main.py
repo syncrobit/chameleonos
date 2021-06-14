@@ -330,10 +330,41 @@ async def html_index(request: web.Request) -> web.FileResponse:
     return web.FileResponse(os.path.join(settings.HTML_PATH, 'index.html'))
 
 
+async def handle_404(request: web.Request) -> web.FileResponse:
+    return web.FileResponse(os.path.join(settings.HTML_PATH, '404.html'))
+
+
+def create_error_middleware(overrides):
+    @web.middleware
+    async def error_middleware(request, handler):
+        try:
+            return await handler(request)
+        except web.HTTPException as ex:
+            override = overrides.get(ex.status)
+            if override:
+                resp = await override(request)
+                resp.set_status(ex.status)
+                return resp
+
+            raise
+        except Exception:
+            resp = await overrides[500](request)
+            resp.set_status(500)
+            return resp
+
+    return error_middleware
+
+
 def make_app() -> web.Application:
     app = web.Application()
     app.add_routes(router)
     app.add_routes([web.static('/resources', settings.RESOURCES_PATH)])
+
+    error_middleware = create_error_middleware({
+        404: handle_404,
+    })
+
+    app.middlewares.append(error_middleware)
 
     return app
 
