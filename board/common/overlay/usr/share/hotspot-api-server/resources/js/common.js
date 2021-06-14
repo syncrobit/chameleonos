@@ -455,6 +455,7 @@ $(document).ready(function(){
                     $('.modal').remove();
                 });
                 $('.modal-append').on('click', '#remoteSwitch', function(){
+                    $('#remote-support-modal').modal('hide');
                     $switch = $(this);
                     $.ajax({
                         type: 'PATCH',
