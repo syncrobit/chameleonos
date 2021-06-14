@@ -128,6 +128,14 @@ sync_from_snapshot() {
     msg_done
 }
 
+sync_background() {
+    if ! sync_from_snapshot &>/var/log/miner_sync.log; then
+        rm -rf /var/lib/miner
+        panic_action miner "sync from snapshot failed"
+        return 1
+    fi
+}
+
 start() {
     # If we don't have enough storage space, remove miner data and do a resync
     free_mb=$(free_space)
@@ -251,11 +259,9 @@ start() {
     msg_done "connected"
 
     if [[ "${sync_needed}" == "true" ]]; then
-        if ! sync_from_snapshot; then
-            rm -rf /var/lib/miner
-            panic_action miner "sync from snapshot failed"
-            return 1
-        fi
+        msg_begin "Synchronizing miner data"
+        sync_background &>/dev/null &
+        msg_done "background"
     fi
 }
 

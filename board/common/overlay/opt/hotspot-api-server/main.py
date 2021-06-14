@@ -18,6 +18,7 @@ import logs
 import miner
 import pf
 import pubkey
+import remote
 import sbapi
 import settings
 import system
@@ -162,7 +163,8 @@ async def get_config(request: web.Request) -> web.Response:
         'nat_internal_port': nat_config['internal_port'],
         'pf_antenna_gain': pf_config['antenna_gain'],
         'pf_rssi_offset': pf_config['rssi_offset'],
-        'pf_tx_power': pf_config['tx_power']
+        'pf_tx_power': pf_config['tx_power'],
+        'remote_enabled': remote.is_enabled()
     })
 
 
@@ -219,6 +221,9 @@ async def set_config(request: web.Request) -> web.Response:
 
         user.set_password(user.DEFAULT_USERNAME, config['password'])
         request._skip_auth = True
+
+    if 'remote_enabled' in config:
+        remote.set_enabled(config['remote_enabled'])
 
     if restart_miner:
         miner.restart()

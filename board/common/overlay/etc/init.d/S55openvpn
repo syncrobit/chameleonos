@@ -53,6 +53,7 @@ start_openvpn() {
 
 stop_openvpn() {
     killall $(basename ${PROG}) &>/dev/null
+    ${PROG_ST} stop &>/dev/null  # Also stop the tunnel
 }
 
 watch() {

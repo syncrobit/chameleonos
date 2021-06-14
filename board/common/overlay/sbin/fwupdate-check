@@ -6,9 +6,13 @@ source /etc/init.d/base
 BASE_URL="https://fwd.syncrob.it"
 REG_CONF="/var/lib/reg.conf"
 MIN_UPTIME=3600
+#ACTIVE_CHECK_ENDPOINT_URL="https://api.%ssyncrob.it/activecheck/"  # Use if service can't do region redirection
+ACTIVE_CHECK_ENDPOINT_URL="https://api.syncrob.it/activecheck/"
+AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 
 test -s ${REG_CONF} && source ${REG_CONF}
 BASE_URL=$(printf "${BASE_URL}" "${REGION_PREFIX}")
+ACTIVE_CHECK_ENDPOINT_URL=$(printf "${ACTIVE_CHECK_ENDPOINT_URL}" "${REGION_PREFIX}")
 
 cmdline_args="$*"
 
@@ -32,6 +36,17 @@ fi
 
 if ps aux | grep '{fwupdate}' | grep -vq grep && ! arg_present "--force"; then
     echo "Firmware update process is already running"
+    exit
+fi
+
+address=$(cat /var/run/public_keys | grep -oE '[0-9a-zA-Z]{50,}' | head -n 1)
+curl --silent --show-error --location-trusted --fail "${ACTIVE_CHECK_ENDPOINT_URL}" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: ${AUTH_TOKEN}" \
+     -X POST -d "{\"rpi_sn\": \"${BOARD_SN}\", \"miner_address\": \"${address}\"}" > /dev/null
+
+if [[ $? != 0 ]]; then
+    echo "Skipping firmware update check for inactive unit"
     exit
 fi
 
