@@ -59,7 +59,7 @@ watch_prog() {
         fi
         free_mb=$(free_space)
         if [[ "${free_mb}" -lt ${min_free_space_watch} ]]; then
-            panic_action miner "low disk space"
+            panic_action miner "low disk space: ${free_mb} MB"
             break
         fi
     done
