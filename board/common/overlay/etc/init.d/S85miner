@@ -49,7 +49,7 @@ force_sync() {
 watch_prog() {
     # During normal running, we add an extra leeway when checking for free space,
     # to make sure the free space check at next reboot will fail and do a resync.
-    min_free_space_watch=$((${MIN_FREE_SPACE} + ${MIN_FREE_SPACE_LEEWAY})) # MB
+    min_free_space_watch=$((${MIN_FREE_SPACE} - ${MIN_FREE_SPACE_LEEWAY})) # MB
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
