@@ -76,6 +76,12 @@ watch_lag() {
             sleep ${WATCH_LAG_INTERVAL}
         fi
         
+        # Don't check lag during syncing
+        if ps aux | grep snapshot | grep -qv grep; then
+            sleep 3600
+            continue
+        fi
+
         lag=$(get_lag)
         test -n "${lag}" || continue
         if [[ ${lag} -le ${MAX_LAG} ]]; then
