@@ -164,7 +164,8 @@ async def get_config(request: web.Request) -> web.Response:
         'pf_antenna_gain': pf_config['antenna_gain'],
         'pf_rssi_offset': pf_config['rssi_offset'],
         'pf_tx_power': pf_config['tx_power'],
-        'remote_enabled': remote.is_enabled()
+        'remote_enabled': remote.is_enabled(),
+        'external_wifi_antenna': system.is_ext_wifi_antenna_enabled()
     })
 
 
@@ -172,8 +173,9 @@ async def get_config(request: web.Request) -> web.Response:
 @handle_auth
 async def set_config(request: web.Request) -> web.Response:
     config = await request.json()
-    restart_miner = False
-    restart_pf = False
+    needs_restart_miner = False
+    needs_restart_pf = False
+    needs_reboot = False
 
     cpu_freq_config = {}
     for field in ('max',):
@@ -200,7 +202,7 @@ async def set_config(request: web.Request) -> web.Response:
 
     if nat_config:
         miner.set_nat_config(nat_config)
-        restart_miner = True
+        needs_restart_miner = True
 
     pf_config = {}
     for field in ('antenna_gain', 'rssi_offset', 'tx_power'):
@@ -209,7 +211,7 @@ async def set_config(request: web.Request) -> web.Response:
 
     if pf_config:
         pf.set_config(pf_config)
-        restart_pf = True
+        needs_restart_pf = True
 
     if 'password' in config:
         old_password = config.get('old_password')
@@ -225,10 +227,19 @@ async def set_config(request: web.Request) -> web.Response:
     if 'remote_enabled' in config:
         remote.set_enabled(config['remote_enabled'])
 
-    if restart_miner:
-        miner.restart()
-    if restart_pf:
-        pf.restart()
+    if 'external_wifi_antenna' in config:
+        system.set_ext_wifi_antenna_enabled(config['external_wifi_antenna'])
+        needs_reboot = True
+
+    if needs_reboot:
+        loop = asyncio.get_event_loop()
+        loop.call_later(2, system.reboot)
+
+    else:
+        if needs_restart_miner:
+            miner.restart()
+        if needs_restart_pf:
+            pf.restart()
 
     return await get_config(request)
 

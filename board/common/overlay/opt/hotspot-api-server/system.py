@@ -14,6 +14,7 @@ UPTIME_CMD = 'cat /proc/uptime | grep -oE "^[[:digit:]]+"'
 REBOOT_CMD = '/sbin/reboot'
 NET_TEST_CMD = '/sbin/nettest'
 DATA_DIR = '/data'
+CONFIG_TXT = '/boot/config.txt'
 
 LOG_DIR = '/var/log'
 MINER_DATA_DIR = '/var/lib/miner'
@@ -28,6 +29,12 @@ FACTORY_RESET_CONNMAN_PATH_PREFIXES = [
     '/var/lib/connman/wifi_*',
     '/var/lib/connman/ethernet_*'
 ]
+
+
+def remount_boot(rw: bool) -> None:
+    how = ['ro', 'rw'][rw]
+    logging.debug('remounting boot %s', how)
+    subprocess.check_call(f'mount -o remount,{how} /boot', shell=True)
 
 
 def get_rpi_sn() -> str:
@@ -156,3 +163,44 @@ def net_test() -> Dict[str, Any]:
         result[key] = value
 
     return result
+
+
+def is_ext_wifi_antenna_enabled() -> bool:
+    with open(CONFIG_TXT, 'rt') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+
+            if line == 'dtparam=ant2':
+                return True
+
+    return False
+
+
+def set_ext_wifi_antenna_enabled(enabled: bool) -> None:
+    if is_ext_wifi_antenna_enabled() == enabled:
+        return  # We're already there
+
+    logging.debug('%s external Wi-Fi antenna', ['disabling', 'enabling'][enabled])
+
+    with open(CONFIG_TXT, 'rt') as f:
+        lines = f.readlines()
+
+    modified_lines = []
+    found = False
+    for line in lines:
+        if line.strip() == 'dtparam=ant2':
+            found = True
+            if not enabled:
+                continue
+
+        modified_lines.append(line)
+
+    if enabled and not found:
+        modified_lines.append('dtparam=ant2\n')
+
+    remount_boot(rw=True)
+    with open(CONFIG_TXT, 'wt') as f:
+        f.writelines(modified_lines)
+    remount_boot(rw=False)
