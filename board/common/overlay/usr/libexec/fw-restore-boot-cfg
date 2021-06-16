@@ -1,8 +1,0 @@
-#!/bin/bash
-
-OLD_BOOT=$1
-
-# Restore external antenna setting
-if cat ${OLD_BOOT}/config.txt | grep -E ^dtparam=ant2; then
-    echo "dtparam=ant2" >> /boot/config.txt
-fi
