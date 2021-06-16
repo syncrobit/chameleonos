@@ -122,10 +122,10 @@ $(document).ready(function(){
                               '<tbody>');
           $.each(data, function(index, element) {
             $('#activity').append('<tr>' +
-                                  '<th scope="row">' + formatNumber(data.block) + '</th>' +
-                                  '<td>' + moment.unix(data.time).utc().format('YYYY-MM-DD H:m:s') + ' UTC</td>' +
-                                  '<td>' + data.type + '</td>' +
-                                  '<td>' + formatNumber(data.amount) + ' HNT</td>' +
+                                  '<th scope="row">' + formatNumber(element.block) + '</th>' +
+                                  '<td>' + moment.unix(element.time).utc().format('YYYY-MM-DD H:m:s') + ' UTC</td>' +
+                                  '<td>' + element.type + '</td>' +
+                                  '<td>' + formatNumber(element.amount) + ' HNT</td>' +
                                   '</tr>');               
             });
           
