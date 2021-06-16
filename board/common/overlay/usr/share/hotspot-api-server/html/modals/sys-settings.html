@@ -14,16 +14,25 @@
             </div>
             <div class="form-group row">
               <label for="inputCPUFreq" class="col-sm-3 col-form-label">CPU Frequency</label>
-            <div class="col-sm-9">
-              <div class="input-group flex-nowrap">
-                <input type="number" class="form-control" id="inputCPUFreq" name="inputCPUFreq" placeholder="1500000" min="600000" max="1500000" step="100000" onKeyDown="return false">
-                <div class="input-group-append">
-                  <span class="input-group-text" style="width:55.53px">kHz</span>
+              <div class="col-sm-9">
+                <div class="input-group flex-nowrap">
+                  <input type="number" class="form-control" id="inputCPUFreq" name="inputCPUFreq" placeholder="1500000" min="600000" max="1500000" step="100000" onKeyDown="return false">
+                  <div class="input-group-append">
+                    <span class="input-group-text" style="width:55.53px">kHz</span>
+                  </div>
                 </div>
+                <small id="inputTxPower" class="form-text text-muted">
+                  Max Value 1500000kHz
+                </small>
               </div>
-              <small id="inputTxPower" class="form-text text-muted">
-                Max Value 1500000kHz
-              </small>
+            </div>
+            <div class="form-group row">
+              <label for="wifiSwitch" class="col-sm-4 col-form-label">External Wifi Antenna</label>
+            <div class="col-sm-8">
+              <div class="custom-control custom-switch" style="padding: 5px 0 5px 2.25rem;">
+                <input type="checkbox" class="custom-control-input" id="wifiSwitch">
+                <label class="custom-control-label" for="wifiSwitch"></label>
+              </div>
             </div>
             </div>
           </div>

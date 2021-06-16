@@ -214,11 +214,14 @@ $(document).ready(function(){
         if(html !== undefined){
             $.get("/config", function( data ) {
                 $('.modal-append').html(html);
+                var $switch = $('.modal-append').find('#wifiSwitch');
+                $switch.prop("checked", data.external_wifi_antenna);
+                
                 $('.modal-append').find('#inputCPUFreq').val(data.cpu_freq_max);
                 $('#sys-settings-modal').modal('show').on('hidden.bs.modal', function () {
                     $('.modal').remove();
                 });   
-
+                
                 $('.modal-append').find('#sys-settings-form').validate({
                     rules: {
                         inputCPUFreq: {
@@ -234,6 +237,7 @@ $(document).ready(function(){
                             url: '/config',
                             data: JSON.stringify({
                                 cpu_freq_max: $('.modal-append').find('#inputCPUFreq').val(),
+                                external_wifi_antenna: ($switch.is(':checked')) ? true : false
                             }),
                             processData: false,
                             contentType: 'application/merge-patch+json',
