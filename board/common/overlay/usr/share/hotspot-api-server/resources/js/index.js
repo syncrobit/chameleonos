@@ -109,7 +109,7 @@ $(document).ready(function(){
     //Activity
     function getActivity(){
       $.get( "/activity", function( data ) {
-        if(data.length > 0){
+        if(Object.keys(data).length > 0){
           $('#activity').html('<table class="table">' +
                               '<thead class="thead-dark">' +
                               '<tr>' +
