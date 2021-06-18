@@ -93,6 +93,9 @@ watch_lag() {
 }
 
 sync_from_snapshot() {
+    logger -t miner "synchronizing miner data"
+
+    echo "-------- $(date) --------"
     msg_begin "Synchronizing miner data"
     
     # Kill any existing sync session
