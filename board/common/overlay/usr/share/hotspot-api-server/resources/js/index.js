@@ -110,7 +110,7 @@ $(document).ready(function(){
     function getActivity(){
       $.get( "/activity", function( data ) {
         if(Object.keys(data).length > 0){
-          $('#activity').html('<table class="table">' +
+          $('#activity').html('<table class="table" id="activity_tbl">' +
                               '<thead class="thead-dark">' +
                               '<tr>' +
                               '<th scope="col">Block</th>' +
@@ -121,7 +121,7 @@ $(document).ready(function(){
                               '</thead>' +
                               '<tbody>');
           $.each(data, function(index, element) {
-            $('#activity').append('<tr>' +
+            $('#activity').find("#activity_tbl tbody").append('<tr>' +
                                   '<th scope="row">' + formatNumber(element.block) + '</th>' +
                                   '<td>' + moment.unix(element.time).utc().format('YYYY-MM-DD H:m:s') + ' UTC</td>' +
                                   '<td>' + element.type + '</td>' +
