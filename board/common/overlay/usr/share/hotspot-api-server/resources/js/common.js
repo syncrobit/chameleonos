@@ -72,15 +72,17 @@ $(document).ready(function(){
                     rules: {
                       inputAntennaGain: {
                         required: true,
-                        digits: true
+                        number: true
                       },
                       inputRssiOffset: {
                         required: true,
-                        digits: true
+                        number: true
                       },
                       inputTxPower:{
                         required: true, 
-                        digits: true   
+                        digits: true, 
+                        min: 12,
+                        max: 27  
                       }
                     },
                     showErrors: formErrorDisplay,
