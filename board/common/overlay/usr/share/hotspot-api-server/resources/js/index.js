@@ -110,29 +110,25 @@ $(document).ready(function(){
     function getActivity(){
       $.get( "/activity", function( data ) {
         if(Object.keys(data).length > 0){
-          var activity_table = '<table class="table" id="activity_tbl">' +
-                               '<thead class="thead-dark">' +
-                               '<tr>' +
-                               '<th scope="col">Block</th>' +
-                               '<th scope="col">Time</th>' +
-                               '<th scope="col">Type</th>' +
-                               '<th scope="col">Amount</th>' +
-                               '</tr>' +
-                               '</thead>' +
-                               '<tbody>';
-          
+          $('#activity').html('<table class="table" id="activity_tbl">' +
+                              '<thead class="thead-dark">' +
+                              '<tr>' +
+                              '<th scope="col">Block</th>' +
+                              '<th scope="col">Time</th>' +
+                              '<th scope="col">Type</th>' +
+                              '<th scope="col">Amount</th>' +
+                              '</tr>' +
+                              '</thead>' +
+                              '<tbody></tbody>' +
+                              '</table>');
           $.each(data, function(index, element) {
-            activity_table += '<tr>' +
-                              '<th scope="row">' + formatNumber(element.block) + '</th>' +
-                              '<td>' + moment.unix(element.time).utc().format('YYYY-MM-DD H:m:s') + ' UTC</td>' +
-                              '<td>' + element.type + '</td>' +
-                              '<td>' + formatNumber(element.amount) + ' HNT</td>' +
-                              '</tr>';               
+            $('#activity').find("#activity_tbl tbody").append('<tr>' +
+                                  '<th scope="row">' + formatNumber(element.block) + '</th>' +
+                                  '<td>' + moment.unix(element.time).utc().format('YYYY-MM-DD H:m:s') + ' UTC</td>' +
+                                  '<td>' + element.type + '</td>' +
+                                  '<td>' + formatNumber(element.amount) + ' HNT</td>' +
+                                  '</tr>');               
             });
-            activity_table += '</tbody>' +
-                              '</table>';
-
-            $('#activity').html(activity_table);
         }
       });
     }
