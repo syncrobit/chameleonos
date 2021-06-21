@@ -192,6 +192,8 @@ start() {
         # Adjust dirs
         sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
         sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
+        # Disable S3 snapshot loading
+        sed -ri 's;snapshots.helium.wtf;snapshots.helium.stf;' ${RELX_CONFIG_PATH}
         
         # If user swarm key is present, configure miner to use it instead of ECC
         if [[ -s ${USER_SWARM_KEY} ]]; then
