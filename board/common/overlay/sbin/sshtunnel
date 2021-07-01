@@ -13,7 +13,7 @@ PID_FILE=/var/run/ssh_reverse_tunnel.pid
 
 function ssh_reverse_tunnel() {
     while true; do
-        ssh -N -R${TUNNEL_PORT}:127.0.0.1:22 -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_SERVER} -p${SSH_PORT}
+        ssh -N -R${TUNNEL_PORT}:127.0.0.1:2304 -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_SERVER} -p${SSH_PORT}
         sleep 30
     done
 }
