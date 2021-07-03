@@ -139,7 +139,7 @@ sync_from_snapshot() {
 }
 
 sync_background() {
-    if ! sync_from_snapshot &>/var/log/miner_sync.log; then
+    if ! sync_from_snapshot &>>/var/log/miner_sync.log; then
         rm -rf /var/lib/miner
         panic_action miner "sync from snapshot failed"
         return 1
