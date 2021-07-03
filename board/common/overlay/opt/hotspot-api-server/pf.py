@@ -10,7 +10,7 @@ import miner
 
 
 PF_RESTART_CMD = 'service packetforwarder restart'
-PF_CONCENTRATOR_MODEL_CMD = 'ps aux | grep /opt/packet_forwarder/bin/lora_pkt_fwd_ | grep -v grep'
+PF_CONCENTRATOR_MODEL_CMD = 'ps aux | grep /lora_pkt_fwd_ | grep -v grep'
 CONF_FILE = '/data/etc/packet_forwarder.conf'
 SYS_CONF_FILE = '/etc/packet_forwarder.conf'
 PF_STARTUP_SCRIPT = '/etc/init.d/S86packetforwarder'

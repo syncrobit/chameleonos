@@ -1,3 +1,13 @@
 #!/bin/bash
 
-curl -s http://localhost/summary?pretty=true | jq -r 'to_entries[] | (.key + ": " + (.value|tostring))' | sed 's/: /|/' | column -t -s '|'
+CREDENTIALS_FILE=/var/lib/api_credentials
+DEF_CREDENTIALS="admin:admin"
+
+function print_data() {
+    credentials=${DEF_CREDENTIALS}
+    test -s ${CREDENTIALS_FILE} && credentials=$(cat ${CREDENTIALS_FILE})
+    curl -u "${credentials}" -s http://localhost/summary?pretty=true | jq -r 'to_entries[] | (.key + ": " + (.value|tostring))' | sed 's/: /|/'
+    curl -u "${credentials}" -s http://localhost/config?pretty=true  | jq -r 'to_entries[] | (.key + ": " + (.value|tostring))' | sed 's/: /|/'
+}
+
+print_data | column -t -s '|'

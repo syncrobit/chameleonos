@@ -154,7 +154,8 @@ async def get_config(request: web.Request) -> web.Response:
     led_strip_config = ledstrip.get_config()
     nat_config = miner.get_nat_config()
     pf_config = pf.get_config()
-    return web.json_response({
+
+    config = {
         'cpu_freq_max': cpu_freq_config['max'],
         'led_brightness': led_strip_config['brightness'],
         'led_ok_color': led_strip_config['ok_color'],
@@ -166,7 +167,22 @@ async def get_config(request: web.Request) -> web.Response:
         'pf_tx_power': pf_config['tx_power'],
         'remote_enabled': remote.is_enabled(),
         'external_wifi_antenna': system.is_ext_wifi_antenna_enabled()
-    })
+    }
+
+    if request.query.get('pretty') == 'true':
+        config['CPU Max Frequency'] = f"{int(config.pop('cpu_freq_max') / 1000)} MHz"
+        config['LED Brightness'] = f"{config.pop('led_brightness')} %"
+        config['LED OK Color'] = config.pop('led_ok_color')
+        config['NAT External IP:Port'] = \
+            f"{config.pop('nat_external_ip') or ''}:{config.pop('nat_external_port') or ''}"
+        config['NAT Internal Port'] = str(config.pop('nat_internal_port') or '')
+        config['Antenna Gain'] = f"{config.pop('pf_antenna_gain')} dBi"
+        config['RSSI Offset'] = f"{config.pop('pf_rssi_offset')} dB"
+        config['TX Power'] = f"{config.pop('pf_tx_power')} dBm"
+        config['Remote Control Enabled'] = ['no', 'yes'][config.pop('remote_enabled')]
+        config['External Wi-Fi Antenna'] = ['no', 'yes'][config.pop('external_wifi_antenna')]
+
+    return web.json_response(config)
 
 
 @router.patch('/config')
