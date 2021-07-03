@@ -85,6 +85,7 @@ watch_lag() {
         lag=$(get_lag)
         test -n "${lag}" || continue
         if [[ ${lag} -le ${MAX_LAG} ]]; then
+            logger -t miner "lag is ${lag}"
             continue
         fi
         force_sync
