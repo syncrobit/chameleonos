@@ -8,11 +8,7 @@ LOG="/var/log/openvpn.log"
 PROG="/usr/sbin/openvpn"
 PROG_ST="/sbin/sshtunnel"
 
-WATCH_CONF="/data/etc/watch.conf"
-
-LINK_WATCH=true
-NETWATCH_RETRIES=3
-NETWATCH_INTERVAL=20
+WATCH_CONF="/etc/watch.conf"
 
 REG_CONF="/var/lib/reg.conf"
 VPNPASSWD_SCRIPT="/etc/init.d/S54vpnpasswd"
@@ -28,7 +24,8 @@ test -s ${REG_CONF} && source ${REG_CONF}
 rm -rf ${CONF}  # Ignore any existing user config
 prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
 
-test -s ${WATCH_CONF} && source ${WATCH_CONF}
+source ${WATCH_CONF}
+
 test -d ${CONF} || exit 0
 test -s /var/run/vpnpasswd || exit 0
 
