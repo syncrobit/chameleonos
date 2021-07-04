@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /etc/init.d/panic
+
 CREDENTIALS_FILE=/var/lib/api_credentials
 DEF_CREDENTIALS="admin:admin"
 
@@ -8,6 +10,12 @@ function print_data() {
     test -s ${CREDENTIALS_FILE} && credentials=$(cat ${CREDENTIALS_FILE})
     curl -u "${credentials}" -s http://localhost/summary?pretty=true | jq -r 'to_entries[] | (.key + ": " + (.value|tostring))' | sed 's/: /|/'
     curl -u "${credentials}" -s http://localhost/config?pretty=true  | jq -r 'to_entries[] | (.key + ": " + (.value|tostring))' | sed 's/: /|/'
+    if [[ -s ${PANIC_DETAILS_FILE} ]]; then
+        source ${PANIC_DETAILS_FILE}
+        echo "Last Panic|${service}: ${message}"
+    else
+        echo "Last Panic"
+    fi
 }
 
 print_data | column -t -s '|'
