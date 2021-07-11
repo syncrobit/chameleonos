@@ -12,6 +12,7 @@ from typing import Awaitable, Callable
 from aiohttp import web
 
 import cpufreq
+import fwupdate
 import gatewayconfig
 import ledstrip
 import logs
@@ -302,6 +303,26 @@ async def pair(request: web.Request) -> web.Response:
 async def resync(request: web.Request) -> web.Response:
     loop = asyncio.get_event_loop()
     loop.call_later(2, miner.resync)
+
+    return web.Response(status=204)
+
+
+@router.get('/fwupdate')
+@handle_auth
+async def get_fwupdate(request: web.Request) -> web.Response:
+    fwupdate_info = fwupdate.get_latest()
+    fwupdate_info['status'] = fwupdate.get_status()
+    return web.json_response(fwupdate_info)
+
+
+@router.patch('/fwupdate')
+@handle_auth
+async def patch_fwupdate(request: web.Request) -> web.Response:
+    fwupdate_info = fwupdate.get_latest()
+    if fwupdate_info['current'] == fwupdate_info['latest']:
+        return web.json_response({'message': 'already running latest version'}, status=400)
+
+    fwupdate.start_upgrade()
 
     return web.Response(status=204)
 
