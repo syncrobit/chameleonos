@@ -60,7 +60,19 @@ function prepare_payload() {
     echo "${payload}"
 }
 
-test -f /var/run/hotspot_name || exit 0  # Miner not started yet
+echo "---- $(date) ----"
+if ! [[ -f /var/run/hotspot_name ]]; then
+    echo "miner not started yet"
+    exit 0
+fi
 
+if ps aux | grep '{send-sys-info}' | grep -v $$ | grep -vq grep; then
+    echo "another instance already running"
+    exit 0
+fi
+
+echo "preparing payload"
 payload=$(prepare_payload)
+echo "sending MQTT message"
 mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${MQTT_TOPIC} -m "${payload}" -i ${BOARD_SN}
+echo "done"
