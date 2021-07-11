@@ -13,7 +13,10 @@ UPGRADE_START_TIMEOUT = 10  # seconds
 
 
 def get_status() -> str:
-    return subprocess.check_output(STATUS_CMD, shell=True).decode().strip()
+    status = subprocess.check_output(STATUS_CMD, shell=True).decode().strip()
+    status = status.replace('[custom]', '').strip()
+
+    return status
 
 
 def get_latest() -> Dict[str, Any]:
