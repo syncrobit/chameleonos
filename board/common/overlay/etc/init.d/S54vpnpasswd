@@ -20,7 +20,7 @@ start() {
         return
     fi
     
-    echo "cham-${BOARD_SN}" > ${VPNPASSWD_FILE}
+    echo "${OS_PREFIX}-${BOARD_SN}" > ${VPNPASSWD_FILE}
     ${MKVPNPASSWD} ${USER_SWARM_KEY} 2>/var/log/mkvpnpasswd.log >> ${VPNPASSWD_FILE}
 
     if [[ $? == 0 ]]; then

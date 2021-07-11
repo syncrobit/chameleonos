@@ -4,7 +4,7 @@
 source /etc/init.d/base
 source /etc/mqtt-send.conf
 
-MQTT_TOPIC="units/chameleon/${BOARD_SN}/sys_info"
+MQTT_TOPIC="units/${OS_PREFIX}/${BOARD_SN}/sys_info"
 
 
 function prepare_payload() {

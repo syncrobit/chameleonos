@@ -33,7 +33,7 @@ function get_latest_info() {
         latest_file="latest_stable.json"
     fi
 
-    latest_url="${BASE_URL}/cham/${latest_file}"
+    latest_url="${BASE_URL}/${OS_PREFIX}/${latest_file}"
     latest=$(curl --fail -sSL ${latest_url})
     latest=$(jq -r '.path,.version,.date' <<<"${latest}")
     latest=(${latest})

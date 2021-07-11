@@ -4,7 +4,7 @@
 source /etc/init.d/base
 source /etc/mqtt-send.conf
 
-MQTT_TOPIC_TEMPLATE="units/chameleon/${BOARD_SN}/logs/%s"
+MQTT_TOPIC_TEMPLATE="units/${OS_PREFIX}/${BOARD_SN}/logs/%s"
 SEND_LOGS_ACTIVE="/var/run/send_logs_active"
 
 
