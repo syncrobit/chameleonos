@@ -41,7 +41,7 @@ function prepare_payload() {
         \"storage_total\":${storage_info[0]},
         \"temperature\":${temperature},
         \"miner_height\":${miner_height},
-        \"miner_listen_addr\":\"${miner_listen_addr}\",
+        \"miner_listen_address\":\"${miner_listen_addr}\",
         \"hotspot_name\":\"${hotspot_name}\",
         \"concentrator_model\":\"${concentrator_model}\"
         \"region\":\"${REGION}\",
