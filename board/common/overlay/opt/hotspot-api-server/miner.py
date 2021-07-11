@@ -102,6 +102,8 @@ def set_nat_config(nat: Dict[str, Any]) -> None:
             if v is None:
                 continue
 
+            if isinstance(v, str):  # Strip spaces, preventing some cases of invalid IP addresses
+                v = v.strip()
             k = f'NAT_{k.upper()}'
             line = f'{k}={v}\n'
             f.write(line)
