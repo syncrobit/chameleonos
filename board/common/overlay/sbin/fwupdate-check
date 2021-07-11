@@ -26,8 +26,42 @@ function arg_present() {
     return 1
 }
 
+function get_latest_info() {
+    if [[ "${OS_PRERELEASES}" == "true" ]]; then
+        latest_file="latest.json"
+    else
+        latest_file="latest_stable.json"
+    fi
+
+    latest_url="${BASE_URL}/cham/${latest_file}"
+    latest=$(curl --fail -sSL ${latest_url})
+    latest=$(jq -r '.path,.version,.date' <<<"${latest}")
+    latest=(${latest})
+    latest_path=${latest[0]}
+    latest_version=${latest[1]}
+    firmware_url="${BASE_URL}${latest_path}"
+
+    if [[ -z "${latest_version}" ]]; then
+        echo "Error getting the latest version"
+        exit 1
+    fi
+}
+
 
 echo "---- $(date) ----"
+
+if arg_present "--info"; then
+    get_latest_info
+    echo "Current: ${OS_VERSION}"
+    echo "Latest: ${latest_version}"
+    echo "URL: ${firmware_url}"
+    if [[ "${OS_PRERELEASES}" == "true" ]]; then
+        echo "Beta: true"
+    else
+        echo "Beta: false"
+    fi
+    exit 0
+fi
 
 if [[ "${OS_DEBUG}" == "true" ]] && ! arg_present "--force"; then
     echo "Skipping firmware update check in debug mode"
@@ -56,30 +90,13 @@ if [[ ${uptime_seconds} -lt ${MIN_UPTIME} ]] && ! arg_present "--force"; then
     exit
 fi
 
-if [[ "${OS_PRERELEASES}" == "true" ]]; then
-    latest_file="latest.json"
-else
-    latest_file="latest_stable.json"
-fi
-
-latest_url="${BASE_URL}/cham/${latest_file}"
-latest=$(curl --fail -sSL ${latest_url})
-latest=$(jq -r '.path,.version,.date' <<<"${latest}")
-latest=(${latest})
-latest_path=${latest[0]}
-latest_version=${latest[1]}
-
-if [[ -z "${latest_version}" ]]; then
-    echo "Error getting the latest version"
-    exit
-fi
+get_latest_info
 
 if [[ "${OS_VERSION}" == "${latest_version}" ]]; then
     echo "Already running latest version (${latest_version})"
-    exit
+    exit 0
 fi
 
-firmware_url="${BASE_URL}${latest_path}"
 panic_inhibit
 echo "Updating from ${OS_VERSION} to ${latest_version} using ${firmware_url}"
 fwupdate upgrade "${firmware_url}"
