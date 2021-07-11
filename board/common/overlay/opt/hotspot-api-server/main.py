@@ -26,7 +26,7 @@ import system
 import user
 
 
-AUTH_REALM_PREFIX = 'SyncroB.it Chameleon'
+AUTH_REALM_PREFIX = 'Helium Hotspot'
 
 router = web.RouteTableDef()
 

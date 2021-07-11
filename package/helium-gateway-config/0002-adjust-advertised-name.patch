@@ -6,4 +6,4 @@ diff -uNr gateway-config-2021.01.22.0/src/gateway_ble_advertisement.erl gateway-
  local_name(_) ->
      Serial = gateway_config:serial_number(),
 -    "Helium Hotspot " ++ lists:nthtail(length(Serial) - 4, Serial).
-+    "SyncroB.it " ++ lists:nthtail(length(Serial) - 8, Serial).
++    "Hotspot " ++ lists:nthtail(length(Serial) - 8, Serial).
