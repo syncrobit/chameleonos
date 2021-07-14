@@ -1,0 +1,75 @@
+#!/bin/bash
+
+WORK_DIR="/opt/gateway_mfr"
+PROG="bin/gateway_mfr"
+LOG="/var/log/gateway_mfr/startup.log"
+SYS_CONF="/opt/gateway_mfr/releases/0.1.0/sys.config"
+HARDWARE_CONF="/var/run/hardware.conf"
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+source ${HARDWARE_CONF}
+
+
+start() {
+    msg_begin "Starting gateway-mfr"
+    
+    if ! [[ -e /dev/i2c-1 ]]; then
+        msg_fail "no I2C device"
+        return 1
+    fi
+
+    # Prepare config file
+    cp ${SYS_CONF} ${RELX_CONFIG_PATH}
+    sed -ri "s/ecc_key_slot, [[:digit:]]/ecc_key_slot, ${ECC_SLOT}/" ${RELX_CONFIG_PATH}
+    sed -ri "s/ecc_address, 16#[[:digit:]]+/ecc_address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
+
+    ${PROG} foreground &>> ${LOG} &
+    msg_done
+}
+
+stop() {
+    msg_begin "Stopping gateway-mfr"
+    
+    base_prog=$(basename ${PROG})
+    if killall -q ${base_prog}; then
+        # Allow 2 seconds for a gracefulish shutdown
+        sleep 2
+        msg_done
+    else
+        msg_fail
+    fi
+    
+    # Kill any remainings with SIGKILL
+    ps | grep -E 'gateway.?mfr' | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
+}
+
+export RUNNER_LOG_DIR="/var/log/gateway_mfr"
+export ERL_CRASH_DUMP="/var/log/gateway_mfr"
+export ERL_EPMD_ADDRESS="127.0.0.1"
+export HOME="/var/run"
+export RELX_CONFIG_PATH="/var/run/gateway_mfr_sys.config"
+mkdir -p $(dirname ${LOG})
+cd ${WORK_DIR}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    restart)
+        stop
+        start
+        ;;
+
+    *)
+        ${PROG} "$@"
+        exit 1
+esac
+
+exit $?
