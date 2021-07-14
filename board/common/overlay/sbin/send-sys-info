@@ -43,7 +43,7 @@ function prepare_payload() {
         \"miner_height\":${miner_height},
         \"miner_listen_address\":\"${miner_listen_addr}\",
         \"hotspot_name\":\"${hotspot_name}\",
-        \"concentrator_model\":\"${concentrator_model}\"
+        \"concentrator_model\":\"${concentrator_model}\",
         \"region\":\"${REGION}\",
         \"fw_version\":\"${OS_VERSION}\",
         \"ecc_sn\":\"${ecc_sn}\",
