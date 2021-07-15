@@ -17,10 +17,10 @@ function prepare_payload() {
         miner_height="null"
         miner_listen_addr=""
     else
-        miner_height=$(/opt/miner/bin/miner info height | tr '\t' ' ' | tr -s ' ' | cut -d ' ' -f 2)
+        miner_height=$(/opt/miner/bin/miner info height | tr '\t' ' ' | tr -s ' ' | cut -d ' ' -f 2 | grep -E '[[:digit:]]+')
         miner_listen_addr=$(/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d '|')
     fi
-    test $? == 0 || miner_height="null"
+    test -n "${miner_height}" || miner_height="null"
     uptime=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
     test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
     test -r /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address)
