@@ -14,7 +14,7 @@ CONF="/data/etc/packet_forwarder.conf"
 LOG="/var/log/packet_forwarder.log"
 LIB_DIR="/opt/packet_forwarder/lib"
 
-REG_TIMEOUT=3600
+REG_TIMEOUT=7200
 REG_CONF="/var/lib/reg.conf"
 DEF_REG="US915"
 MINER_READY_FILE="/var/run/miner_ready"
