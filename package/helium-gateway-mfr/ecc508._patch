@@ -1,0 +1,24 @@
+diff -uNr ecc508-old-orig/src/ecc508.erl ecc508-old-patched/src/ecc508.erl
+--- ecc508-old-orig/src/ecc508.erl	2019-07-29 21:50:14.000000000 +0300
++++ ecc508-old-patched/src/ecc508.erl	2021-05-15 23:51:13.348732882 +0300
+@@ -3,7 +3,7 @@
+ -include_lib("public_key/include/public_key.hrl").
+ 
+ %% API exports
+--export([start_link/0, stop/1,
++-export([start_link/0, start_link/2, stop/1,
+          wake/1, idle/1, sleep/1, reset/1,
+          serial_num/1,
+          lock/2, lock/3,
+@@ -59,6 +59,11 @@
+ start_link() ->
+     i2c:start_link("i2c-1", 16#60, ?CMDGRP_COUNT_MAX).
+ 
++%% @doc Start and link the ecc process with a given devname i2c bus, a
++%% given address and the default max count.
++start_link(DevName, Address) ->
++    i2c:start_link(DevName, Address, ?CMDGRP_COUNT_MAX).
++
+ %% @doc Stops the given ecc process.
+ stop(Pid) ->
+     i2c:stop(Pid).

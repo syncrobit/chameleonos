@@ -1,0 +1,69 @@
+diff -uNr gateway_mfr-orig/config/sys.config gateway_mfr-patched/config/sys.config
+--- gateway_mfr-orig/config/sys.config	2021-01-22 21:53:18.000000000 +0200
++++ gateway_mfr-patched/config/sys.config	2021-05-16 01:17:58.033147549 +0300
+@@ -15,5 +15,6 @@
+                       {lager_file_backend, [{file, "console.log"}, {level, info}]},
+                       {lager_file_backend, [{file, "error.log"}, {level, error}]}
+                      ]}
+-         ]}
++         ]},
++ {gateway_mfr, [{ecc_key_slot, 0}, {ecc_bus, "i2c-1"}, {ecc_address, 16#60}]}
+ ].
+diff -uNr gateway_mfr-orig/src/gateway_mfr_worker.erl gateway_mfr-patched/src/gateway_mfr_worker.erl
+--- gateway_mfr-orig/src/gateway_mfr_worker.erl	2021-01-22 21:53:18.000000000 +0200
++++ gateway_mfr-patched/src/gateway_mfr_worker.erl	2021-05-16 01:31:23.036308286 +0300
+@@ -44,7 +44,9 @@
+ 
+ 
+ init(_) ->
+-    {ok, ECCHandle} = ecc508:start_link(),
++    Bus = application:get_env(gateway_mfr, ecc_bus, "i2c-1"),
++    Address = application:get_env(gateway_mfr, ecc_address, 16#60),
++    {ok, ECCHandle} = ecc508:start_link(Bus, Address),
+     {ok, #state{ecc_handle=ECCHandle}}.
+ 
+ 
+@@ -122,11 +124,12 @@
+ 
+ -spec handle_provision_miner_key(#state{}) -> ok | {error, term()}.
+ handle_provision_miner_key(State=#state{ecc_handle=Pid}) ->
++    KeySlot = application:get_env(gateway_mfr, ecc_key_slot, ?KEY_SLOT),
+     Tests = run_tests([{zone_locked, config},
+                        {zone_locked, data},
+                        slot_config,
+                        key_config,
+-                       {slot_unlocked, ?KEY_SLOT}
++                       {slot_unlocked, KeySlot}
+                       ], State),
+     case lists:filter(fun({_, ok}) ->
+                               false;
+@@ -138,7 +141,7 @@
+             ecc508:wake(Pid),
+             %% Generate KEY slot. We currently do not lock the slot which 
+             %% may allow key regeneration at some point
+-            ok = gen_compact_key(Pid, ?KEY_SLOT),
++            ok = gen_compact_key(Pid, KeySlot),
+             ecc508:idle(Pid),
+             ok;
+         Failures ->
+@@ -147,8 +150,9 @@
+ 
+ -spec handle_miner_key(#state{}) -> {ok, string()} | {error, term()}.
+ handle_miner_key(#state{ecc_handle=Pid}) ->
++    KeySlot = application:get_env(gateway_mfr, ecc_key_slot, ?KEY_SLOT),
+     ecc508:wake(Pid),
+-    case ecc508:genkey(Pid, public, ?KEY_SLOT) of
++    case ecc508:genkey(Pid, public, KeySlot) of
+         {error, Error} ->
+             {error, Error};
+         {ok, PubKey} ->
+@@ -272,7 +276,8 @@
+ 
+ -spec check_miner_key(pid()) -> ok | {error, term()}.
+ check_miner_key(Pid) ->
+-    case ecc508:genkey(Pid, public, ?KEY_SLOT) of
++    KeySlot = application:get_env(gateway_mfr, ecc_key_slot, ?KEY_SLOT),
++    case ecc508:genkey(Pid, public, KeySlot) of
+         {ok, PubKey} ->
+             case ecc_compact:is_compact(PubKey) of
+                 {true, _} -> ok;
