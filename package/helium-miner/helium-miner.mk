@@ -30,7 +30,6 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
     )
 
     patch -d $(@D)/_build/default/lib/erasure -p1 < package/helium-miner/erlang-erasure._patch
-    patch -d $(@D)/_build/default/lib/erlang_pbc -p1 < package/helium-miner/erlang-pbc._patch
     patch -d $(@D)/_build/default/lib/procket -p1 < package/helium-miner/procket._patch
 endef
             
