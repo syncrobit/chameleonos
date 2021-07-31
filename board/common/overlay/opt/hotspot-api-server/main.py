@@ -78,6 +78,10 @@ async def get_summary(request: web.Request) -> web.Response:
     storage_used, storage_total = system.get_storage_info()
 
     quick = request.query.get('quick') == 'true'
+    miner_listen_addr = miner.get_listen_addr() if not quick else None
+    miner_listen_ok = None
+    if miner_listen_addr:
+        miner_listen_ok = await sbapi.test_listen_addr(miner_listen_addr)
 
     summary = {
         'serial_number': system.get_rpi_sn(),
@@ -88,7 +92,8 @@ async def get_summary(request: web.Request) -> web.Response:
         'storage_total': storage_total,
         'temperature': system.get_temperature(),
         'miner_height': miner.get_height() if not quick else None,
-        'miner_listen_addr': miner.get_listen_addr() if not quick else None,
+        'miner_listen_addr': miner_listen_addr,
+        'miner_listen_ok': miner_listen_ok,
         'hotspot_name': pubkey.get_name(),
         'concentrator_model': pf.get_concentrator_model() if not quick else None,
         'region': miner.get_region() if not quick else None,
@@ -114,6 +119,7 @@ async def get_summary(request: web.Request) -> web.Response:
         summary['Temperature'] = f"{summary.pop('temperature')} C"
         summary['Miner Height'] = f"{summary.pop('miner_height')}/{blockchain_height} (lag is {lag})"
         summary['Miner Listen Address'] = summary.pop('miner_listen_addr')
+        summary['Miner Listen OK'] = summary.pop('miner_listen_ok')
         summary['Hotspot Name'] = summary.pop('hotspot_name')
         summary['Concentrator Model'] = summary.pop('concentrator_model')
         summary['Region'] = summary.pop('region')

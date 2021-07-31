@@ -1,15 +1,17 @@
 
 import aiohttp.hdrs
 import json
+import re
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 BASE_URL = 'https://api.syncrob.it'
 AUTH_TOKEN = '3F4ECC8F2C95134BCA7281C83B879'
+LISTEN_ADDR_IPV4_RE = re.compile(r'^/ip4/([0-9.]{7,15})/tcp/(\d+)$')
 
 
-async def api_request(method: str, path: str, body: Any = None) -> Any:
+async def api_request(method: str, path: str, body: Any = None, timeout=None) -> Any:
     url = f'{BASE_URL}{path}/'
     headers = {
         'Authorization': AUTH_TOKEN
@@ -22,7 +24,7 @@ async def api_request(method: str, path: str, body: Any = None) -> Any:
     auth_header_name = aiohttp.hdrs.AUTHORIZATION
     aiohttp.hdrs.AUTHORIZATION = 'workaround_for_redirect'
     try:
-        async with aiohttp.ClientSession(headers=headers) as client:
+        async with aiohttp.ClientSession(headers=headers, timeout=timeout) as client:
             async with client.request(method=method, url=url, json=body) as response:
                 return json.loads(await response.text())
 
@@ -41,3 +43,21 @@ async def get_stats(address: str) -> Dict[str, Any]:
 
 async def get_activity(address: str) -> Dict[str, Any]:
     return await api_request('POST', '/activity', body={'gw_addr': address})
+
+
+async def test_listen_addr(listen_addr: str) -> Optional[bool]:
+    m = LISTEN_ADDR_IPV4_RE.match(listen_addr)
+    if not m:
+        return
+
+    ip, port = m.groups()
+    port = int(port)
+    body = {
+        'ip_address': ip,
+        'port': port
+    }
+    response = await api_request('POST', '/minerlistencheck/', body=body, timeout=aiohttp.ClientTimeout(10))
+    try:
+        return response['status'] == 'Port open'
+    except:
+        return False
