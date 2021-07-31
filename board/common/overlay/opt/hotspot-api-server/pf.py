@@ -15,6 +15,7 @@ CONF_FILE = '/data/etc/packet_forwarder.conf'
 SYS_CONF_FILE = '/etc/packet_forwarder.conf'
 PF_STARTUP_SCRIPT = '/etc/init.d/S86packetforwarder'
 PF_TIMEOUT = 10  # Seconds
+DEF_REGION = 'US915'
 
 
 def get_concentrator_model() -> Optional[str]:
@@ -44,7 +45,7 @@ def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:
         config = get_config(SYS_CONF_FILE)
         conf_file = CONF_FILE
 
-        config['tx_power'] = get_def_tx_power(miner.get_region())
+        config['tx_power'] = get_def_tx_power(miner.get_region() or DEF_REGION)
 
     else:
         config = {

@@ -13,7 +13,6 @@ MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep listen_addrs -
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
-DEF_REGION = 'US915'
 NAT_CONF_FILE = '/data/etc/nat.conf'
 FORCE_RESYNC_FILE = '/var/lib/miner/force_resync'
 SWARM_KEY_FILE = '/var/lib/user_swarm_key'
@@ -50,7 +49,7 @@ def get_region() -> str:
             return re.search(r'REGION=([a-zA-Z0-9]+)', f.read()).group(1)
 
     except Exception:
-        return DEF_REGION
+        pass
 
 
 def is_swarm_key_mode() -> bool:
