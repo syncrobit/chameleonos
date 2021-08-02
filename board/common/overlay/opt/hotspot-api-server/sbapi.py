@@ -1,8 +1,8 @@
-
 import aiohttp.hdrs
 import json
 import re
 
+import asyncio
 from typing import Any, Dict, Optional
 
 
@@ -56,7 +56,11 @@ async def test_listen_addr(listen_addr: str) -> Optional[bool]:
         'ip_address': ip,
         'port': port
     }
-    response = await api_request('POST', '/minerlistencheck/', body=body, timeout=aiohttp.ClientTimeout(10))
+    try:
+        response = await api_request('POST', '/minerlistencheck/', body=body, timeout=aiohttp.ClientTimeout(12))
+    except asyncio.TimeoutError:
+        return
+
     try:
         return response['status'] == 'Port open'
     except:
