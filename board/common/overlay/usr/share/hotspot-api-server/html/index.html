@@ -250,6 +250,11 @@
 							</div>
 						</div>
 					</div>
+					<div class="p-3 px-4 mt-auto hide-on-minified firmware-update-wrapper" style="display: none;">
+						<a href="#" target="_blank" class="btn d-block btn-danger fw-600 rounded-pill update-firmware">
+							<i class="fa fa-code-branch me-1 ms-n1"></i> Update firmware 
+						</a>
+					</div>
 				</div>
 				<!-- END menu -->
 			</div>
@@ -359,9 +364,12 @@
 							<!-- BEGIN card -->
 								<div class="card bg-gradient-cyan-blue position-relative mb-3">
                                     <div class="card-body d-flex align-items-center text-white ">
-                                        <div class="flex-fill">
+                                        <div class="flex-fill mr-3">
                                         <div class="mb-1">CPU Usage</div>
-                                        <h2 class="cpu-usage">...</h2>
+                                        <h4 class="cpu-usage">...</h4>
+										<div class="progress bg-black-transparent-5 mb-2" style="height: 6px;">
+											<div class="progrss-bar progress-bar-striped bg-white cpu-progress" style="width: 0%;"></div>
+										</div>
                                         <div><strong>Temperature:</strong> <span class="temperature"></span></div>
                                         </div>
                                         <div class="opacity-5">
@@ -372,29 +380,35 @@
 							<!-- END card -->
 							
 							<!-- BEGIN card -->
-							<div class="card bg-gradient-custom-pink position-relative mb-3">
-                                <div class="card-body d-flex align-items-center text-white ">
-                                    <div class="flex-fill">
-                                    <div class="mb-1">Storage</div>
-                                    <h2 class="storage-usage">...</h2>
-                                    <div><strong>Percentage used:</strong> <span class="storage-per-used"></span></div>
+							<div class="card bg-gradient-custom-indigo position-relative mb-3">
+							    <div class="card-body d-flex align-items-center text-white ">
+                                    <div class="flex-fill mr-3">
+                                    <div class="mb-1">Memory</div>
+                                    <h4 class="memory_usge">...</h4>
+									<div class="progress bg-black-transparent-5 mb-2" style="height: 6px;">
+										<div class="progrss-bar progress-bar-striped bg-white mem-progress" style="width: 0%;"></div>
+									</div>
+                                    <div><strong>Percentage used:</strong> <span class="mem-per-used"></span></div>
                                     </div>
                                     <div class="opacity-5">
-                                    <i class="fas fa-hdd fa-4x"></i>
+                                    <i class="fas fa-memory fa-4x"></i>
                                     </div>
                                 </div>
                             </div>
                             <!-- END card -->
                             <!-- BEGIN card -->
-							<div class="card bg-gradient-custom-orange position-relative mb-3">
-                                <div class="card-body d-flex align-items-center text-white">
-                                    <div class="flex-fill">
-                                    <div class="mb-1">BlockChain Height</div>
-                                    <h2 class="chain-height">...</h2>
-                                    <div>&nbsp;</div>
+							<div class="card bg-gradient-custom-pink position-relative mb-3">
+                                <div class="card-body d-flex align-items-center text-white ">
+                                    <div class="flex-fill mr-3">
+                                    <div class="mb-1">Storage</div>
+                                    <h4 class="storage-usage">...</h4>
+									<div class="progress bg-black-transparent-5 mb-2" style="height: 6px;">
+										<div class="progrss-bar progress-bar-striped bg-white storage-progress" style="width: 0%;"></div>
+									</div>
+                                    <div><strong>Percentage used:</strong> <span class="storage-per-used"></span></div>
                                     </div>
                                     <div class="opacity-5">
-                                    <i class="fas fa-cubes fa-4x"></i>
+                                    <i class="fas fa-hdd fa-4x"></i>
                                     </div>
                                 </div>
                             </div>
@@ -405,15 +419,16 @@
 						<!-- BEGIN col-6 -->
 						<div class="col-sm-6">
 							<!-- BEGIN card -->
-                            <div class="card bg-gradient-custom-indigo position-relative mb-3">
-							    <div class="card-body d-flex align-items-center text-white ">
+                            <div class="card bg-gradient-custom-orange position-relative mb-3">
+                                <div class="card-body d-flex align-items-center text-white">
                                     <div class="flex-fill">
-                                    <div class="mb-1">Memory</div>
-                                    <h2 class="memory_usge">...</h2>
-                                    <div><strong>Percentage used:</strong> <span class="mem-per-used"></span></div>
+                                    <div class="mb-1">BlockChain Height</div>
+									<div class="mb-2" style="height: 6px;"></div>
+                                    <h4 class="chain-height">...</h4>
+                                    <div>&nbsp;</div>
                                     </div>
                                     <div class="opacity-5">
-                                    <i class="fas fa-memory fa-4x"></i>
+                                    <i class="fas fa-cubes fa-4x"></i>
                                     </div>
                                 </div>
                             </div>
@@ -424,7 +439,8 @@
                                 <div class="card-body d-flex align-items-center text-white">
                                     <div class="flex-fill">
                                     <div class="mb-1">Miner Height</div>
-                                    <h2 class="miner_height">...</h2>
+									<div class="mb-2" style="height: 6px;"></div>
+                                    <h4 class="miner_height">...</h4>
                                     <div><strong>Status:</strong> <span class="is-sync"></span></div>
                                     </div>
                                     <div class="opacity-5">
@@ -438,7 +454,8 @@
                                 <div class="card-body d-flex align-items-center text-white">
                                     <div class="flex-fill">
                                     <div class="mb-1">Oracle Price</div>
-                                    <h2 class="oracle-price">...</h2>
+									<div class="mb-2" style="height: 6px;"></div>
+                                    <h4 class="oracle-price">...</h4>
                                     <div>&nbsp;</div>
                                     </div>
                                     <div class="opacity-5">
