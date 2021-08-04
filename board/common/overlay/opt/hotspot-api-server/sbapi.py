@@ -9,9 +9,10 @@ from typing import Any, Dict, Optional
 BASE_URL = 'https://api.syncrob.it'
 AUTH_TOKEN = '3F4ECC8F2C95134BCA7281C83B879'
 LISTEN_ADDR_IPV4_RE = re.compile(r'^/ip4/([0-9.]{7,15})/tcp/(\d+)$')
+DEFAULT_TIMEOUT = aiohttp.ClientTimeout(60)
 
 
-async def api_request(method: str, path: str, body: Any = None, timeout=None) -> Any:
+async def api_request(method: str, path: str, body: Any = None, timeout=DEFAULT_TIMEOUT) -> Any:
     url = f'{BASE_URL}{path}/'
     headers = {
         'Authorization': AUTH_TOKEN
@@ -57,7 +58,7 @@ async def test_listen_addr(listen_addr: str) -> Optional[bool]:
         'port': port
     }
     try:
-        response = await api_request('POST', '/minerlistencheck/', body=body, timeout=aiohttp.ClientTimeout(12))
+        response = await api_request('POST', '/minerlistencheck', body=body, timeout=aiohttp.ClientTimeout(12))
     except asyncio.TimeoutError:
         return
 
