@@ -31,7 +31,7 @@ test -s /var/run/vpnpasswd || exit 0
 
 
 # Adjust the VPN server host according to region
-SERVER_HOST="et.%ssyncrob.it"
+SERVER_HOST="et-${OS_PREFIX}.%ssyncrob.it"
 SERVER_HOST=$(printf "${SERVER_HOST}" "${REGION_PREFIX}")
 sed -ri "s/remote.*1194/remote ${SERVER_HOST} 1194/" ${CONF}/client.conf
 
