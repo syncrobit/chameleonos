@@ -3,8 +3,19 @@
 SPEED_TEST_TIMEOUT=5  # Seconds
 SPEED_TEST_URL=http://speedtest-blr1.digitalocean.com/10mb.test
 
+cmdline_args="$*"
 
-function test_speed() {
+function arg_present() {
+    for arg in ${cmdline_args}; do
+        if [ "${arg}" == "$1" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+function test_download_speed() {
     curl -o /dev/null --stderr /tmp/speedtest.txt -m ${SPEED_TEST_TIMEOUT} ${SPEED_TEST_URL}
     speed=$(cat /tmp/speedtest.txt | grep -v 'timed out' | tail -n 1 | tr -s ' ' | rev | cut -d ' ' -f 1 | rev | sed -r 's/([0-9]+)/\1 /')
     # Speed must start with a number
@@ -36,7 +47,9 @@ function test_public_ip() {
     echo "Public IP:      ${ip}"
 }
 
-echo "Testing network connection... "
-test_speed
-test_latency
-test_public_ip
+echo "Testing network connection..."
+test -z "$1" || arg_present "--download-speed" && test_download_speed
+test -z "$1" || arg_present "--latency" && test_latency
+test -z "$1" || arg_present "--public-ip" && test_public_ip
+
+exit 0

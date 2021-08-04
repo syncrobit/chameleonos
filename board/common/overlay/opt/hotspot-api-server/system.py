@@ -132,15 +132,23 @@ def get_temperature() -> int:
     return int(psutil.sensors_temperatures()['cpu_thermal'][0].current)
 
 
-def net_test() -> Dict[str, Any]:
+def net_test(download_speed: bool = True, latency: bool = True, public_ip: bool = True) -> Dict[str, Any]:
     result = {
         'download_speed': None,
         'latency': None,
         'public_ip': None
     }
 
+    cmd = NET_TEST_CMD
+    if download_speed:
+        cmd += ' --download-speed'
+    if latency:
+        cmd += ' --latency'
+    if public_ip:
+        cmd += ' --public-ip'
+
     try:
-        output = subprocess.check_output(NET_TEST_CMD, shell=True).decode().strip()
+        output = subprocess.check_output(cmd, shell=True).decode().strip()
 
     except Exception:
         return result

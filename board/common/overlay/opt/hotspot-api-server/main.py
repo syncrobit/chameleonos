@@ -138,7 +138,13 @@ async def get_summary(request: web.Request) -> web.Response:
 
 @router.get('/nettest')
 async def get_net_test(request: web.Request) -> web.Response:
-    net_test = system.net_test()
+    download_speed = request.query.get('download_speed') == 'true'
+    latency = request.query.get('latency') == 'true'
+    public_ip = request.query.get('public_ip') == 'true'
+    if not download_speed and not latency and not public_ip:
+        download_speed = latency = public_ip = True
+
+    net_test = system.net_test(download_speed, latency, public_ip)
     return web.json_response(net_test)
 
 
