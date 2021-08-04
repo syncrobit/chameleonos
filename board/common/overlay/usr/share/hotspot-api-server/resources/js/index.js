@@ -77,10 +77,11 @@ $(document).ready(function(){
         $('.explorer-view').attr("href", "https://explorer.helium.com/hotspots/" + data.address);
         $('.miner-name').html((data.hotspot_name == null) ? 'N/A' : data.hotspot_name);
         $('.miner-region').html((data.region == null) ? 'N/A' : data.region);
-        $('.concentrator-model').html((data.concentrator_model == null) ? 'N/A' :data.concentrator_model);
+        $('.concentrator-model').html((data.concentrator_model == null) ? 'N/A' : data.concentrator_model);
         $('.listen-addr').html((data.miner_listen_addr == null) ? 'N/A' : data.miner_listen_addr);
         $('.miner_height').html((data.miner_height == null) ? '0' : formatNumber(data.miner_height));
         $('.relayed').html((data.miner_listen_addr == null) ? 'N/A' : (/\/p2p/i.test(data.miner_listen_addr)) ? 'Yes' : 'No')
+        $('.listener-ok').html((data.miner_listen_ok == true) ? 'Yes' : (data.miner_listen_ok == false) ? 'Forwarding/NAT issue' : 'Relayed/Timedout');
         miner_height = (data.miner_height === null) ? 0: data.miner_height;
       }).done(function(){
         $.get( "/stats", function( data ) {
@@ -105,6 +106,15 @@ $(document).ready(function(){
         $('.memory_usge').html(formatBytes(data.mem_used) + "/" + formatBytes(data.mem_total))
         $('.mem-per-used').html(mem_percent);
         $('.mem-progress').css('width', mem_percent);
+      });
+
+      //Check NetConnection
+      $.get( "/nettest?latency=true", function( data ) {
+        if(data.latency === null){
+          $('.network-activity-wrapper').show();
+        }else{
+          $('.network-activity-wrapper').hide();
+        }
       });
     }, 5000);
 
