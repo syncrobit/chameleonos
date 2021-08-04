@@ -478,12 +478,48 @@ $(document).ready(function(){
                      });
 
                 });
-            });
-            
-            
+            });    
         }
     });
-    
+
+    //Check Firmware Update
+    $.get( "/fwupdate", function( data ) {
+        if(data.current !== data.latest){
+            $('.firmware-update-wrapper').show();
+        }else{
+            $('.firmware-update-wrapper').hide();
+        }
+    });
+
+    //Firmware Update button
+    $('.update-firmware').click(function(e){
+        e.preventDefault();
+        var html = getModal('fw-update');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+            $('.modal-append').find('#fw-update-modal').modal({backdrop: 'static', keyboard: false})
+            $('.modal-append').find('#fw-update-modal').modal('show'); 
+
+            $.ajax({
+                type: 'PATCH',
+                url: '/fwupdate',
+                processData: false,
+                contentType: 'application/merge-patch+json',
+                complete: function(xhr, statusText){}
+             });
+
+             setInterval(function(){ 
+                $.get( "/fwupdate", function( data ) {
+                    if(data.status == "idle"){
+                        location.reload();
+                    }else{
+                        $('.modal-append').find('.fw-upd-status').html(data.status);
+                    }
+                    
+                });
+             }, 1000);
+        }
+    });
 });
 
 function getModal(modalName){
