@@ -98,7 +98,7 @@ async def get_summary(request: web.Request) -> web.Response:
         'concentrator_model': pf.get_concentrator_model() if not quick else None,
         'region': miner.get_region() if not quick else None,
         'fw_version': system.get_fw_version(),
-        'ecc_sn': pubkey.get_ecc_sn(),
+        'ecc_sn': [None, 'ok'][bool(pubkey.get_ecc_sn())],
         'swarm_key_mode': miner.is_swarm_key_mode(),
         'address': pubkey.get_address(),
         'pub_key': pubkey.get_pub_key_hex(),
