@@ -20,6 +20,7 @@ MIN_FREE_SPACE=1024 # MB
 MIN_FREE_SPACE_LEEWAY=512 # MB
 SYNC_URL="https://msync.syncrob.it/"
 FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
+NO_SYNC_FILE="/data/etc/miner_no_sync"
 DEF_PORT=44158
 
 
@@ -53,7 +54,9 @@ watch_prog() {
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
-            force_sync
+            if ! [[ -f ${NO_SYNC_FILE} ]]; then
+                force_sync
+            fi
             panic_action miner "service dead"
             break
         fi
@@ -88,7 +91,9 @@ watch_lag() {
             logger -t miner "lag is ${lag}"
             continue
         fi
-        force_sync
+        if ! [[ -f ${NO_SYNC_FILE} ]]; then
+            force_sync
+        fi
         panic_action miner "lag is ${lag} > ${MAX_LAG}"
     done
 }
@@ -270,7 +275,7 @@ start() {
     fi
     msg_done "connected"
 
-    if [[ "${sync_needed}" == "true" ]]; then
+    if [[ "${sync_needed}" == "true" ]] && ! [[ -f ${NO_SYNC_FILE} ]]; then
         msg_begin "Synchronizing miner data"
         sync_background &>/dev/null &
         msg_done "background"
