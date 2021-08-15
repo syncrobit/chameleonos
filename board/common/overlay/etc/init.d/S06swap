@@ -1,0 +1,50 @@
+#!/bin/bash
+
+SWAP_FILE="/data/varlib/swapfile"
+SWAP_SIZE=1024  # MB
+SWAP_MIN_SYS=1048576  # MB
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+# Don't add swap on systems with memory above 1GB
+total_mem=$(cat /proc/meminfo  | grep MemTotal | tr -s ' ' | cut -d ' ' -f 2)
+if [[ ${total_mem} -gt ${SWAP_MIN_SYS} ]]; then
+    exit 0
+fi
+
+
+case "$1" in
+    start)
+        if ! [[ -s ${SWAP_FILE} ]]; then
+            msg_begin "Allocating swap file"
+            dd if=/dev/zero of=${SWAP_FILE} bs=1M count=${SWAP_SIZE} conv=fsync &> /dev/null
+            if [[ $? == 0 ]]; then
+                msg_done
+            else
+                msg_fail
+                exit 0  # Continue booting without swap
+            fi
+        fi
+
+        mkswap ${SWAP_FILE} &> /dev/null
+        
+        msg_begin "Enabling swap"
+        swapon ${SWAP_FILE}
+        if [[ $? == 0 ]]; then
+            msg_done
+        else
+            msg_fail
+            exit 0  # Continue booting without swap
+        fi
+        ;;
+
+    stop)
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
+
+exit $?
