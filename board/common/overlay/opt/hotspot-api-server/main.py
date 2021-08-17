@@ -85,6 +85,7 @@ async def get_summary(request: web.Request) -> web.Response:
 
     summary = {
         'serial_number': system.get_rpi_sn(),
+        'os_prefix': system.get_os_prefix(),
         'cpu_usage': system.get_cpu_usage(),
         'mem_used': mem_used,
         'mem_total': mem_total,
@@ -113,6 +114,7 @@ async def get_summary(request: web.Request) -> web.Response:
         lag = blockchain_height - (summary['miner_height'] or 0)
 
         summary['Serial Number'] = summary.pop('serial_number')
+        summary['OS Prefix'] = summary.pop('os_prefix')
         summary['CPU Usage'] = f"{summary.pop('cpu_usage')} %"
         summary['Memory Usage'] = f"{summary.pop('mem_used')}/{summary.pop('mem_total')} MB"
         summary['Storage Usage'] = f"{summary.pop('storage_used')}/{summary.pop('storage_total')} MB"

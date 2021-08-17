@@ -46,6 +46,10 @@ def get_rpi_sn() -> str:
     return '00000000'
 
 
+def get_os_prefix() -> str:
+    return subprocess.check_output('source /etc/version && echo ${OS_PREFIX}', shell=True).decode().strip()
+
+
 def reboot() -> None:
     logging.info('rebooting')
     os.system(REBOOT_CMD)
