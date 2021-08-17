@@ -105,6 +105,7 @@ async def get_summary(request: web.Request) -> web.Response:
         'pub_key': pubkey.get_pub_key_hex(),
         'eth_mac': system.get_eth_mac(),
         'wlan_mac': system.get_wlan_mac(),
+        'bt_mac': system.get_bt_mac(),
         'uptime': system.get_uptime(),
         'time': int(time.time())
     }
@@ -132,6 +133,7 @@ async def get_summary(request: web.Request) -> web.Response:
         summary['Public Key'] = summary.pop('pub_key')
         summary['Ethernet MAC'] = summary.pop('eth_mac')
         summary['Wi-Fi MAC'] = summary.pop('wlan_mac')
+        summary['Bluetooth MAC'] = summary.pop('bt_mac')
         summary['Uptime'] = str(datetime.timedelta(seconds=summary.pop('uptime')))
         summary['Date/Time'] = f"{str(datetime.datetime.utcfromtimestamp(summary.pop('time')))} (UTC)"
 

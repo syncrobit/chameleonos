@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional, Tuple
 
 ETH_MAC_FILE = '/sys/class/net/eth0/address'
 WLAN_MAC_FILE = '/sys/class/net/wlan0/address'
+BT_MAC_CMD = 'hcitool dev | grep hci0 | cut -f 3'
 FW_VERSION_CMD = '/sbin/fwupdate current'
 UPTIME_CMD = 'cat /proc/uptime | grep -oE "^[[:digit:]]+"'
 REBOOT_CMD = '/sbin/reboot'
@@ -97,6 +98,14 @@ def get_wlan_mac() -> Optional[str]:
     try:
         with open(WLAN_MAC_FILE, 'rt') as f:
             return f.read().strip()
+
+    except Exception:
+        pass
+
+
+def get_bt_mac() -> Optional[str]:
+    try:
+        return subprocess.check_output(BT_MAC_CMD, shell=True).decode().strip().lower()
 
     except Exception:
         pass
