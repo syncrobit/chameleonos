@@ -152,6 +152,18 @@ async def get_net_test(request: web.Request) -> web.Response:
     return web.json_response(net_test)
 
 
+@router.get('/selftest')
+@handle_auth
+async def get_self_test(request: web.Request) -> web.Response:
+    return web.json_response({
+        "eth": bool(system.get_eth_mac()),
+        "wlan": bool(system.get_wlan_mac()),
+        "bt": bool(system.get_bt_mac()),
+        "ecc": bool(pubkey.get_ecc_sn(direct=True)),
+        "lora": bool(pf.get_concentrator_id())
+    })
+
+
 @router.get('/stats')
 async def get_stats(request: web.Request) -> web.Response:
     stats = await sbapi.get_stats(pubkey.get_address())

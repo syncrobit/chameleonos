@@ -11,11 +11,20 @@ import miner
 
 PF_RESTART_CMD = 'service packetforwarder restart'
 PF_CONCENTRATOR_MODEL_CMD = 'ps aux | grep /lora_pkt_fwd_ | grep -v grep'
+PF_CONCENTRATOR_ID_CMD = 'cd /opt/packet_forwarder/bin/ && ./chip_id | grep -oE "0x[a-f0-9]+" | cut -b 3-100'
 CONF_FILE = '/data/etc/packet_forwarder.conf'
 SYS_CONF_FILE = '/etc/packet_forwarder.conf'
 PF_STARTUP_SCRIPT = '/etc/init.d/S86packetforwarder'
 PF_TIMEOUT = 10  # Seconds
 DEF_REGION = 'US915'
+
+
+def get_concentrator_id() -> Optional[str]:
+    try:
+        return subprocess.check_output(PF_CONCENTRATOR_ID_CMD, shell=True)
+
+    except Exception:
+        pass
 
 
 def get_concentrator_model() -> Optional[str]:
