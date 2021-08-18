@@ -8,7 +8,7 @@ LOG="/var/log/openvpn.log"
 PROG="/usr/sbin/openvpn"
 PROG_ST="/sbin/sshtunnel"
 
-WATCH_CONF="/etc/watch.conf"
+NETWATCH_CONF="/etc/netwatch.conf"
 
 REG_CONF="/var/lib/reg.conf"
 VPNPASSWD_SCRIPT="/etc/init.d/S54vpnpasswd"
@@ -24,7 +24,7 @@ test -s ${REG_CONF} && source ${REG_CONF}
 rm -rf ${CONF}  # Ignore any existing user config
 prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
 
-source ${WATCH_CONF}
+source ${NETWATCH_CONF}
 
 test -d ${CONF} || exit 0
 test -s /var/run/vpnpasswd || exit 0
@@ -54,10 +54,12 @@ stop_openvpn() {
 }
 
 watch() {
+    sleep ${NET_WATCH_DELAY}
+
     last_vpnpasswd_uptime=0
     dead_count=0
     while true; do
-        sleep ${NETWATCH_INTERVAL}
+        sleep ${NET_WATCH_INTERVAL}
         if ! running; then
             logger -t openvpn "dead, restarting (count=${dead_count})"
             up=$(uptime_seconds)
@@ -72,7 +74,7 @@ watch() {
             start_openvpn
 
             # Start SSH tunnel if openvpn is successively found dead
-            if [[ ${dead_count} -gt ${NETWATCH_RETRIES} ]]; then
+            if [[ ${dead_count} -gt ${NET_WATCH_RETRIES} ]]; then
                 if ! ${PROG_ST} status; then
                     logger -t sshtunnel "starting"
                     ${PROG_ST} start

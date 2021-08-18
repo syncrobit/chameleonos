@@ -125,8 +125,8 @@ start() {
         if [[ -z "${reg}" ]]; then
             count=$((count + 60))
             if [[ ${count} -gt ${REG_TIMEOUT} ]]; then
-                msg_fail "no regulatory information"
-                panic_action packetforwarder "no regulatory information"
+                msg_fail "no region information"
+                panic_action packetforwarder "no region information"
                 return 1
             fi
             sleep 60
