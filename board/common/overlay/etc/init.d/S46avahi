@@ -1,0 +1,41 @@
+#!/bin/bash
+
+PROG=/usr/sbin/avahi-daemon
+CONF=/etc/avahi/avahi-daemon.conf
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+test -s ${CONF} || exit 0
+
+
+function start() {
+    msg_begin "Starting avahi daemon"
+    $PROG -D -f ${CONF} &>/dev/null
+    test $? == 0 && msg_done || msg_fail
+}
+
+function stop() {
+    msg_begin "Stopping avahi daemon"
+    $PROG -k -f ${CONF} &>/dev/null
+    test $? == 0 && msg_done || msg_fail
+}
+
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    restart)
+        stop
+        start
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
