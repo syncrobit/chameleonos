@@ -431,6 +431,17 @@ def create_error_middleware(overrides):
     return error_middleware
 
 
+def create_cors_middleware():
+    @web.middleware
+    async def cors_middleware(request, handler):
+        response = await handler(request)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+
+        return response
+
+    return cors_middleware
+
+
 def make_app() -> web.Application:
     app = web.Application()
     app.add_routes(router)
@@ -440,7 +451,10 @@ def make_app() -> web.Application:
         404: handle_404,
     })
 
+    cors_middleware = create_cors_middleware()
+
     app.middlewares.append(error_middleware)
+    app.middlewares.append(cors_middleware)
 
     return app
 
