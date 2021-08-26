@@ -5,7 +5,7 @@ BUCKET="syncrobit-firmware"
 S3CMD="s3cmd -c ${HOME}/.s3cfg-linode"
 
 function exit_usage() {
-    echo "Usage: $0 <release-stable|release-beta|release-prov|unrelease-stable|unrelease-beta|promote-stable|promote-beta|upload> [image.xz]"
+    echo "Usage: $0 <release-stable|release-beta|unrelease-stable|unrelease-beta|promote-stable|promote-beta|upload> [image.xz]"
     exit 1
 }
 
@@ -98,17 +98,6 @@ function main() {
             s3upload ${region} ${THINGOS_PREFIX} /tmp/${latest_file}
             ;;
 
-        release-prov)
-            if [[ "${os_prefix}" != "${THINGOS_PREFIX_PROV}" ]]; then
-                echo "Invalid OS image prefix: ${os_prefix}"
-                exit 1
-            fi
-            s3upload ${region} ${THINGOS_PREFIX_PROV} ${image_path}
-            latest_file="latest.json"
-            make_latest "/${THINGOS_PREFIX_PROV}/${image_name}" ${version} > /tmp/${latest_file}
-            s3upload ${region} ${THINGOS_PREFIX_PROV} /tmp/${latest_file}
-            ;;
-
         unrelease-stable | unrelease-beta)
             latest_file="latest"
             [[ ${cmd} == *stable ]] && latest_file+="_stable"
@@ -146,7 +135,6 @@ if [[ -z "${VENDOR}" ]]; then
 fi
 
 set -a
-source ${base_path}/vendors/common.conf
 source ${base_path}/vendors/${VENDOR}.conf
 set +a 
 

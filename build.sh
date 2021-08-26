@@ -23,12 +23,11 @@ gzip=$(which pigz 2> /dev/null || which gzip 2> /dev/null)
 test -f "$basedir/.build-env" && source "$basedir/.build-env"
 
 # extra environment from vendor-specific file
-set -a
-source ${basedir}/vendors/common.conf
 if [[ -n "${VENDOR}" ]]; then
+    set -a
     source ${basedir}/vendors/${VENDOR}.conf
+    set +a
 fi
-set +a
 
 # OS name
 if [ -n "$THINGOS_SHORT_NAME" ]; then
