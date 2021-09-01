@@ -124,7 +124,7 @@ sync_from_snapshot() {
         msg_fail "metadata parsing failed"
         return 1
     fi
-    if ! curl --fail -m 600 --silent --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
+    if ! curl --fail -m 1800 --silent --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
         msg_fail "snapshot download failed"
         return 1
     fi
@@ -138,7 +138,7 @@ sync_from_snapshot() {
     panic_inhibit
 
     # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
-    export NODETOOL_TIMEOUT=300000
+    export NODETOOL_TIMEOUT=600000
     ${FULL_PROG} snapshot load /tmp/snapshot.bin &>/dev/null
     msg_done
 }
