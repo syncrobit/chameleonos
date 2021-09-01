@@ -1,0 +1,8 @@
+#!/bin/bash
+
+while panic_inhibit -q > /dev/null; do
+    sleep 60
+done
+
+logger "periodic reboot"
+reboot
