@@ -89,6 +89,7 @@ function state_loop() {
             usleep 100000
         else  # Assuming "steady"
             ${LED_STRIP} on ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
+            sleep 2
         fi
     done
 }
