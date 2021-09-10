@@ -107,6 +107,7 @@ sync_from_snapshot() {
     # Kill any existing sync session
     ps aux | grep curl | grep snapshot.bin | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
     ps aux | grep 'snapshot load' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
+    rm -f /data/snapshot.bin*
     
     if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
         msg_fail "metadata download failed"
@@ -120,13 +121,23 @@ sync_from_snapshot() {
         msg_fail "metadata parsing failed"
         return 1
     fi
+    if ! ark=$(jq -r '.arkUri' <<< ${data}); then
+        msg_fail "metadata parsing failed"
+        return 1
+    fi
     if ! check_sum=$(jq -r '.checkSum.md5' <<< ${data}); then
         msg_fail "metadata parsing failed"
         return 1
     fi
-    if ! curl --fail -m 1800 --silent --show-error --location-trusted "${file}" -o /tmp/snapshot.bin; then
-        msg_fail "snapshot download failed"
-        return 1
+    if curl --fail -m 1800 --silent --show-error --location-trusted "${ark}" -o /data/snapshot.bin.xz; then
+        unxz /data/snapshot.bin.xz
+    else
+        msg_fail "compressed snapshot download failed"
+        msg_begin "retrying with uncompressed snapshot"
+        if ! curl --fail -m 1800 --silent --show-error --location-trusted "${file}" -o /data/snapshot.bin; then
+            msg_fail "snapshot download failed"
+            return 1
+        fi
     fi
     local_check_sum=$(md5sum /tmp/snapshot.bin | awk '{print $1}')
     if [[ "${local_check_sum}" != "${check_sum}" ]]; then
@@ -139,7 +150,7 @@ sync_from_snapshot() {
 
     # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
     export NODETOOL_TIMEOUT=600000
-    ${FULL_PROG} snapshot load /tmp/snapshot.bin &>/dev/null
+    ${FULL_PROG} snapshot load /data/snapshot.bin &>/dev/null
     msg_done
 }
 
