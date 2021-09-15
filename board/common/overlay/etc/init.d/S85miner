@@ -6,7 +6,7 @@ FULL_PROG=${WORK_DIR}/${PROG}
 LOG="/var/log/miner/startup.log"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
 MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
-SYS_CONF="/opt/miner/releases/0.1.0/sys.config"
+SYS_CONF_PATTERN="/opt/miner/releases/*/sys.config"
 USER_CONF="/data/etc/miner_sys.config"
 NAT_CONF="/data/etc/nat.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
@@ -139,7 +139,7 @@ sync_from_snapshot() {
             return 1
         fi
     fi
-    local_check_sum=$(md5sum /tmp/snapshot.bin | awk '{print $1}')
+    local_check_sum=$(md5sum /data/snapshot.bin | awk '{print $1}')
     if [[ "${local_check_sum}" != "${check_sum}" ]]; then
         msg_fail "invalid checksum"
         return 1
@@ -204,13 +204,18 @@ start() {
     if [[ -s ${USER_CONF} ]]; then
         cp ${USER_CONF} ${RELX_CONFIG_PATH}
     else
+        SYS_CONF=$(ls -1 ${SYS_CONF_PATTERN} | head -n 1)  # Just use the first occurrence
         cp ${SYS_CONF} ${RELX_CONFIG_PATH}
         
         # Adjust dirs
         sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
         sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
+        
         # Disable S3 snapshot loading
         sed -ri 's;snapshots.helium.wtf;snapshots.helium.stf;' ${RELX_CONFIG_PATH}
+        
+        # Impose a snapshot memory limit
+        sed -ri 's;\{honor_quick_sync;\{snapshot_memory_limit, 400\},\n   \{honor_quick_sync;' ${RELX_CONFIG_PATH}
         
         # If user swarm key is present, configure miner to use it instead of ECC
         if [[ -s ${USER_SWARM_KEY} ]]; then
