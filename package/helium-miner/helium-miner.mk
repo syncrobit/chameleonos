@@ -11,6 +11,7 @@ HELIUM_MINER_LICENSE_FILES = LICENSE
 HELIUM_MINER_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin host-erlang-rebar
             
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_FETCH_PATCH_DEPS
+HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_UPDATE_VERSION
 
 define HELIUM_MINER_FETCH_PATCH_DEPS
     (cd $(@D); \
@@ -31,6 +32,10 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
 
     patch -d $(@D)/_build/default/lib/erasure -p1 < package/helium-miner/erlang-erasure._patch
     patch -d $(@D)/_build/default/lib/procket -p1 < package/helium-miner/procket._patch
+endef
+
+define HELIUM_MINER_UPDATE_VERSION
+    sed -i 's/git}/"$(HELIUM_MINER_VERSION)"}/g' $(@D)/rebar.config
 endef
             
 define HELIUM_MINER_BUILD_CMDS
