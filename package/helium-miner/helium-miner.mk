@@ -52,6 +52,7 @@ define HELIUM_MINER_BUILD_CMDS
 endef
 
 define HELIUM_MINER_INSTALL_TARGET_CMDS
+    rm -rf $(TARGET_DIR)/opt/miner; \
     mkdir -p $(TARGET_DIR)/opt/miner; \
     cd $(TARGET_DIR)/opt/miner; \
     tar xvf $(@D)/_build/prod/rel/*/*.tar.gz; \
