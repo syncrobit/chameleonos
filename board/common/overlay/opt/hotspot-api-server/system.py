@@ -136,6 +136,11 @@ def get_mem_info() -> Tuple[int, int]:
     return int(vm.used / 1024 / 1024), int(vm.total / 1024 / 1024)
 
 
+def get_swap_info() -> Tuple[int, int]:
+    sm = psutil.swap_memory()
+    return int(sm.used / 1024 / 1024), int(sm.total / 1024 / 1024)
+
+
 def get_storage_info() -> Tuple[int, int]:
     du = psutil.disk_usage(DATA_DIR)
     return int(du.used / 1024 / 1024), int(du.total / 1024 / 1024)

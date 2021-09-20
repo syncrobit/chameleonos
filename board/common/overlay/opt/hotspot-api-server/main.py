@@ -75,6 +75,7 @@ def handle_auth(
 @router.get('/summary')
 async def get_summary(request: web.Request) -> web.Response:
     mem_used, mem_total = system.get_mem_info()
+    swap_used, swap_total = system.get_swap_info()
     storage_used, storage_total = system.get_storage_info()
 
     quick = request.query.get('quick') == 'true'
@@ -89,6 +90,8 @@ async def get_summary(request: web.Request) -> web.Response:
         'cpu_usage': system.get_cpu_usage(),
         'mem_used': mem_used,
         'mem_total': mem_total,
+        'swap_used': swap_used,
+        'swap_total': swap_total,
         'storage_used': storage_used,
         'storage_total': storage_total,
         'temperature': system.get_temperature(),
@@ -118,6 +121,7 @@ async def get_summary(request: web.Request) -> web.Response:
         summary['OS Prefix'] = summary.pop('os_prefix')
         summary['CPU Usage'] = f"{summary.pop('cpu_usage')} %"
         summary['Memory Usage'] = f"{summary.pop('mem_used')}/{summary.pop('mem_total')} MB"
+        summary['Swap Usage'] = f"{summary.pop('swap_used')}/{summary.pop('swap_total')} MB"
         summary['Storage Usage'] = f"{summary.pop('storage_used')}/{summary.pop('storage_total')} MB"
         summary['Temperature'] = f"{summary.pop('temperature')} C"
         summary['Miner Height'] = f"{summary.pop('miner_height')}/{blockchain_height} (lag is {lag})"
