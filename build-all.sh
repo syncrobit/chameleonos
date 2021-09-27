@@ -9,7 +9,7 @@ if [[ -z "${VERSION}" ]]; then
     exit 1
 fi
 
-VENDORS="syncrobit linxdot"
+VENDORS=$(ls -1 vendors/ | sed s/.conf//)
 
 export THINGOS_VERSION=${VERSION}
 

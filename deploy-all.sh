@@ -14,7 +14,7 @@ if [[ -z "$1" ]]; then
     exit 1
 fi
 
-VENDORS="syncrobit linxdot"
+VENDORS=$(ls -1 vendors/ | sed s/.conf//)
 
 set -a
 for VENDOR in ${VENDORS}; do
