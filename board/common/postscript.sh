@@ -62,10 +62,17 @@ fi
 # set vendor-default hardware settings
 if [[ -n "${LGW_RESET_GPIO}" ]]; then
     sed -ri "s/DEFAULT_LGW_RESET_GPIO=.*/DEFAULT_LGW_RESET_GPIO=${LGW_RESET_GPIO}/" ${TARGET}/etc/init.d/S*hwdetect
+else
+    cp ${COMMON_DIR}/overlay/etc/init.d/S*hwdetect ${TARGET}/etc/init.d/
 fi
 if [[ -n "${ECC_ADDRESS}" ]]; then
     sed -ri "s/DEFAULT_ECC_ADDRESS=.*/DEFAULT_ECC_ADDRESS=${ECC_ADDRESS}/" ${TARGET}/etc/init.d/S*hwdetect
 fi
+else
+    cp ${COMMON_DIR}/overlay/etc/init.d/S*hwdetect ${TARGET}/etc/init.d/
+fi
 if [[ -n "${ECC_SLOT}" ]]; then
     sed -ri "s/DEFAULT_ECC_SLOT=.*/DEFAULT_ECC_SLOT=${ECC_SLOT}/" ${TARGET}/etc/init.d/S*hwdetect
+else
+    cp ${COMMON_DIR}/overlay/etc/init.d/S*hwdetect ${TARGET}/etc/init.d/
 fi
