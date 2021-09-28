@@ -67,7 +67,6 @@ else
 fi
 if [[ -n "${ECC_ADDRESS}" ]]; then
     sed -ri "s/DEFAULT_ECC_ADDRESS=.*/DEFAULT_ECC_ADDRESS=${ECC_ADDRESS}/" ${TARGET}/etc/init.d/S*hwdetect
-fi
 else
     cp ${COMMON_DIR}/overlay/etc/init.d/S*hwdetect ${TARGET}/etc/init.d/
 fi
