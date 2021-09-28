@@ -3,11 +3,12 @@
 HW_CONF=/var/run/hardware.conf
 USER_HW_CONF=/data/etc/hardware.conf
 
-EXPANDER_GPIO=13
 DEFAULT_LGW_RESET_GPIO=17
-OG_LGW_RESET_GPIO=25
 DEFAULT_ECC_ADDRESS=0x60
 DEFAULT_ECC_SLOT=0
+
+EXPANDER_GPIO=13
+OG_LGW_RESET_GPIO=25
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
