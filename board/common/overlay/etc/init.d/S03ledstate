@@ -5,6 +5,7 @@ LOG="/var/log/led_state.log"
 STATE_FILE="/var/run/led_state"
 PAIRING_FILE="/var/run/pairing"
 PID_FILE="/var/run/led_strip.pid"
+HW_CONF="/var/run/hardware.conf"
 
 SYS_CONF="/etc/ledstrip.conf"
 CONF="/data/etc/ledstrip.conf"
@@ -67,10 +68,20 @@ function get_fixed_colors() {
 }
 
 function state_loop() {
+    while ! [[ -f ${HW_CONF} ]]; do  # Wait for hardware config to be ready
+        sleep 1
+    done
+    
+    source ${HW_CONF}
+    if [[ "${HAS_LED_STRIP}" != true ]]; then
+        return  # No LED strip support, exit loop
+    fi
+    
     renice -10 ${BASHPID}  # Run LEDs with high prio
     echo > ${STATE_FILE}
     while true; do
         test -f ${STATE_FILE} || break  # Removing the file exits loop
+        source ${HW_CONF}
         old_state=$(cat ${STATE_FILE})
         new_state=$(get_state)
         if [[ "${old_state}" != "${new_state}" ]]; then
