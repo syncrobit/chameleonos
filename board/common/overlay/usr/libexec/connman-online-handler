@@ -48,6 +48,7 @@ if [[ "${ONLINE}" == true ]]; then
 
     payload="{
         \"rpi_sn\":\"${BOARD_SN}\",
+        \"hostname\":\"$(hostname)\",
         \"ip_addr_local\":\"${addr}\",
         \"ip_addr_vpn\":\"${addr_tun0}\"
     }"
