@@ -59,7 +59,7 @@ async def test_listen_addr(listen_addr: str) -> Optional[bool]:
     }
     try:
         response = await api_request('POST', '/minerlistencheck', body=body, timeout=aiohttp.ClientTimeout(12))
-    except asyncio.TimeoutError:
+    except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
         return
 
     try:
