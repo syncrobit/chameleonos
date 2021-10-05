@@ -4,7 +4,7 @@ SSH_SERVER=revtun.sbinternal.net
 SSH_PORT=2304
 SSH_USER=root
 
-RPI_SN=$(cat /proc/cpuinfo | grep Serial | cut -d : -f 2 | tr -d ' ')
+RPI_SN=$(/etc/init.d/boardsn)
 RPI_SN_PART=${RPI_SN: -4}
 TUNNEL_PORT=$(printf "%d" 0x${RPI_SN_PART})
 LOG_FILE=/var/log/ssh_reverse_tunnel.log

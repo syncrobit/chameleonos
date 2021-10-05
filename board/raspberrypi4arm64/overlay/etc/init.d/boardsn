@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ -f /data/etc/boardsn.conf ]]; then
+    cat /data/etc/boardsn.conf
+    exit
+fi
+
 sn=$(cat /proc/cpuinfo | grep Serial | tr -d ' ' | cut -d ':' -f 2)
 echo ${sn: -8}
-

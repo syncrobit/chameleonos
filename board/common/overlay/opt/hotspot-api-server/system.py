@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional, Tuple
 ETH_MAC_FILE = '/sys/class/net/eth0/address'
 WLAN_MAC_FILE = '/sys/class/net/wlan0/address'
 BT_MAC_CMD = 'hcitool dev | grep hci0 | cut -f 3'
+BOARD_SN_CMD = '/etc/init.d/boardsn'
 FW_VERSION_CMD = '/sbin/fwupdate current'
 UPTIME_CMD = 'cat /proc/uptime | grep -oE "^[[:digit:]]+"'
 REBOOT_CMD = '/sbin/reboot'
@@ -39,12 +40,7 @@ def remount_boot(rw: bool) -> None:
 
 
 def get_rpi_sn() -> str:
-    with open('/proc/cpuinfo', 'rt') as f:
-        for line in f:
-            if line.startswith('Serial'):
-                return line.strip()[-8:]
-
-    return '00000000'
+    return subprocess.check_output(BOARD_SN_CMD, shell=True).decode().strip()
 
 
 def get_os_prefix() -> str:
