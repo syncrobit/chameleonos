@@ -1,8 +1,8 @@
 #!/bin/bash
 
-REGIONS="us-east-1 eu-central-1 ap-south-1"
+REGIONS="us-east-2 eu-central-1 ap-northeast-1"
 BUCKET="syncrobit-firmware"
-S3CMD="s3cmd -c ${HOME}/.s3cfg-linode"
+S3CMD="s3cmd -c ${HOME}/.s3cfg-chameleon"
 
 function exit_usage() {
     echo "Usage: $0 <release-stable|release-beta|unrelease-stable|unrelease-beta|promote-stable|promote-beta|upload> [image.xz]"
