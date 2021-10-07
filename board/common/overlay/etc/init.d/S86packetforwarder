@@ -147,10 +147,7 @@ start() {
     done
     
     # Remember the region for future use
-    reg_prefix="$(echo ${reg} | cut -b1-2 | tr A-Z a-z)."
-    if [[ "${reg_prefix}" == "us." ]]; then
-        reg_prefix=""  # US works without prefix since it's the default
-    fi
+    reg_prefix="$(echo ${reg} | cut -b1-2 | tr A-Z a-z)"
     echo "REGION=${reg}" > ${REG_CONF}
     echo "REGION_PREFIX=${reg_prefix}" >> ${REG_CONF}
 

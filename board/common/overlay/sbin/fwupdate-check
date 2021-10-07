@@ -2,11 +2,11 @@
 
 source /etc/init.d/base
 
-#BASE_URL="https://fwd.%ssyncrob.it"  # Use if service can't do region redirection
+#BASE_URL="https://fwd-%s.syncrob.it"  # Use if service can't do region redirection
 BASE_URL="https://fwd.syncrob.it"
 REG_CONF="/var/lib/reg.conf"
 MIN_UPTIME=3600
-#ACTIVE_CHECK_ENDPOINT_URL="https://api.%ssyncrob.it/activecheck/"  # Use if service can't do region redirection
+#ACTIVE_CHECK_ENDPOINT_URL="https://api-%s.syncrob.it/activecheck/"  # Use if service can't do region redirection
 ACTIVE_CHECK_ENDPOINT_URL="https://api.syncrob.it/activecheck/"
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 

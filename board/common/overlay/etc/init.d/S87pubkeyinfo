@@ -2,7 +2,7 @@
 
 PROG="/usr/libexec/print-pub-key-info"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
-#PROV_REGISTER_URL="https://api.%ssyncrob.it/alienunit/"  # Use if service can't do region redirection
+#PROV_REGISTER_URL="https://api-%s.syncrob.it/alienunit/"  # Use if service can't do region redirection
 PROV_REGISTER_URL="https://api.syncrob.it/alienunit/"
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 REG_CONF="/var/lib/reg.conf"

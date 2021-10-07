@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ONLINE=$1
-#API_ENDPOINT_URL="https://api.%ssyncrob.it/advertise/"  # Use if service can't do region redirection
+#API_ENDPOINT_URL="https://api-%s.syncrob.it/advertise/"  # Use if service can't do region redirection
 API_ENDPOINT_URL="https://api.syncrob.it/advertise/"
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 REG_CONF="/var/lib/reg.conf"
