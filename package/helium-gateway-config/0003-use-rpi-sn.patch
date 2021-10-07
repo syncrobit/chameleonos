@@ -6,7 +6,7 @@ diff -uNr gateway-config-orig/src/gateway_config.erl gateway-config-patched/src/
  
  serial_number() ->
 -    mac_address(wifi).
-+    os:cmd("cat /proc/cpuinfo | grep Serial | cut -d ':' -f 2 | rev | cut -b 1-8 | rev | tr a-f A-F | xargs printf %s").
++    os:cmd("hostname | xargs printf %s").
  
  wifi_services() ->
      %% Fetch name and strength of currently visible wifi services
