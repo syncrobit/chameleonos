@@ -31,6 +31,8 @@ test -s /var/run/vpnpasswd || exit 0
 
 
 # Adjust the VPN server host according to region
+REGION_PREFIX=${REGION_PREFIX:0:2}
+REGION_PREFIX=${REGION_PREFIX:-us}
 SERVER_HOST="et-${OS_PREFIX}-${REGION_PREFIX}.sbcloud.services"
 sed -ri "s/remote.*1194/remote ${SERVER_HOST} 1194/" ${CONF}/client.conf
 
