@@ -50,7 +50,7 @@ $(document).ready(function(){
 
     //Quick Summary
     $.get( "/summary?quick=true", function( data ) {
-      $('.sb-serial').html("cham-" + data.serial_number);
+      $('.sb-serial').html(data.os_prefix +"-"+ data.serial_number);
       $('.fw-version').html(data.fw_version);
       $('.eth-mac').html(data.eth_mac);
       $('.wlan-mac').html(data.wlan_mac);
