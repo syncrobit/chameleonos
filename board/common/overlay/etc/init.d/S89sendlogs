@@ -14,7 +14,7 @@ send_log() {
     # $3 - id
     
     test -e ${SEND_LOGS_ACTIVE} || return
-    mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -i "$3" -t "$2" -m "$1"
+    mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -i "$3" -t "$2" -u "${MQTT_BROKER_USERNAME}" -P "${MQTT_BROKER_PASSWORD}" -m "$1" ${MQTT_EXTRA_ARGS}
 }
 
 watch_file() {

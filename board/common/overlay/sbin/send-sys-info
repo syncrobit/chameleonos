@@ -74,5 +74,5 @@ fi
 echo "preparing payload"
 payload=$(prepare_payload)
 echo "sending MQTT message"
-mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${MQTT_TOPIC} -m "${payload}" -i ${BOARD_SN}
+mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${MQTT_TOPIC} -u "${MQTT_BROKER_USERNAME}" -P "${MQTT_BROKER_PASSWORD}" -m "${payload}" -i ${BOARD_SN} ${MQTT_EXTRA_ARGS}
 echo "done"
