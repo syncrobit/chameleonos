@@ -9,7 +9,7 @@ import subprocess
 
 
 MINER_HEIGHT_CMD = '/opt/miner/bin/miner info height'
-MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep listen_addrs -A2 | tail -n1 | tr -d "|"'
+MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep " listen_addrs" -A2 | tail -n1 | tr -d "|"'
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'

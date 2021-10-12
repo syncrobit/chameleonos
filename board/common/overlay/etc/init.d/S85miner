@@ -14,6 +14,7 @@ HARDWARE_CONF="/var/run/hardware.conf"
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
 WATCH_LAG_INTERVAL_STARTUP=300
+WATCH_P2P_INTERVAL=3600
 NETWORK_TIMEOUT=3600
 MAX_LAG=250
 MIN_FREE_SPACE=1024 # MB
@@ -22,6 +23,10 @@ SYNC_URL="https://msync.syncrob.it/"
 FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
 NO_SYNC_FILE="/data/etc/miner_no_sync"
 DEF_PORT=44158
+AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
+
+PANIC_ON_RELAYED=false
+PANIC_ON_UNREACHABLE=false
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -95,6 +100,41 @@ watch_lag() {
             force_sync
         fi
         panic_action miner "lag is ${lag} > ${MAX_LAG}"
+    done
+}
+
+watch_p2p() {
+    while true; do
+        sleep ${WATCH_P2P_INTERVAL}
+        
+        # Don't check p2p during syncing
+        if ps aux | grep snapshot | grep -qv grep; then
+            continue
+        fi
+
+        listen_addr=$(${FULL_PROG} peer book -s | grep " listen_addrs" -A2 | tail -n1 | tr -d "|")
+        test -n "${listen_addr}" || continue
+        if [[ "${listen_addr}" =~ ^/ip4/([0-9.]+)/tcp/([0-9]+)$ ]]; then
+            listen_ip=${BASH_REMATCH[1]}
+            listen_port=${BASH_REMATCH[2]}
+            if [[ ${PANIC_ON_UNREACHABLE} == true ]]; then
+                body="{\"ip_address\":\"${listen_ip}\",\"port\":${listen_port}}"
+                url="https://api.syncrob.it/minerlistencheck/"
+                output=$(curl --fail -m 120 --silent --show-error --location-trusted -H "Authorization: ${AUTH_TOKEN}" "${url}" -d "${body}")
+                status=$(jq -r .status <<< "${output}")
+                if [[ "${status}" == "Port open" ]]; then
+                    logger -t miner "miner is reachable at ${listen_ip}:${listen_port}"
+                else
+                    panic_action miner "miner is unreachable at ${listen_ip}:${listen_port}"
+                fi
+            fi
+        else
+            if [[ ${PANIC_ON_RELAYED} == true ]]; then
+                panic_action miner "connection is relayed: ${listen_addr}"
+            else
+                logger -t miner "connection is relayed: ${listen_addr}"
+            fi
+        fi
     done
 }
 
@@ -275,8 +315,11 @@ start() {
     
     # Start the miner
     nice -n 10 ${PROG} foreground &>> ${LOG} &
+    
+    # Start the watchers
     watch_prog &
     watch_lag &
+    watch_p2p &
 
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
     test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
