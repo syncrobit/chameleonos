@@ -61,13 +61,13 @@ $(document).ready(function(){
 
       //Stats
       var storage_percent = ((data.storage_used/data.storage_total) * 100).toFixed(2) + "%";
-      var mem_percent = ((data.mem_used/data.mem_total) * 100).toFixed(2) + "%";
+      var mem_percent = (((data.mem_used + data.swap_used)/(data.mem_total + data.swap_total)) * 100).toFixed(2) + "%";
       $('.cpu-usage').html(data.cpu_usage + "%");
       $('.cpu-progress').css('width', data.cpu_usage + "%");
       $('.storage-usage').html(formatBytes(data.storage_used) + "/" + formatBytes(data.storage_total));
       $('.storage-progress').css('width', storage_percent);
       $('.storage-per-used').html(storage_percent);
-      $('.memory_usge').html(formatBytes(data.mem_used) + "/" + formatBytes(data.mem_total))
+      $('.memory_usge').html(formatBytes(data.mem_used + data.swap_used) + "/" + formatBytes(data.mem_total + data.swap_total))
       $('.mem-per-used').html(mem_percent);
       $('.mem-progress').css('width', mem_percent);
       
@@ -100,10 +100,10 @@ $(document).ready(function(){
     //Live stats
     setInterval(function(){ 
       $.get( "/summary?quick=true", function( data ) {
-        var mem_percent = ((data.mem_used/data.mem_total) * 100).toFixed(2) + "%";
+        var mem_percent = (((data.mem_used + data.swap_used)/(data.mem_total + data.swap_total)) * 100).toFixed(2) + "%";
         $('.cpu-usage').html(data.cpu_usage + "%");
         $('.cpu-progress').css('width', data.cpu_usage + "%");
-        $('.memory_usge').html(formatBytes(data.mem_used) + "/" + formatBytes(data.mem_total))
+        $('.memory_usge').html(formatBytes(data.mem_used + data.swap_used) + "/" + formatBytes(data.mem_total + data.swap_total))
         $('.mem-per-used').html(mem_percent);
         $('.mem-progress').css('width', mem_percent);
       });
