@@ -8,8 +8,11 @@ import re
 import subprocess
 
 
-MINER_HEIGHT_CMD = '/opt/miner/bin/miner info height'
-MINER_LISTEN_ADDR_CMD = '/opt/miner/bin/miner peer book -s | grep " listen_addrs" -A2 | tail -n1 | tr -d "|"'
+MINER_CMD = '/opt/miner/bin/miner'
+MINER_HEIGHT_CMD = f'{MINER_CMD} info height'
+MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep " listen_addrs" -A2 | tail -n1 | tr -d "|"'
+MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
+MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s --payer %(payer)s'
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
@@ -122,6 +125,32 @@ def restart() -> None:
     logging.info('restarting miner')
     try:
         subprocess.check_call(MINER_RESTART_CMD, shell=True, timeout=MINER_TIMEOUT)
+
+    except Exception:
+        pass
+
+
+def txn_add_gateway(owner: str, payer: str) -> Optional[str]:
+    logging.info('pushing add_gateway transaction to miner')
+
+    cmd = MINER_ADD_GATEWAY_CMD % {'owner': owner, 'payer': payer}
+
+    try:
+        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT)
+        return output.decode().strip() or None
+
+    except Exception:
+        pass
+
+
+def txn_assert_location(owner: str, payer: str, location) -> Optional[str]:
+    logging.info('pushing assert_location transaction to miner')
+
+    cmd = MINER_ASSERT_LOCATION_CMD % {'owner': owner, 'payer': payer, 'location': location}
+
+    try:
+        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT)
+        return output.decode().strip() or None
 
     except Exception:
         pass

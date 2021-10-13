@@ -339,6 +339,39 @@ async def resync(request: web.Request) -> web.Response:
     return web.Response(status=204)
 
 
+@router.post('/txn/add_gateway')
+@handle_auth
+async def txn_add_gateway(request: web.Request) -> web.Response:
+    data = await request.json()
+    owner = data.get('owner')
+    if not owner:
+        return web.json_response({'message': 'missing "owner" field'}, status=400)
+    payer = data.get('payer')
+    if not payer:
+        return web.json_response({'message': 'missing "payer" field'}, status=400)
+
+    result = miner.txn_add_gateway(owner, payer)
+    return web.Response(status=201, body=result)
+
+
+@router.post('/txn/assert_location')
+@handle_auth
+async def txn_assert_location(request: web.Request) -> web.Response:
+    data = await request.json()
+    owner = data.get('owner')
+    if not owner:
+        return web.json_response({'message': 'missing "owner" field'}, status=400)
+    payer = data.get('payer')
+    if not payer:
+        return web.json_response({'message': 'missing "payer" field'}, status=400)
+    location = data.get('location')
+    if not location:
+        return web.json_response({'message': 'missing "location" field'}, status=400)
+
+    result = miner.txn_assert_location(owner, payer, location)
+    return web.Response(status=201, body=result)
+
+
 @router.get('/fwupdate')
 @handle_auth
 async def get_fwupdate(request: web.Request) -> web.Response:
