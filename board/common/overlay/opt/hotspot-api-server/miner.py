@@ -12,7 +12,8 @@ MINER_CMD = '/opt/miner/bin/miner'
 MINER_HEIGHT_CMD = f'{MINER_CMD} info height'
 MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep " listen_addrs" -A2 | tail -n1 | tr -d "|"'
 MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
-MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s --payer %(payer)s'
+MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s ' \
+                            f'--payer %(payer)s --nonce %(nonce)s'
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
@@ -143,10 +144,10 @@ def txn_add_gateway(owner: str, payer: str) -> Optional[str]:
         pass
 
 
-def txn_assert_location(owner: str, payer: str, location) -> Optional[str]:
+def txn_assert_location(owner: str, payer: str, location: str, nonce: int) -> Optional[str]:
     logging.info('pushing assert_location transaction to miner')
 
-    cmd = MINER_ASSERT_LOCATION_CMD % {'owner': owner, 'payer': payer, 'location': location}
+    cmd = MINER_ASSERT_LOCATION_CMD % {'owner': owner, 'payer': payer, 'location': location, nonce: nonce}
 
     try:
         output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT)

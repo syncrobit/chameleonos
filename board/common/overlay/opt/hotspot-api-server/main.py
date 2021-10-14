@@ -367,8 +367,9 @@ async def txn_assert_location(request: web.Request) -> web.Response:
     location = data.get('location')
     if not location:
         return web.json_response({'message': 'missing "location" field'}, status=400)
+    nonce = data.get('nonce', 1)
 
-    result = miner.txn_assert_location(owner, payer, location)
+    result = miner.txn_assert_location(owner, payer, location, nonce)
     return web.Response(status=201, body=result)
 
 
