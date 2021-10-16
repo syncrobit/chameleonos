@@ -17,8 +17,9 @@ MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s lo
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
-NAT_CONF_FILE = '/data/etc/nat.conf'
+CONF_FILE = '/data/etc/nat.conf'
 FORCE_RESYNC_FILE = '/var/lib/miner/force_resync'
+NO_SYNC_FILE = '/data/etc/miner_no_sync'
 SWARM_KEY_FILE = '/var/lib/user_swarm_key'
 
 
@@ -60,17 +61,19 @@ def is_swarm_key_mode() -> bool:
     return os.path.exists(SWARM_KEY_FILE)
 
 
-def get_nat_config() -> Dict[str, Any]:
-    nat_config = {
-        'external_ip': None,
-        'external_port': None,
-        'internal_port': None
+def get_config() -> Dict[str, Any]:
+    current_config = {
+        'nat_external_ip': None,
+        'nat_external_port': None,
+        'nat_internal_port': None,
+        'panic_on_relayed': False,
+        'panic_on_unreachable': False
     }
 
-    if not os.path.exists(NAT_CONF_FILE):
-        return nat_config
+    if not os.path.exists(CONF_FILE):
+        return current_config
 
-    with open(NAT_CONF_FILE, 'rt') as f:
+    with open(CONF_FILE, 'rt') as f:
         for line in f:
             line = line.strip()
             try:
@@ -79,7 +82,6 @@ def get_nat_config() -> Dict[str, Any]:
             except ValueError:
                 continue
 
-            k = k[4:].lower()  # Skip NAT_
             if k.endswith('port'):
                 try:
                     v = int(v)
@@ -87,27 +89,33 @@ def get_nat_config() -> Dict[str, Any]:
                 except ValueError:
                     continue
 
-            nat_config[k] = v
+            if k.startswith('panic_on'):
+                v = v.lower() == 'true'
 
-    return nat_config
+            current_config[k] = v
+
+    return current_config
 
 
-def set_nat_config(nat: Dict[str, Any]) -> None:
-    logging.info('updating NAT config: %s', nat)
+def set_config(config: Dict[str, Any]) -> None:
+    logging.info('updating miner config: %s', config)
 
     # Use current values for missing entries
-    current_config = get_nat_config()
+    current_config = get_config()
     for k, v in current_config.items():
-        nat.setdefault(k, v)
+        config.setdefault(k, v)
 
-    with open(NAT_CONF_FILE, 'wt') as f:
-        for k, v in nat.items():
+    with open(CONF_FILE, 'wt') as f:
+        for k, v in config.items():
             if v is None:
                 continue
 
             if isinstance(v, str):  # Strip spaces, preventing some cases of invalid IP addresses
                 v = v.strip()
-            k = f'NAT_{k.upper()}'
+            elif isinstance(v, bool):
+                v = str(v).lower()
+
+            k = k.upper()
             line = f'{k}={v}\n'
             f.write(line)
 

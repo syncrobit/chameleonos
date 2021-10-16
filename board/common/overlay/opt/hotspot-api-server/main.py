@@ -185,19 +185,25 @@ async def get_activity(request: web.Request) -> web.Response:
 async def get_config(request: web.Request) -> web.Response:
     cpu_freq_config = cpufreq.get_config()
     led_strip_config = ledstrip.get_config()
-    nat_config = miner.get_nat_config()
+    miner_config = miner.get_config()
     pf_config = pf.get_config()
 
     config = {
         'cpu_freq_max': cpu_freq_config['max'],
+
         'led_brightness': led_strip_config['brightness'],
         'led_ok_color': led_strip_config['ok_color'],
-        'nat_external_ip': nat_config['external_ip'],
-        'nat_external_port': nat_config['external_port'],
-        'nat_internal_port': nat_config['internal_port'],
+
+        'nat_external_ip': miner_config['nat_external_ip'],
+        'nat_external_port': miner_config['nat_external_port'],
+        'nat_internal_port': miner_config['nat_internal_port'],
+        'panic_on_relayed': miner_config['panic_on_relayed'],
+        'panic_on_unreachable': miner_config['panic_on_unreachable'],
+
         'pf_antenna_gain': pf_config['antenna_gain'],
         'pf_rssi_offset': pf_config['rssi_offset'],
         'pf_tx_power': pf_config['tx_power'],
+
         'remote_enabled': remote.is_enabled(),
         'external_wifi_antenna': system.is_ext_wifi_antenna_enabled()
     }
@@ -206,9 +212,12 @@ async def get_config(request: web.Request) -> web.Response:
         config['CPU Max Frequency'] = f"{int(config.pop('cpu_freq_max') / 1000)} MHz"
         config['LED Brightness'] = f"{config.pop('led_brightness')} %"
         config['LED OK Color'] = config.pop('led_ok_color')
-        config['NAT External IP:Port'] = \
+        config['NAT External IP:Port'] = (
             f"{config.pop('nat_external_ip') or ''}:{config.pop('nat_external_port') or ''}"
+        )
         config['NAT Internal Port'] = str(config.pop('nat_internal_port') or '')
+        config['Panic On Relayed'] = ['no', 'yes'][config.pop('panic_on_relayed')]
+        config['Panic On Unreachable'] = ['no', 'yes'][config.pop('panic_on_unreachable')]
         config['Antenna Gain'] = f"{config.pop('pf_antenna_gain')} dBi"
         config['RSSI Offset'] = f"{config.pop('pf_rssi_offset')} dB"
         config['TX Power'] = f"{config.pop('pf_tx_power')} dBm"
@@ -244,13 +253,15 @@ async def set_config(request: web.Request) -> web.Response:
         ledstrip.set_config(led_strip_config)
         ledstrip.restart()
 
-    nat_config = {}
-    for field in ('external_ip', 'external_port', 'internal_port'):
-        if f'nat_{field}' in config:
-            nat_config[field] = config[f'nat_{field}']
+    miner_config = {}
+    for field in (
+        'nat_external_ip', 'nat_external_port', 'nat_internal_port', 'panic_on_relayed', 'panic_on_unreachable'
+    ):
+        if field in config:
+            miner_config[field] = config[field]
 
-    if nat_config:
-        miner.set_nat_config(nat_config)
+    if miner_config:
+        miner.set_config(miner_config)
         needs_restart_miner = True
 
     pf_config = {}
