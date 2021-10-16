@@ -18,6 +18,8 @@ test -x ${PROG} || exit 0
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
 prepare_conf ${CONF} ${SYS_CONF} ${BOOT_CONF}
+# fix empty bluetooth conf file
+test -s ${CONF} || cp ${SYS_CONF} ${CONF}
 test -s ${CONF} || exit 0
 
 
