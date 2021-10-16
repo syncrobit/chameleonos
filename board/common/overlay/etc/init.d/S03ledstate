@@ -6,9 +6,11 @@ STATE_FILE="/var/run/led_state"
 PAIRING_FILE="/var/run/pairing"
 PID_FILE="/var/run/led_strip.pid"
 HW_CONF="/var/run/hardware.conf"
+NETWORK_TIMEOUT=30
 
 SYS_CONF="/etc/ledstrip.conf"
 CONF="/data/etc/ledstrip.conf"
+
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -21,10 +23,11 @@ test -s ${CONF} && source ${CONF}
 
 declare -A STATE_COLORS=( \
     [powered_up]=white \
-    [ip_ready]=yellow \
+    [ip_ready]=white \
     [miner_syncing]=orange \
     [lora_ready]=${LED_STRIP_OK_COLOR} \
     [updating_firmware]=cyan \
+    [no_net]=yellow \
     [panic]=red \
     [rebooting]=magenta \
 )
@@ -35,12 +38,18 @@ declare -A STATE_PATTERNS=( \
     [miner_syncing]=progress \
     [lora_ready]=steady \
     [updating_firmware]=fade \
+    [no_net]=fade \
     [panic]=fade \
     [rebooting]=fade \
 )
 
 PAIRING_COLOR=blue
 
+
+function has_network() {
+    result=$(ip route get 1.1.1.1 2>/dev/null)
+    test -n "${result}" || return 1
+}
 
 function get_state() {
     if [[ -s /tmp/rcK.pid ]] && kill -0 $(cat /tmp/rcK.pid) &>/dev/null; then
@@ -53,8 +62,10 @@ function get_state() {
         echo "lora_ready"
     elif ps aux | grep snapshot | grep -qv grep; then
         echo "miner_syncing"
-    elif [[ -e /var/run/connman/resolv.conf ]] && connmand-wait-online --timeout=1 &> /dev/null; then
+    elif has_network; then
         echo "ip_ready"
+    elif [[ $(cat /proc/uptime | grep -oE '^[[:digit:]]+') -gt ${NETWORK_TIMEOUT} ]]; then
+        echo "no_net"
     else
         echo "powered_up"
     fi
