@@ -188,9 +188,18 @@ sync_from_snapshot() {
     # Avoid panic reboots during snapshot load
     panic_inhibit
 
-    # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
+    # Increase miner command timeout
     export NODETOOL_TIMEOUT=600000
+    
+    # Pause miner sync during snapshot load
+    ${FULL_PROG} repair sync_pause >/dev/null
+
+    # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
     ${FULL_PROG} snapshot load /data/snapshot.bin &>/dev/null
+
+    # Resume miner sync after snapshot load
+    ${FULL_PROG} repair sync_resume >/dev/null
+
     msg_done
 }
 
@@ -250,9 +259,6 @@ start() {
         # Adjust dirs
         sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
         sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
-        
-        # Disable S3 snapshot loading
-        sed -ri 's;snapshots.helium.wtf;snapshots.helium.stf;' ${RELX_CONFIG_PATH}
         
         # Impose a snapshot memory limit
         sed -ri 's;\{honor_quick_sync;\{snapshot_memory_limit, 400\},\n   \{honor_quick_sync;' ${RELX_CONFIG_PATH}
