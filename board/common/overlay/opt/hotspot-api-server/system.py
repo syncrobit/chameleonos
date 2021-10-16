@@ -23,7 +23,7 @@ MINER_DATA_DIR = '/var/lib/miner'
 FACTORY_RESET_SERVICES = ['miner', 'packetforwarder', 'gatewayconfig', 'connman']
 FACTORY_RESET_CONF_FILES = [
     '/var/lib/reg.conf',
-    '/data/etc/nat.conf',
+    '/data/etc/miner.conf',
     '/data/etc/packet_forwarder.conf'
     '/data/etc/ledstrip.conf'
 ]

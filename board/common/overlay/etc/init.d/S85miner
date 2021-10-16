@@ -8,7 +8,8 @@ USER_SWARM_KEY="/var/lib/user_swarm_key"
 MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
 SYS_CONF_PATTERN="/opt/miner/releases/*/sys.config"
 USER_CONF="/data/etc/miner_sys.config"
-NAT_CONF="/data/etc/nat.conf"
+MINER_CONF="/data/etc/miner.conf"
+MINER_LEGACY_CONF="/data/etc/nat.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
 
 WATCH_PROG_INTERVAL=10
@@ -31,7 +32,8 @@ FORCE_SYNC_ENABLED=true
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
-test -s ${NAT_CONF} && source ${NAT_CONF}
+test -f ${MINER_LEGACY_CONF} && mv ${MINER_LEGACY_CONF} ${MINER_CONF}
+test -s ${MINER_CONF} && source ${MINER_CONF}
 
 source ${HARDWARE_CONF}
 

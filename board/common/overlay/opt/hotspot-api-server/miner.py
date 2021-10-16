@@ -17,7 +17,7 @@ MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s lo
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
-CONF_FILE = '/data/etc/nat.conf'
+CONF_FILE = '/data/etc/miner.conf'
 FORCE_SYNC_FILE = '/var/lib/miner/force_sync'
 SWARM_KEY_FILE = '/var/lib/user_swarm_key'
 
