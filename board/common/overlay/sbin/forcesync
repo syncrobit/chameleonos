@@ -1,8 +1,7 @@
 #!/bin/bash
 
-FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
+FORCE_SYNC_FILE="/var/lib/miner/force_sync"
 
-
-mkdir -p $(dirname ${FORCE_RESYNC_FILE})
-touch ${FORCE_RESYNC_FILE}
+mkdir -p $(dirname ${FORCE_SYNC_FILE})
+touch ${FORCE_SYNC_FILE}
 service miner restart

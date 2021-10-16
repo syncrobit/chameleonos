@@ -18,8 +18,7 @@ MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
 CONF_FILE = '/data/etc/nat.conf'
-FORCE_RESYNC_FILE = '/var/lib/miner/force_resync'
-NO_SYNC_FILE = '/data/etc/miner_no_sync'
+FORCE_SYNC_FILE = '/var/lib/miner/force_sync'
 SWARM_KEY_FILE = '/var/lib/user_swarm_key'
 
 
@@ -67,7 +66,8 @@ def get_config() -> Dict[str, Any]:
         'nat_external_port': None,
         'nat_internal_port': None,
         'panic_on_relayed': False,
-        'panic_on_unreachable': False
+        'panic_on_unreachable': False,
+        'force_sync_enabled': True
     }
 
     if not os.path.exists(CONF_FILE):
@@ -89,7 +89,7 @@ def get_config() -> Dict[str, Any]:
                 except ValueError:
                     continue
 
-            if k.startswith('panic_on'):
+            if k.startswith('panic_on') or k.endswith('enabled'):
                 v = v.lower() == 'true'
 
             current_config[k] = v
@@ -121,10 +121,10 @@ def set_config(config: Dict[str, Any]) -> None:
 
 
 def resync() -> None:
-    logging.info('forcing miner resync')
+    logging.info('forcing miner sync')
 
-    if os.path.exists(os.path.dirname(FORCE_RESYNC_FILE)):
-        with open(FORCE_RESYNC_FILE, 'w'):
+    if os.path.exists(os.path.dirname(FORCE_SYNC_FILE)):
+        with open(FORCE_SYNC_FILE, 'w'):
             pass
 
     restart()

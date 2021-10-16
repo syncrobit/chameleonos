@@ -20,13 +20,13 @@ MAX_LAG=250
 MIN_FREE_SPACE=1024 # MB
 MIN_FREE_SPACE_LEEWAY=512 # MB
 SYNC_URL="https://msync.syncrob.it/"
-FORCE_RESYNC_FILE="/var/lib/miner/force_resync"
-NO_SYNC_FILE="/data/etc/miner_no_sync"
+FORCE_SYNC_FILE="/var/lib/miner/force_sync"
 DEF_PORT=44158
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 
 PANIC_ON_RELAYED=false
 PANIC_ON_UNREACHABLE=false
+FORCE_SYNC_ENABLED=true
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
@@ -49,17 +49,17 @@ get_lag() {
 }
 
 force_sync() {
-    mkdir -p $(dirname ${FORCE_RESYNC_FILE}) && touch ${FORCE_RESYNC_FILE}
+    mkdir -p $(dirname ${FORCE_SYNC_FILE}) && touch ${FORCE_SYNC_FILE}
 }
 
 watch_prog() {
     # During normal running, we add an extra leeway when checking for free space,
-    # to make sure the free space check at next reboot will fail and do a resync.
+    # to make sure the free space check at next reboot will fail and do a force sync.
     min_free_space_watch=$((${MIN_FREE_SPACE} - ${MIN_FREE_SPACE_LEEWAY})) # MB
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
-            if ! [[ -f ${NO_SYNC_FILE} ]]; then
+            if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
                 force_sync
             fi
             panic_action miner "service dead"
@@ -96,7 +96,7 @@ watch_lag() {
             logger -t miner "lag is ${lag}"
             continue
         fi
-        if ! [[ -f ${NO_SYNC_FILE} ]]; then
+        if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
             force_sync
         fi
         panic_action miner "lag is ${lag} > ${MAX_LAG}"
@@ -212,7 +212,7 @@ sync_background() {
 }
 
 start() {
-    # If we don't have enough storage space, remove miner data and do a resync
+    # If we don't have enough storage space, remove miner data and do a force sync
     free_mb=$(free_space)
     if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
         msg_begin "Removing miner data due to low space"
@@ -220,8 +220,8 @@ start() {
         rm -rf /var/lib/miner
     fi
     
-    if [[ -f ${FORCE_RESYNC_FILE} ]]; then
-        msg_begin "Forcing miner data resync"
+    if [[ -f ${FORCE_SYNC_FILE} ]]; then
+        msg_begin "Forcing miner data sync"
         msg_done
         rm -rf /var/lib/miner
     fi
@@ -267,7 +267,7 @@ start() {
         if [[ -s ${USER_SWARM_KEY} ]]; then
             sed -ri 's/(.*key_slot.*)/%%\1/' ${RELX_CONFIG_PATH}
 
-            # If swarm key has changed, we need to resync
+            # If swarm key has changed, we need to force sync
             new_sk_hash=$(md5sum ${USER_SWARM_KEY} | cut -d ' ' -f 1)
             test -s ${MINER_SWARM_KEY} && old_sk_hash=$(md5sum ${MINER_SWARM_KEY} | cut -d ' ' -f 1)
             test "${old_sk_hash}" == "${new_sk_hash}" || sync_needed="true"
@@ -340,7 +340,7 @@ start() {
     fi
     msg_done "connected"
 
-    if [[ "${sync_needed}" == "true" ]] && ! [[ -f ${NO_SYNC_FILE} ]]; then
+    if [[ "${sync_needed}" == "true" ]] && [[ ${FORCE_SYNC_ENABLED} == true ]]; then
         msg_begin "Synchronizing miner data"
         sync_background &>/dev/null &
         msg_done "background"

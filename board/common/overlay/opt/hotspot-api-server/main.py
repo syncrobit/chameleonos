@@ -199,6 +199,7 @@ async def get_config(request: web.Request) -> web.Response:
         'nat_internal_port': miner_config['nat_internal_port'],
         'panic_on_relayed': miner_config['panic_on_relayed'],
         'panic_on_unreachable': miner_config['panic_on_unreachable'],
+        'force_sync_enabled': miner_config['force_sync_enabled'],
 
         'pf_antenna_gain': pf_config['antenna_gain'],
         'pf_rssi_offset': pf_config['rssi_offset'],
@@ -218,6 +219,7 @@ async def get_config(request: web.Request) -> web.Response:
         config['NAT Internal Port'] = str(config.pop('nat_internal_port') or '')
         config['Panic On Relayed'] = ['no', 'yes'][config.pop('panic_on_relayed')]
         config['Panic On Unreachable'] = ['no', 'yes'][config.pop('panic_on_unreachable')]
+        config['Force-sync Enabled'] = ['no', 'yes'][config.pop('force_sync_enabled')]
         config['Antenna Gain'] = f"{config.pop('pf_antenna_gain')} dBi"
         config['RSSI Offset'] = f"{config.pop('pf_rssi_offset')} dB"
         config['TX Power'] = f"{config.pop('pf_tx_power')} dBm"
@@ -255,7 +257,12 @@ async def set_config(request: web.Request) -> web.Response:
 
     miner_config = {}
     for field in (
-        'nat_external_ip', 'nat_external_port', 'nat_internal_port', 'panic_on_relayed', 'panic_on_unreachable'
+        'nat_external_ip',
+        'nat_external_port',
+        'nat_internal_port',
+        'panic_on_relayed',
+        'panic_on_unreachable',
+        'force_sync_enabled'
     ):
         if field in config:
             miner_config[field] = config[field]
