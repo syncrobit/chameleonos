@@ -1,6 +1,6 @@
 
 import logging
-import os
+import os.path
 import psutil
 import subprocess
 
@@ -17,6 +17,7 @@ REBOOT_CMD = '/sbin/reboot'
 NET_TEST_CMD = '/sbin/nettest'
 DATA_DIR = '/data'
 CONFIG_TXT = '/boot/config.txt'
+LAST_PANIC_FILE = '/var/lib/last_panic'
 
 LOG_DIR = '/var/log'
 MINER_DATA_DIR = '/var/lib/miner'
@@ -185,6 +186,29 @@ def net_test(download_speed: bool = True, latency: bool = True, public_ip: bool 
         result[key] = value
 
     return result
+
+
+def get_last_panic_details() -> Optional[Dict[str, str]]:
+    if not os.path.exists(LAST_PANIC_FILE):
+        return
+
+    details = {}
+
+    with open(LAST_PANIC_FILE, 'rt') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+
+            parts = line.split('=')
+            if len(parts) != 2:
+                continue
+
+            name, value = parts
+            value = value.strip('"')
+            details[name] = value
+
+    return details
 
 
 def is_ext_wifi_antenna_enabled() -> bool:

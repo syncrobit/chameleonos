@@ -110,7 +110,8 @@ async def get_summary(request: web.Request) -> web.Response:
         'wlan_mac': system.get_wlan_mac(),
         'bt_mac': system.get_bt_mac(),
         'uptime': system.get_uptime(),
-        'time': int(time.time())
+        'time': int(time.time()),
+        'last_panic': system.get_last_panic_details()
     }
 
     if request.query.get('pretty') == 'true':
@@ -140,6 +141,12 @@ async def get_summary(request: web.Request) -> web.Response:
         summary['Bluetooth MAC'] = summary.pop('bt_mac')
         summary['Uptime'] = str(datetime.timedelta(seconds=summary.pop('uptime')))
         summary['Date/Time'] = f"{str(datetime.datetime.utcfromtimestamp(summary.pop('time')))} (UTC)"
+
+        last_panic = summary.pop('last_panic')
+        if last_panic:
+            summary['Last Panic'] = f'{last_panic["service"]}: {last_panic["message"]}'
+        else:
+            summary['Last Panic'] = 'none'
 
     return web.json_response(summary)
 
