@@ -261,7 +261,12 @@ start() {
         # Adjust dirs
         sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
         sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
-        
+
+        if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
+            # Disable S3 snapshot loading if we're going to use the fast sync
+            sed -ri 's;snapshots.helium.wtf;snapshots.helium.stf;' ${RELX_CONFIG_PATH}
+        fi
+                
         # Impose a snapshot memory limit
         sed -ri 's;\{honor_quick_sync;\{snapshot_memory_limit, 400\},\n   \{honor_quick_sync;' ${RELX_CONFIG_PATH}
         
