@@ -399,7 +399,6 @@ async def txn_assert_location(request: web.Request) -> web.Response:
 
 
 @router.get('/fwupdate')
-@handle_auth
 async def get_fwupdate(request: web.Request) -> web.Response:
     fwupdate_info = fwupdate.get_latest()
     fwupdate_info['status'] = fwupdate.get_status()
