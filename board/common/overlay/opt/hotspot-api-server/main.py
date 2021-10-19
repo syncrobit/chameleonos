@@ -452,6 +452,36 @@ async def get_log(request: web.Request) -> web.Response:
     return web.Response(content_type='text/plain', body=content)
 
 
+@router.get(r'/sbapi/{path:.+}')
+@handle_auth
+async def get_sbapi(request: web.Request) -> web.Response:
+    return await sbapi.passthrough(request)
+
+
+@router.post(r'/sbapi/{path:.+}')
+@handle_auth
+async def post_sbapi(request: web.Request) -> web.Response:
+    return await sbapi.passthrough(request)
+
+
+@router.patch(r'/sbapi/{path:.+}')
+@handle_auth
+async def patch_sbapi(request: web.Request) -> web.Response:
+    return await sbapi.passthrough(request)
+
+
+@router.put(r'/sbapi/{path:.+}')
+@handle_auth
+async def put_sbapi(request: web.Request) -> web.Response:
+    return await sbapi.passthrough(request)
+
+
+@router.delete(r'/sbapi/{path:.+}')
+@handle_auth
+async def delete_delete(request: web.Request) -> web.Response:
+    return await sbapi.passthrough(request)
+
+
 @router.get(r'/{path:[a-zA-Z0-9_/-]+}')
 @handle_auth
 async def html_page(request: web.Request) -> web.FileResponse:

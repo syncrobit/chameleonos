@@ -3,7 +3,10 @@ import re
 
 from typing import Optional
 
-import chamutils
+try:
+    import chamutils
+except:
+    pass
 
 
 PUB_KEY_HEX_FILE = '/var/run/public_key_hex'
