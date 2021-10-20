@@ -84,15 +84,11 @@ function state_loop() {
     done
     
     source ${HW_CONF}
-    if [[ "${HAS_LED_STRIP}" != true ]]; then
-        return  # No LED strip support, exit loop
-    fi
-    
+
     renice -10 ${BASHPID}  # Run LEDs with high prio
     echo > ${STATE_FILE}
     while true; do
         test -f ${STATE_FILE} || break  # Removing the file exits loop
-        source ${HW_CONF}
         old_state=$(cat ${STATE_FILE})
         new_state=$(get_state)
         if [[ "${old_state}" != "${new_state}" ]]; then
@@ -100,17 +96,21 @@ function state_loop() {
             echo "${new_state}" > ${STATE_FILE}
             echo "state is ${new_state}"
         fi
-        color=${STATE_COLORS[${new_state}]}
-        pattern=${STATE_PATTERNS[${new_state}]}
-        
-        if [[ "${pattern}" == "fade" ]]; then
-            ${LED_STRIP} fadein ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
-            ${LED_STRIP} fadeout ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
-        elif [[ "${pattern}" == "progress" ]]; then
-            ${LED_STRIP} progresslr ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
-            usleep 100000
-        else  # Assuming "steady"
-            ${LED_STRIP} on ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
+        if [[ "${HAS_LED_STRIP}" == true ]]; then
+            color=${STATE_COLORS[${new_state}]}
+            pattern=${STATE_PATTERNS[${new_state}]}
+            
+            if [[ "${pattern}" == "fade" ]]; then
+                ${LED_STRIP} fadein ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
+                ${LED_STRIP} fadeout ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
+            elif [[ "${pattern}" == "progress" ]]; then
+                ${LED_STRIP} progresslr ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
+                usleep 100000
+            else  # Assuming "steady"
+                ${LED_STRIP} on ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
+                sleep 2
+            fi
+        else
             sleep 2
         fi
     done
