@@ -9,6 +9,16 @@ import subprocess
 RESTART_CMD = 'service ledstate restart'
 CONF_FILE = '/data/etc/ledstrip.conf'
 SYS_CONF_FILE = '/etc/ledstrip.conf'
+STATE_FILE = '/var/run/led_state'
+DEF_STATE = 'powered_up'
+
+
+def get_current_state() -> str:
+    try:
+        with open(STATE_FILE, 'rt') as f:
+            return f.read().strip()
+    except Exception:
+        return DEF_STATE
 
 
 def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:

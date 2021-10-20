@@ -111,7 +111,8 @@ async def get_summary(request: web.Request) -> web.Response:
         'bt_mac': system.get_bt_mac(),
         'uptime': system.get_uptime(),
         'time': int(time.time()),
-        'last_panic': system.get_last_panic_details()
+        'last_panic': system.get_last_panic_details(),
+        'current_state': ledstrip.get_current_state()
     }
 
     if request.query.get('pretty') == 'true':
@@ -141,6 +142,7 @@ async def get_summary(request: web.Request) -> web.Response:
         summary['Bluetooth MAC'] = summary.pop('bt_mac')
         summary['Uptime'] = str(datetime.timedelta(seconds=summary.pop('uptime')))
         summary['Date/Time'] = f"{str(datetime.datetime.utcfromtimestamp(summary.pop('time')))} (UTC)"
+        summary['Current State'] = summary.pop('current_state')
 
         last_panic = summary.pop('last_panic')
         if last_panic:
