@@ -18,7 +18,7 @@ function prepare_payload() {
         miner_listen_addr=""
     else
         miner_height=$(/opt/miner/bin/miner info height | tr '\t' ' ' | tr -s ' ' | cut -d ' ' -f 2 | grep -E '[[:digit:]]+')
-        miner_listen_addr=$(/opt/miner/bin/miner peer book -s | grep " listen_addrs" -A2 | tail -n1 | tr -d '|')
+        miner_listen_addr=$(/opt/miner/bin/miner peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d '|')
     fi
     test -n "${miner_height}" || miner_height="null"
     uptime=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')

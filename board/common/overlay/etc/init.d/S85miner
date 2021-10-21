@@ -114,7 +114,7 @@ watch_p2p() {
             continue
         fi
 
-        listen_addr=$(${FULL_PROG} peer book -s | grep " listen_addrs" -A2 | tail -n1 | tr -d "|")
+        listen_addr=$(${FULL_PROG} peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d "|")
         test -n "${listen_addr}" || continue
         if [[ "${listen_addr}" =~ ^/ip4/([0-9.]+)/tcp/([0-9]+)$ ]]; then
             listen_ip=${BASH_REMATCH[1]}
