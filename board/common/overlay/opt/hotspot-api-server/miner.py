@@ -76,11 +76,14 @@ def get_config() -> Dict[str, Any]:
     with open(CONF_FILE, 'rt') as f:
         for line in f:
             line = line.strip()
+
             try:
                 k, v = line.split('=', 1)
 
             except ValueError:
                 continue
+
+            k = k.lower()
 
             if k.endswith('port'):
                 try:
