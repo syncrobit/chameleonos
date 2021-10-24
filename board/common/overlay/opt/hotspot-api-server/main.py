@@ -5,9 +5,10 @@ import base64
 import datetime
 import logging
 import os
+import ssl
 import time
 
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, Optional
 
 from aiohttp import web
 
@@ -536,6 +537,16 @@ def create_cors_middleware():
     return cors_middleware
 
 
+async def redirect_tls(request: web.Request) -> None:
+    url = request.url
+    url = url.with_port(settings.TLS_PORT)
+    url = url.with_scheme('https')
+    url = url.human_repr()
+    url = url.replace(':443', '')
+
+    raise web.HTTPMovedPermanently(url)
+
+
 def make_app() -> web.Application:
     app = web.Application()
     app.add_routes(router)
@@ -553,7 +564,23 @@ def make_app() -> web.Application:
     return app
 
 
-if __name__ == '__main__':
+def make_redirect_app() -> web.Application:
+    app = web.Application()
+    app.add_routes([web.get('/', redirect_tls)])
+
+    return app
+
+
+async def start_app(app: web.Application, ssl_context: Optional[ssl.SSLContext], port: int) -> web.AppRunner:
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, host='0.0.0.0', port=port, ssl_context=ssl_context)
+    await site.start()
+
+    return runner
+
+
+def main():
     logging.basicConfig(
         format='%(asctime)s [%(levelname)s]: %(message)s',
         level=logging.INFO,
@@ -561,5 +588,35 @@ if __name__ == '__main__':
     )
     logging.info('hello!')
 
+    loop = asyncio.get_event_loop()
+
     app = make_app()
-    web.run_app(app, port=settings.PORT, print=lambda *args: None)
+    redirect_app = None
+    ssl_context = None
+    port = settings.PORT
+    if settings.TLS_CERT and settings.TLS_KEY:
+        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile=settings.TLS_CA)
+        ssl_context.load_cert_chain(settings.TLS_CERT, settings.TLS_KEY)
+        port = settings.TLS_PORT
+        redirect_app = make_redirect_app()
+
+    runner = loop.run_until_complete(start_app(app, ssl_context, port))
+
+    redirect_runner = None
+    if redirect_app:
+        redirect_runner = loop.run_until_complete(start_app(redirect_app, ssl_context=None, port=settings.PORT))
+
+    try:
+        loop.run_forever()
+    except Exception:
+        pass
+    finally:
+        loop.run_until_complete(runner.cleanup())
+        if redirect_runner:
+            loop.run_until_complete(redirect_runner.cleanup())
+
+    logging.info('bye!')
+
+
+if __name__ == '__main__':
+    main()
