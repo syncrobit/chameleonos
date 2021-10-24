@@ -6,9 +6,13 @@ FULL_PROG=${WORK_DIR}/${PROG}
 LOG="/var/log/gateway_config/startup.log"
 HCI_DIR="/sys/kernel/debug/bluetooth/hci0"
 PAIRING_FILE="/var/run/pairing"
+PAIR_BUTTON_HOLD_TIME=5  # seconds
+HARDWARE_CONF="/var/run/hardware.conf"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
+
+source ${HARDWARE_CONF}
 
 
 setup_bluetooth() {
@@ -25,6 +29,24 @@ setup_bluetooth() {
 
     # Since we don't have a button, just enable pairing at boot, with a short delay
     (/bin/sleep 5 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
+}
+
+watch_pair_button() {
+    count=0
+    while true; do
+        sleep 1
+        level=$(gpio.sh ${PAIR_BUTTON_GPIO})
+        if [[ "${level}" == "${PAIR_BUTTON_ACTIVE_LEVEL}" ]]; then
+            count=$((count + 1))
+        else
+            count=0
+        fi
+        if [[ ${count} -ge ${PAIR_BUTTON_HOLD_TIME} ]]; then
+            echo "pairing button held for ${PAIR_BUTTON_HOLD_TIME} seconds"
+            count=0
+            HOME=/var/run ${FULL_PROG} advertise on
+        fi
+    done
 }
 
 watch_advertise_status() {
@@ -49,6 +71,9 @@ start() {
     
     mkdir -p $(dirname ${LOG})
     setup_bluetooth
+    if [[ -n "${PAIR_BUTTON_GPIO}" ]]; then
+        watch_pair_button &>/var/log/pair_button.log &
+    fi
 
     cd ${WORK_DIR}
     

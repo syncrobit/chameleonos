@@ -66,6 +66,18 @@ if [[ -n "${LGW_RESET_GPIO}" ]]; then
 else
     echo "Using default LGW_RESET_GPIO"
 fi
+if [[ -n "${PAIR_BUTTON_GPIO}" ]]; then
+    echo "Using PAIR_BUTTON_GPIO=${PAIR_BUTTON_GPIO}"
+    sed -ri "s/DEFAULT_PAIR_BUTTON_GPIO=.*/DEFAULT_PAIR_BUTTON_GPIO=${PAIR_BUTTON_GPIO}/" ${TARGET}/etc/init.d/S*hwdetect
+else
+    echo "Using default PAIR_BUTTON_GPIO"
+fi
+if [[ -n "${PAIR_BUTTON_ACTIVE_LEVEL}" ]]; then
+    echo "Using PAIR_BUTTON_ACTIVE_LEVEL=${PAIR_BUTTON_ACTIVE_LEVEL}"
+    sed -ri "s/DEFAULT_PAIR_BUTTON_ACTIVE_LEVEL=.*/DEFAULT_PAIR_BUTTON_ACTIVE_LEVEL=${PAIR_BUTTON_ACTIVE_LEVEL}/" ${TARGET}/etc/init.d/S*hwdetect
+else
+    echo "Using default PAIR_BUTTON_ACTIVE_LEVEL"
+fi
 if [[ -n "${ECC_ADDRESS}" ]]; then
     echo "Using ECC_ADDRESS=${ECC_ADDRESS}"
     sed -ri "s/DEFAULT_ECC_ADDRESS=.*/DEFAULT_ECC_ADDRESS=${ECC_ADDRESS}/" ${TARGET}/etc/init.d/S*hwdetect
