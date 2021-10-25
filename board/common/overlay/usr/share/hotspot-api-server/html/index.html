@@ -45,9 +45,7 @@
 					</button>
 				</div>
 				
-				<a href="https://syncrob.it/" class="brand-logo">
-					<span class="sb-logo">SyncroB.it</span>
-				</a>
+				<a href="javascript:void(0);" class="brand-logo"></a>
 			</div>
 			<!-- END brand -->
 			
@@ -56,68 +54,19 @@
 				<div class="menu-search">
 					
 				</div>
-                <!---
+                
 				<div class="menu-item dropdown">
 					<a href="#" data-toggle="dropdown" data-display="static" class="menu-link">
 						<div class="menu-icon"><i class="fa fa-bell nav-icon"></i></div>
-						<div class="menu-label">3</div>
+						<div class="menu-label gw-label" style="display: none;">1</div>
 					</a>
 					<div class="dropdown-menu dropdown-menu-right dropdown-notification">
 						<h6 class="dropdown-header text-gray-900 mb-1">Notifications</h6>
-						<a href="#" class="dropdown-notification-item">
-							<div class="dropdown-notification-icon">
-								<i class="fa fa-receipt fa-lg fa-fw text-success"></i>
-							</div>
-							<div class="dropdown-notification-info">
-								<div class="title">Your store has a new order for 2 items totaling $1,299.00</div>
-								<div class="time">just now</div>
-							</div>
-							<div class="dropdown-notification-arrow">
-								<i class="fa fa-chevron-right"></i>
-							</div>
-						</a>
-						<a href="#" class="dropdown-notification-item">
-							<div class="dropdown-notification-icon">
-								<i class="far fa-user-circle fa-lg fa-fw text-muted"></i>
-							</div>
-							<div class="dropdown-notification-info">
-								<div class="title">3 new customer account is created</div>
-								<div class="time">2 minutes ago</div>
-							</div>
-							<div class="dropdown-notification-arrow">
-								<i class="fa fa-chevron-right"></i>
-							</div>
-						</a>
-						<a href="#" class="dropdown-notification-item">
-							<div class="dropdown-notification-icon">
-								<img src="/resources/img/icon/android.svg" alt="" width="26" />
-							</div>
-							<div class="dropdown-notification-info">
-								<div class="title">Your android application has been approved</div>
-								<div class="time">5 minutes ago</div>
-							</div>
-							<div class="dropdown-notification-arrow">
-								<i class="fa fa-chevron-right"></i>
-							</div>
-						</a>
-						<a href="#" class="dropdown-notification-item">
-							<div class="dropdown-notification-icon">
-								<img src="/resources/img/icon/paypal.svg" alt="" width="26" />
-							</div>
-							<div class="dropdown-notification-info">
-								<div class="title">Paypal payment method has been enabled for your store</div>
-								<div class="time">10 minutes ago</div>
-							</div>
-							<div class="dropdown-notification-arrow">
-								<i class="fa fa-chevron-right"></i>
-							</div>
-						</a>
-						<div class="p-2 text-center mb-n1">
-							<a href="#" class="text-gray-800 text-decoration-none">See all</a>
+						<div class="gw-notifications">
 						</div>
 					</div>
 				</div>
-                -->
+               
 				<div class="menu-item dropdown">
 					<a href="#" data-toggle="dropdown" data-display="static" class="menu-link">
 						<div class="menu-img">
@@ -133,6 +82,9 @@
 					<div class="dropdown-menu dropdown-menu-right mr-lg-3">
 						<a class="dropdown-item d-flex align-items-center change-pass" href="#">
                             Change Password <i class="fa fa-key fa-fw ml-auto text-gray-400 f-s-16"></i>
+                        </a>
+						<a class="dropdown-item d-flex align-items-center help-dialog" href="#">
+                            Help <i class="fa fa-life-ring fa-fw ml-auto text-gray-400 f-s-16"></i>
                         </a>
 						<div class="dropdown-divider"></div>
 						<a class="dropdown-item d-flex align-items-center" href="#">
@@ -182,6 +134,11 @@
 								</a>
 							</div>
 							<div class="menu-item">
+								<a href="#" class="menu-link miner-config">
+									<span class="menu-text">Miner Settings</span>
+								</a>
+							</div>
+							<div class="menu-item">
 								<a href="#" class="menu-link remote-support">
 									<span class="menu-text">Remote Support</span>
 								</a>
@@ -205,6 +162,12 @@
 							<span class="menu-caret"><b class="caret"></b></span>
 						</a>
 						<div class="menu-submenu">
+							<div class="menu-item">
+								<a href="#" class="menu-link onboard-unit">
+									<span class="menu-text">Onboard</span>
+                                    <i class="fas fa-spinner fa-spin onboard-spinner" style="display: none;"></i>
+								</a>
+							</div>
                             <div class="menu-item">
 								<a href="#" class="menu-link enable-pairing">
 									<span class="menu-text">Enable Pairing</span>
@@ -323,11 +286,17 @@
 									<div class="row">
 										<div class="col-6 col-lg-5">
 											<div class="mt-1">
+												<i class="fa fa-fw fa-clock fs-28px text-black-transparent-5"></i>
+											</div>
+											<div class="mt-1">
 												<div>24 Hour Earnings</div>
 												<div class="font-weight-600 text-white daily-earnings">... HNT</div>
 											</div>
 										</div>
 										<div class="col-6 col-lg-5">
+											<div class="mt-1">
+												<i class="fa fa-fw fa-calendar-alt fs-28px text-black-transparent-5"></i>
+											</div>
 											<div class="mt-1">
 												<div>30 Days Earnings</div>
 												<div class="font-weight-600 text-white monthly-earnings">... HNT</div>
@@ -347,7 +316,11 @@
 								<!-- END col-8 -->
 								
 								<!-- BEGIN col-4 -->
-								<div class="col-md-4 d-none d-md-block" style="min-height: 380px;"></div>
+								<div class="col-md-4 d-none d-md-block" style="min-height: 380px;">
+									<div class="status-wrapper">
+										Status <span class="gw-status gw_lora_ready"></span>
+									</div>
+								</div>
 								<!-- END col-4 -->
 							</div>
 							<!-- END row -->
@@ -428,7 +401,7 @@
                                     <div class="mb-1">BlockChain Height</div>
 									<div class="mb-2" style="height: 6px;"></div>
                                     <h4 class="chain-height">...</h4>
-                                    <div>&nbsp;</div>
+                                    <div><strong>Status:</strong> <span class="etl-is-sync"></span></div>
                                     </div>
                                     <div class="opacity-5">
                                     <i class="fas fa-cubes fa-4x"></i>
@@ -538,7 +511,9 @@
 									<h5 class="mb-1">Activity</h5>
 									<div class="fs-13px">Last 10 rewards</div>
 								</div>
-								<a href="#" class="text-muted refresh-activity"><i class="fa fa-redo activity-icon"></i></a>
+								<a href="#" class="text-muted refresh-activity">
+									<i class="fa fa-redo activity-icon"></i>
+								</a>
 							</div>
 							<div id="activity">
                                 <div class="no-activity">
@@ -556,10 +531,9 @@
 			<!-- END row -->
 			
             <!-- START #toast -->
-            <div class="toasts-container">
-                
-            </div>    
+            <div class="toasts-container"></div>    
             <!-- END #toast -->
+
             <!-- START #modal-->
             <div class="modal-append"></div>
             <!-- END #modal-->
@@ -567,7 +541,9 @@
 		<!-- END #content -->
 		
 		<!-- BEGIN btn-scroll-top -->
-		<a href="#" data-click="scroll-top" class="btn-scroll-top fade"><i class="fa fa-arrow-up"></i></a>
+		<a href="#" data-click="scroll-top" class="btn-scroll-top fade">
+			<i class="fa fa-arrow-up"></i>
+		</a>
 		<!-- END btn-scroll-top -->
 	</div>
 	<!-- END #app -->
