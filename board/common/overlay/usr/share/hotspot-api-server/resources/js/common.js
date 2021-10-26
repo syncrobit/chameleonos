@@ -520,6 +520,196 @@ $(document).ready(function(){
              }, 1000);
         }
     });
+
+    //Miner Settings
+    $('.miner-config').click(function(e){
+        e.preventDefault();
+        var html = getModal('miner-settings');
+        if(html !== undefined){
+            $.get("/config", function( data ) {
+                $('.modal-append').html(html);
+                $('.tooltip-show').tooltip('show');
+                $('.modal-append').find('#disablesync').prop("checked", data.force_sync_enabled);
+                $('.modal-append').find('#reboot-realy').prop("checked", data.panic_on_relayed);
+                $('.modal-append').find('#reboot-unreachable').prop("checked", data.panic_on_unreachable);
+                $('#miner-settings-modal').modal('show').on('hidden.bs.modal', function () {
+                    $('.modal').remove();
+                });
+
+                //Disable Sync
+                $('.modal-append').on('click', '#disablesync', function(){
+                    $disableSwitch = $(this);
+                    $.ajax({
+                        type: 'PATCH',
+                        url: '/config',
+                        data: JSON.stringify({
+                            force_sync_enabled: ($disableSwitch.is(':checked')) ? true : false
+                        
+                        }),
+                        processData: false,
+                        contentType: 'application/merge-patch+json',
+                        complete: function(xhr, statusText){
+                            toastAppend('is-settings-not', 'Instant sync settings applied.');
+                        }
+                    });
+                });
+
+                //Reboot Relay
+                $('.modal-append').on('click', '#reboot-realy', function(){
+                    $relaySwitch = $(this);
+                    $.ajax({
+                        type: 'PATCH',
+                        url: '/config',
+                        data: JSON.stringify({
+                            panic_on_relayed: ($relaySwitch.is(':checked')) ? true : false
+                        
+                        }),
+                        processData: false,
+                        contentType: 'application/merge-patch+json',
+                        complete: function(xhr, statusText){
+                            toastAppend('rr-settings-not', 'Reboot relayed settings applied.');
+                        }
+                    });
+                });
+
+                //Reboot Unreachable
+                $('.modal-append').on('click', '#reboot-unreachable', function(){
+                    $unreachableSwitch = $(this);
+                    $.ajax({
+                        type: 'PATCH',
+                        url: '/config',
+                        data: JSON.stringify({
+                            panic_on_unreachable: ($unreachableSwitch.is(':checked')) ? true : false
+                        
+                        }),
+                        processData: false,
+                        contentType: 'application/merge-patch+json',
+                        complete: function(xhr, statusText){
+                            toastAppend('ru-settings-not', 'Reboot unreachable settings applied.');
+                        }
+                    });
+                });
+            });
+        }
+
+    });
+
+    //Help Modal
+    $('.help-dialog').click(function(e){
+        e.preventDefault();
+        var html = getModal('help');
+        if(html !== undefined){
+            $.ajax({
+                type: 'POST',
+                url: '/sbapi/maker/',
+                data: JSON.stringify({
+                    action: 'getMakerHelp',
+                    serial: os_prefix
+                
+                }),
+                contentType : 'application/json',
+                success: function(data){
+                    data = JSON.parse(data);
+                    $('.modal-append').html(html);
+                    $('.troubleshoot-button').click(function(){
+                        window.open(
+                            data.maker.kb_link,
+                            '_blank'
+                          );
+                    });
+
+                    $('#help-modal').modal('show').on('hidden.bs.modal', function () {
+                        $('.modal').remove();
+                    });
+
+                $('.send-ticket').click(function(e){
+                    $('.main-step').hide();
+                    $('.submit-ticket-body').toggle("slide", {direction: "down"}, 200);
+                    $('.submit-ticket').show();
+                });
+                }
+            }); 
+        }
+    });
+
+    //Onboard Modal
+    $('.onboard-unit').click(function(e){
+        e.preventDefault();
+        $('.onboard-spinner').show();
+        var html = getModal('onboard');
+        if(html !== undefined){
+            var gw_address = getGwAddress();
+            $.ajax({
+                type: 'POST',
+                url: '/sbapi/maker/',
+                data: JSON.stringify({
+                    action: 'checkOnboarded',
+                    gw: gw_address
+                
+                }),
+                contentType : 'application/json',
+                success: function(data){
+                    data = JSON.parse(data);
+                    console.log(data)
+                    $('.modal-append').html(html);
+                    if(!data.gw_status){
+                        $('.view-explorer-m').attr("href", "https://explorer.helium.com/hotspots/" + gw_address);
+                        $('.onboard-available').hide();
+                        $('.onboard-wallet-cli').hide()
+                        $('.onboard-unavailable').show();
+                        $('.onboard-unit').hide();
+                    }else{
+                        $('.onboard-unavailable').hide();
+                        $('.onboard-wallet-cli').hide();
+                        $('.onboard-available').show();
+                        $('.onboard-unit').show();
+                        $('.inputPayer').val(data.maker.maker_address).prop('disabled', true);
+                    }
+
+                    $('#onboard-modal').modal('show').on('hidden.bs.modal', function () {
+                        $('.modal').remove();
+                    });
+                    $('.onboard-spinner').hide();
+
+                    $('.modal-append').find('#onboard-form').validate({
+                        rules: {
+                          inputOwner: {
+                            required: true,
+                          },
+                        },
+                        showErrors: formErrorDisplay,
+                        submitHandler: function (ev) {
+                          $.ajax({
+                            type: 'Post',
+                            url: '/txn/add_gateway',
+                            data: JSON.stringify({
+                              owner: $('.modal-append').find('#inputOwner').val(),
+                              payer: $('.modal-append').find('#inputPayer').val()
+                            }),
+                            contentType: 'application/json',
+                            success: function(data){
+                                $('.onboard-unavailable').hide();
+                                $('.onboard-available').hide();
+                                $('.onboard-unit').hide();
+                                
+                                if(isBase64(data)){
+                                    $('.onboard-success').val('helium-wallet --format json hotspots add --onboarding "' +
+                                                              $('.modal-append').find('#inputPayer').val() +'" "' + data + '" --commit');
+                                }else{
+                                    $('.onboard-success').val('Onboarding transaction failed, please try again later...');
+                                }
+                                
+                                $('.onboard-wallet-cli').show();
+                            }
+                         });
+                        }
+                      });
+                }
+            });    
+        }
+
+    });
+
 });
 
 function getModal(modalName){
@@ -574,6 +764,15 @@ function modalAppend(id, title, body, buttonText, buttonAction){
     $('#' + id).modal('show').on('hidden.bs.modal', function () {
         $('.modal').remove();
     });               
+}
+
+function isBase64(str) {
+    var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+    return base64regex.test(str);
+}
+
+function getSummary(){
+
 }
 
 jQuery.validator.addMethod("notEqual", function(value, element, param) {

@@ -1,0 +1,64 @@
+<div class="modal fade show" id="miner-settings-modal" aria-modal="true" style="padding-right: 15px;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" id="sys-settings-form">
+          <div class="modal-header">
+            <h5 class="modal-title">Miner Settings</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group row" style="margin-bottom:0;">
+              <label for="disablesync" class="col-sm-4 col-form-label">Instant Sync</label>
+                <div class="col-sm-8">
+                    <div class="input-group flex-nowrap">
+                        <div class="custom-control custom-switch" style="padding: 5px 0 5px 2.25rem;">
+                            <input type="checkbox" class="custom-control-input" id="disablesync">
+                            <label class="custom-control-label" for="disablesync"></label>
+                        </div>
+                        <div class="input-group-append tooltip-show" data-placement="right" title="Disables Syncrobit's instant sync and reverts to Helium p2p sync">
+                            <span class="input-group-text" style="background-color:inherit;border:none;padding:0;cursor: pointer;">
+                                <i class="fa fa-question-circle fs-12px mr-1"></i> 
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row" style="margin-bottom:0;">
+                <label for="reboot-realy" class="col-sm-4 col-form-label">Reboot Relay</label>
+                  <div class="col-sm-8">
+                    <div class="input-group flex-nowrap">
+                        <div class="custom-control custom-switch" style="padding: 5px 0 5px 2.25rem;">
+                            <input type="checkbox" class="custom-control-input" id="reboot-realy">
+                            <label class="custom-control-label" for="reboot-realy"></label>
+                        </div>
+                        <div class="input-group-append tooltip-show" data-placement="right" title="Enbles auto reboot if unit goes into relay status (checks hourly)">
+                            <span class="input-group-text" style="background-color:inherit;border:none;padding:0;cursor: pointer;">
+                                <i class="fa fa-question-circle fs-12px mr-1"></i> 
+                            </span>
+                        </div>
+                    </div>    
+                  </div>
+            </div>
+            <div class="form-group row" style="margin-bottom:0;">
+                <label for="reboot-unreachable" class="col-sm-4 col-form-label">Reboot Unreachable</label>
+                  <div class="col-sm-8">
+                        <div class="input-group flex-nowrap">
+                            <div class="custom-control custom-switch" style="padding: 5px 0 5px 2.25rem;">
+                            <input type="checkbox" class="custom-control-input" id="reboot-unreachable">
+                            <label class="custom-control-label" for="reboot-unreachable"></label>
+                            </div>
+                            <div class="input-group-append tooltip-show" data-placement="right" title="If unit becomes unreachable because of libp2p it will reboot (checks hourly)">
+                                <span class="input-group-text" style="background-color:inherit;border:none;padding:0;cursor: pointer;">
+                                    <i class="fa fa-question-circle fs-12px mr-1"></i> 
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>

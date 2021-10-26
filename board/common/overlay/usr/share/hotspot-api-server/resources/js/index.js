@@ -1,5 +1,6 @@
+var miner_height, gw_addr, os_prefix;
 $(document).ready(function(){
-  var miner_height;
+  
     //Check if Password is default
     $.ajax({
       url: "/verify_password",
@@ -50,14 +51,54 @@ $(document).ready(function(){
 
     //Quick Summary
     $.get( "/summary?quick=true", function( data ) {
-      $('.sb-serial').html(data.os_prefix +"-"+ data.serial_number);
+      gw_addr = data.address
+      os_prefix = data.os_prefix
+      $('.sb-serial').html(os_prefix +"-"+ data.serial_number);
       $('.fw-version').html(data.fw_version);
       $('.eth-mac').html(data.eth_mac);
       $('.wlan-mac').html(data.wlan_mac);
-      $('.miner-address').html((data.address == null) ? 'N/A' : data.address);
+      $('.miner-address').html((gw_addr == null) ? 'N/A' : gw_addr);
       $('.temperature').html(data.temperature + " &deg;C");
       $('.uptime').html(convertime(data.uptime));
       $('.current-time').html(moment.unix(data.time).utc().format('YYYY-MM-DD H:m:s') + " UTC");
+      
+      //Get Logo
+      $.ajax({
+        url:'resources/img/' + os_prefix + '_logo.png',
+        type:'HEAD',
+        success:function(){
+          $('.brand-logo').html('<img src="resources/img/' + os_prefix + '_logo.png" alt="" height="20">' +
+                                '<span class="sb-slogan">Powered By SyncroB.it</span>')
+        },
+        error: function(){
+          $('.brand-logo').html('<span class="sb-logo">SyncroB.it</span>');
+        }
+      });
+      
+      //Last Panic
+      if(data.last_panic != null){
+        $('.gw-notifications').html('<a href="javascript:void(0);" class="dropdown-notification-item">' +
+                               '<div class="dropdown-notification-icon">' +
+                               '<i class="fa fa-exclamation-triangle fa-lg fa-fw text-warning"></i>' +
+                               '</div>' +
+                               '<div class="dropdown-notification-info">' +
+                               '<div class="title panic-title"> ' +
+                               '<strong>Service: </strong>' + data.last_panic.service + '<br> <strong>Message: </strong>' + data.last_panic.message + '</div>' +
+                               '<div class="time panic-time">' + timeSince(data.last_panic.timestamp) + ' ago' +'</div>' +
+                               '</div>' +
+                               '</a>');
+        if(timeSince(data.last_panic.timestamp) < 2){
+          $('.gw-label').show();
+        }                         
+      }else{
+        $('.gw-notifications').html('<a href="javascript:void(0);" class="dropdown-notification-item">' +
+                                    '<div class="dropdown-notification-info">' +
+                                    '<div class="title panic-title" style="text-align:center;"> No new notification...</div>' +
+                                    '</div>' +
+                                    '</a>');
+        $('.gw-label').hide();
+      }
+
 
       //Stats
       var storage_percent = ((data.storage_used/data.storage_total) * 100).toFixed(2) + "%";
@@ -90,7 +131,8 @@ $(document).ready(function(){
           $('.monthly-earnings').html(data.rewards_30d + " HNT");
           $('.daily-earnings').html(data.rewards_1d + " HNT")
           $('.weekly-earnings').html(data.rewards_7d + " HNT");
-          $('.is-sync').html((miner_height < (data.blockchain_height.replace(/,/g, '') - 250)) ? 'Out of Sync' : 'Synced');
+          $('.is-sync').html(((miner_height < (data.api_height.replace(/,/g, '') - 250)) ? 'Out of Sync' : 'Synced') + ' (' + ((miner_height / data.api_height.replace(/,/g, '')) * 100).toFixed(2) + "%)");
+          $('.etl-is-sync').html(((data.blockchain_height < (data.api_height.replace(/,/g, '') - 250)) ? 'Out of Sync' : 'Synced') + ' (' + ((data.blockchain_height.replace(/,/g, '') / data.api_height.replace(/,/g, '')) * 100).toFixed(2) + "%)");
           $('.difference').html(calculateDifference(data.rewards_7d, data.last_week) + '%');
         })
       });
@@ -106,6 +148,8 @@ $(document).ready(function(){
         $('.memory_usge').html(formatBytes(data.mem_used + data.swap_used) + "/" + formatBytes(data.mem_total + data.swap_total))
         $('.mem-per-used').html(mem_percent);
         $('.mem-progress').css('width', mem_percent);
+        $('.gw-status').removeClass('gw_lora_ready gw_power_up gw_ip_ready gw_miner_syncing gw_updating_firmware gw_no_net gw_panic gw_rebooting')
+        .addClass('gw_' + data.current_state);
       });
 
       //Check NetConnection
@@ -153,8 +197,8 @@ $(document).ready(function(){
             $('#activity').find("#activity_tbl tbody").append('<tr>' +
                                   '<th scope="row">' + formatNumber(element.block) + '</th>' +
                                   '<td>' + moment.unix(element.time).utc().format('YYYY-MM-DD H:m:s') + ' UTC</td>' +
-                                  '<td>' + element.type + '</td>' +
-                                  '<td>' + formatNumber(element.amount) + ' HNT</td>' +
+                                  '<td><span class="badge badge-primary">' + element.type + '</span></td>' +
+                                  '<td>' + element.amount + ' HNT</td>' +
                                   '</tr>');               
             });
         }
@@ -171,6 +215,7 @@ $(document).ready(function(){
       }, 800);
       getActivity();
     });
+    
 });
 
 function formatBytes(bytes, decimals = 2) {
@@ -198,6 +243,10 @@ function calculateDifference(now, lastweek){
   return icon + '<b>' + percent + '</b>';
 }
 
+function getGwAddress(){
+  return gw_addr;
+}
+
 function convertime(time) {
   var sec_num = parseInt(time, 10); // don't forget the second param
   var days    = Math.floor(sec_num / 86400);
@@ -211,4 +260,31 @@ function convertime(time) {
   if (seconds < 10) {seconds = "0"+seconds;}
   var time    = days+" days " +hours+':'+minutes+':'+seconds;
   return time;
+}
+
+function timeSince(date) {
+  date = new Date(date * 1000);
+  var seconds = Math.floor((new Date() - date) / 1000);
+  var interval = seconds / 31536000;
+
+  if (interval > 1) {
+    return Math.floor(interval) + " years";
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+    return Math.floor(interval) + " months";
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+    return Math.floor(interval) + " days";
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+    return Math.floor(interval) + " hours";
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+    return Math.floor(interval) + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
 }

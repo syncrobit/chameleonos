@@ -1,0 +1,31 @@
+<div class="modal fade show" id="help-modal" aria-modal="true" style="padding-right: 15px;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Help</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div class="main-step mhelp">
+                <button type="button" class="btn btn-outline-primary btn-large mr-2 mhelp-button send-ticket" style="display: none;">
+                    <i class="fas fa-lg fa-fw fa-ticket-alt" style="font-size: 2rem;"></i><br> Submit Ticket
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-large mhelp-button troubleshoot-button">
+                    <i class="fas fa-lg fa-fw fa-life-ring" style="font-size: 2rem;"></i><br> Troubleshoot
+                </button>
+            </div>
+            <div class="submit-ticket-body" style="display: none;">
+                <div class="form-group">
+                    <textarea class="form-control" id="ticket-description" rows="5" placeholder="Describe the issue in detail..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default close-modal" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary submit-ticket" style="display: none;">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
