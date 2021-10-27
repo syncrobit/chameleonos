@@ -5,6 +5,8 @@ import base64
 import datetime
 import logging
 import os
+import re
+import socket
 import ssl
 import time
 
@@ -28,6 +30,7 @@ import user
 
 
 AUTH_REALM_PREFIX = 'Helium Hotspot'
+VPN_IP_REGEX = re.compile(r'^10\.2[4,5]?\.\d+\.\d+$')
 
 router = web.RouteTableDef()
 
@@ -506,8 +509,9 @@ async def handle_404(request: web.Request) -> web.FileResponse:
 
 
 def create_error_middleware(overrides):
+
     @web.middleware
-    async def error_middleware(request, handler):
+    async def error_middleware(request: web.Request, handler):
         try:
             return await handler(request)
         except web.HTTPException as ex:
@@ -527,8 +531,9 @@ def create_error_middleware(overrides):
 
 
 def create_cors_middleware():
+
     @web.middleware
-    async def cors_middleware(request, handler):
+    async def cors_middleware(request: web.Request, handler):
         response = await handler(request)
         response.headers['Access-Control-Allow-Origin'] = '*'
 
@@ -537,14 +542,30 @@ def create_cors_middleware():
     return cors_middleware
 
 
-async def redirect_tls(request: web.Request) -> None:
-    url = request.url
-    url = url.with_port(settings.TLS_PORT)
-    url = url.with_scheme('https')
-    url = url.human_repr()
-    url = url.replace(':443', '')
+def create_redirect_tls_middleware():
+    def should_redirect(request: web.Request) -> bool:
+        url = request.url
+        return (
+            url.scheme == 'http' and
+            url.host not in ('localhost', '127.0.0.1') and
+            not VPN_IP_REGEX.match(url.host)
+        )
 
-    raise web.HTTPMovedPermanently(url)
+    @web.middleware
+    async def redirect_tls_middleware(request: web.Request, handler):
+        if should_redirect(request):
+            host = settings.TLS_REDIRECT_HOST.format(hostname=socket.gethostname())
+            url = request.url
+            url = url.with_port(settings.TLS_PORT)
+            url = url.with_scheme('https')
+            url = url.with_host(host)
+            url = url.human_repr()
+            url = url.replace(':443', '')
+            raise web.HTTPMovedPermanently(url)
+
+        return await handler(request)
+
+    return redirect_tls_middleware
 
 
 def make_app() -> web.Application:
@@ -555,18 +576,12 @@ def make_app() -> web.Application:
     error_middleware = create_error_middleware({
         404: handle_404,
     })
-
     cors_middleware = create_cors_middleware()
+    redirect_tls_middleware = create_redirect_tls_middleware()
 
     app.middlewares.append(error_middleware)
     app.middlewares.append(cors_middleware)
-
-    return app
-
-
-def make_redirect_app() -> web.Application:
-    app = web.Application()
-    app.add_routes([web.get('/', redirect_tls)])
+    app.middlewares.append(redirect_tls_middleware)
 
     return app
 
@@ -591,20 +606,12 @@ def main():
     loop = asyncio.get_event_loop()
 
     app = make_app()
-    redirect_app = None
-    ssl_context = None
-    port = settings.PORT
-    if settings.TLS_CERT and settings.TLS_KEY:
+    runner = loop.run_until_complete(start_app(app, ssl_context=None, port=settings.PORT))
+    tls_runner = None
+    if settings.TLS_CERT:
         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile=settings.TLS_CA)
         ssl_context.load_cert_chain(settings.TLS_CERT, settings.TLS_KEY)
-        port = settings.TLS_PORT
-        redirect_app = make_redirect_app()
-
-    runner = loop.run_until_complete(start_app(app, ssl_context, port))
-
-    redirect_runner = None
-    if redirect_app:
-        redirect_runner = loop.run_until_complete(start_app(redirect_app, ssl_context=None, port=settings.PORT))
+        tls_runner = loop.run_until_complete(start_app(app, ssl_context=ssl_context, port=settings.TLS_PORT))
 
     try:
         loop.run_forever()
@@ -612,8 +619,8 @@ def main():
         pass
     finally:
         loop.run_until_complete(runner.cleanup())
-        if redirect_runner:
-            loop.run_until_complete(redirect_runner.cleanup())
+        if tls_runner:
+            loop.run_until_complete(tls_runner.cleanup())
 
     logging.info('bye!')
 

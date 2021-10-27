@@ -19,3 +19,4 @@
 *.img.zip
 .idea
 .venv
+.env
