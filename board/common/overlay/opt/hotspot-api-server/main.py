@@ -30,7 +30,7 @@ import user
 
 
 AUTH_REALM_PREFIX = 'Helium Hotspot'
-VPN_IP_REGEX = re.compile(r'^10\.2[4,5]?\.\d+\.\d+$')
+VPN_IP_REGEX = re.compile(r'^10\.2[4,5]\d\.\d+\.\d+$')
 
 router = web.RouteTableDef()
 
