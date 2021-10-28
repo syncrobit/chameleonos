@@ -265,7 +265,7 @@ start() {
         if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
             # Disable internal snapshot loading if we're going to use the fast sync
             sed -ri 's;snapshots.helium.wtf;snapshots.helium.stf;' ${RELX_CONFIG_PATH}
-            set -ri 's;fetch_latest_from_snap_source, true;fetch_latest_from_snap_source, false;' ${RELX_CONFIG_PATH}
+            sed -ri 's;fetch_latest_from_snap_source, true;fetch_latest_from_snap_source, false;' ${RELX_CONFIG_PATH}
         fi
                 
         # Impose a snapshot memory limit
