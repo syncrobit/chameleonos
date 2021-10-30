@@ -1,0 +1,18 @@
+diff -uNr sx1302_hal.orig/libloragw/src/loragw_reg.c sx1302_hal.new/libloragw/src/loragw_reg.c
+--- sx1302_hal.orig/libloragw/src/loragw_reg.c	2021-09-08 21:31:12.000000000 +0300
++++ sx1302_hal.new/libloragw/src/loragw_reg.c	2021-10-30 21:49:43.687389524 +0300
+@@ -1226,10 +1226,10 @@
+         DEBUG_MSG("ERROR READING CHIP VERSION REGISTER\n");
+         return LGW_REG_ERROR;
+     }
+-    if (u != loregs[SX1302_REG_COMMON_VERSION_VERSION].dflt) {
+-        DEBUG_PRINTF("ERROR: NOT EXPECTED CHIP VERSION (v%u)\n", u);
+-        return LGW_REG_ERROR;
+-    }
++    //if (u != loregs[SX1302_REG_COMMON_VERSION_VERSION].dflt) {
++    //    DEBUG_PRINTF("ERROR: NOT EXPECTED CHIP VERSION (v%u)\n", u);
++    //    return LGW_REG_ERROR;
++    //}
+     DEBUG_PRINTF("Note: chip version is 0x%02X (v%u.%u)\n", u, (u >> 4) & 0x0F, u & 0x0F) ;
+ 
+     DEBUG_MSG("Note: success connecting the concentrator\n");
