@@ -51,6 +51,21 @@ get_lag() {
 }
 
 force_sync() {
+    snapshot_height=$(get_snapshot_height)
+    our_height=$(${FULL_PROG} info height | awk '{print $2}')
+    if [[ -z "${snapshot_height}" ]]; then
+        logger -t miner "force_sync: skipping due to unknown snapshot height"
+        return
+    fi
+    if [[ -z "${our_height}" ]]; then
+        logger -t miner "force_sync: skipping due to unknown own miner height"
+        return
+    fi
+    if [[ ${our_height} -ge ${snapshot_height} ]]; then
+        logger -t miner "force_sync: skipping due to old snapshot (own=${our_height} >= snapshot=${snapshot_height})"
+        return
+    fi
+
     mkdir -p $(dirname ${FORCE_SYNC_FILE}) && touch ${FORCE_SYNC_FILE}
 }
 
@@ -138,6 +153,16 @@ watch_p2p() {
             fi
         fi
     done
+}
+
+get_snapshot_height() {
+    if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
+        return
+    fi
+    if ! block_height=$(echo "${data}" | jq -r .fileUri | grep -oE '[[:digit:]]+'); then
+        return
+    fi
+    echo $block_height
 }
 
 sync_from_snapshot() {
