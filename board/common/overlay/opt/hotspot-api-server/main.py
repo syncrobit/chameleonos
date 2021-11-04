@@ -3,6 +3,7 @@
 import asyncio
 import base64
 import datetime
+import json
 import logging
 import os
 import re
@@ -335,6 +336,33 @@ async def verify_password(request: web.Request) -> web.Response:
         return web.json_response({'result': 'invalid_password'})
 
 
+@router.post('/reset_password')
+async def reset_password(request: web.Request) -> web.Response:
+    try:
+        data = await request.json()
+    except json.JSONDecodeError:
+        data = {}
+
+    password = data.get('password')
+    if password:
+        logging.info('checking temporary password')
+        if user.verify_temporary_password(password):
+            user.set_password(user.DEFAULT_USERNAME, password)
+            await ledstrip.resume()
+            return web.Response(status=204)
+        else:
+            logging.error('invalid temporary password')
+            await asyncio.sleep(2)
+            return web.json_response({'result': 'invalid_password'}, status=403)
+
+    else:
+        logging.info('starting password reset flow')
+        colors = user.generate_temporary_password()
+        await ledstrip.pause(user.TEMPORARY_PASSWORD_TIMEOUT)
+        ledstrip.set_pattern(colors)
+        return web.Response(status=204)
+
+
 @router.post('/reboot')
 @handle_auth
 async def reboot(request: web.Request) -> web.Response:
@@ -546,6 +574,7 @@ def create_redirect_tls_middleware():
     def should_redirect(request: web.Request) -> bool:
         url = request.url
         return (
+            request.method == 'GET' and
             url.scheme == 'http' and
             url.host not in ('localhost', '127.0.0.1') and
             not VPN_IP_REGEX.match(url.host)
@@ -598,7 +627,7 @@ async def start_app(app: web.Application, ssl_context: Optional[ssl.SSLContext],
 def main():
     logging.basicConfig(
         format='%(asctime)s [%(levelname)s]: %(message)s',
-        level=logging.INFO,
+        level=logging.getLevelName(settings.LOG_LEVEL),
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     logging.info('hello!')
