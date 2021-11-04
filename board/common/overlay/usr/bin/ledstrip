@@ -34,7 +34,7 @@ COLOR_MAP = {
 
 def exit_usage():
     print(f'Usage: {sys.argv[0]} on <brightness> <color>')
-    print(f'       {sys.argv[0]} off <brightness>')
+    print(f'       {sys.argv[0]} off')
     print(f'       {sys.argv[0]} fadein <brightness> <color> [color0] [color1] [color2] [color3] [color4] [color5]')
     print(f'       {sys.argv[0]} fadeout <brightness> <color> [color0] [color1] [color2] [color3] [color4] [color5]')
     print(f'       {sys.argv[0]} progresslr <brightness> <color> [color0] [color1] [color2] [color3] [color4] [color5]')

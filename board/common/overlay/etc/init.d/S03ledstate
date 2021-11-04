@@ -4,6 +4,7 @@ LED_STRIP="/usr/bin/ledstrip"
 LOG="/var/log/led_state.log"
 STATE_FILE="/var/run/led_state"
 PAIRING_FILE="/var/run/pairing"
+PAUSE_FILE="/var/run/led_pause"
 PID_FILE="/var/run/led_strip.pid"
 HW_CONF="/var/run/hardware.conf"
 NETWORK_TIMEOUT=30
@@ -52,7 +53,9 @@ function has_network() {
 }
 
 function get_state() {
-    if [[ -s /tmp/rcK.pid ]] && kill -0 $(cat /tmp/rcK.pid) &>/dev/null; then
+    if [[ -f ${PAUSE_FILE} ]]; then
+        echo "pause"
+    elif [[ -s /tmp/rcK.pid ]] && kill -0 $(cat /tmp/rcK.pid) &>/dev/null; then
         echo "rebooting"
     elif [[ -f /var/run/panic_generated ]]; then
         echo "panic"
@@ -96,7 +99,7 @@ function state_loop() {
             echo "${new_state}" > ${STATE_FILE}
             echo "state is ${new_state}"
         fi
-        if [[ "${HAS_LED_STRIP}" == true ]]; then
+        if [[ "${HAS_LED_STRIP}" == true ]] && [[ "${new_state}" != pause ]]; then
             color=${STATE_COLORS[${new_state}]}
             pattern=${STATE_PATTERNS[${new_state}]}
             
