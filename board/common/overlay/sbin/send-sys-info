@@ -21,7 +21,7 @@ function prepare_payload() {
         miner_listen_addr=$(/opt/miner/bin/miner peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d '|')
     fi
     test -n "${miner_height}" || miner_height="null"
-    uptime=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
+    system_uptime=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
     test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
     test -r /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address)
     ecc_sn=$(cat /var/run/ecc_sn)
@@ -32,6 +32,17 @@ function prepare_payload() {
     swarm_key_mode=$(test -s /var/lib/user_swarm_key && echo true || echo false)
     time=$(date +%s)
     concentrator_model=$(ps aux | grep /opt/packet_forwarder/bin/lora_pkt_fwd_ | grep -oE 'sx13.*' 2>/dev/null)
+    if [[ -s /var/lib/last_panic ]]; then
+        source /var/lib/last_panic
+        last_panic="{
+            \"service\":\"${service}\",
+            \"message\":\"${message}\",
+            \"timestamp\":\"${timestamp}\",
+            \"uptime\":\"${uptime}\"
+        }"
+    else
+        last_panic=null
+    fi
 
     payload="{
         \"cpu_usage\":${cpu_usage},
@@ -52,11 +63,12 @@ function prepare_payload() {
         \"pub_key\":\"${pub_key}\",
         \"eth_mac\":\"${eth_mac}\",
         \"wlan_mac\":\"${wlan_mac}\",
-        \"uptime\":${uptime},
-        \"time\":${time}
+        \"uptime\":${system_uptime},
+        \"time\":${time},
+        \"last_panic\":${last_panic}
     }"
 
-    payload=$(echo ${payload} | tr -d '\t\n ')
+    payload=$(echo ${payload} | jq -c)
     echo "${payload}"
 }
 
