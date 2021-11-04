@@ -1,5 +1,11 @@
 #!/bin/bash
 
+source /etc/init.d/os_conf
+
+if [[ "${OS_PERIODIC_REBOOT}" == false ]]; then
+    exit 0
+fi
+
 while panic_inhibit -q > /dev/null; do
     sleep 60
 done
