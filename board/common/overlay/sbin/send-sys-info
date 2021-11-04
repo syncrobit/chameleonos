@@ -37,8 +37,8 @@ function prepare_payload() {
         last_panic="{
             \"service\":\"${service}\",
             \"message\":\"${message}\",
-            \"timestamp\":\"${timestamp}\",
-            \"uptime\":\"${uptime}\"
+            \"timestamp\":${timestamp},
+            \"uptime\":${uptime}
         }"
     else
         last_panic=null

@@ -207,6 +207,9 @@ def get_last_panic_details() -> Optional[Dict[str, str]]:
 
             name, value = parts
             value = value.strip('"')
+            if name in ('timestamp', 'uptime'):
+                value = int(value)
+
             details[name] = value
 
     return details
