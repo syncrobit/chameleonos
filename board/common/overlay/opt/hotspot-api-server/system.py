@@ -18,6 +18,7 @@ NET_TEST_CMD = '/sbin/nettest'
 DATA_DIR = '/data'
 CONFIG_TXT = '/boot/config.txt'
 LAST_PANIC_FILE = '/var/lib/last_panic'
+OS_CONF = '/data/etc/os.conf'
 
 LOG_DIR = '/var/log'
 MINER_DATA_DIR = '/var/lib/miner'
@@ -209,6 +210,34 @@ def get_last_panic_details() -> Optional[Dict[str, str]]:
             details[name] = value
 
     return details
+
+
+def get_os_conf_var(name: str) -> str:
+    cmd = f'source /etc/init.d/os_conf && echo ${{{name}}}'
+    return subprocess.check_output(cmd, shell=True).decode().strip()
+
+
+def set_os_conf_var(name: str, value: str) -> None:
+    with open(OS_CONF, 'rt') as f:
+        lines = f.readlines()
+        lines = [line.strip() for line in lines if line.strip()]
+
+    variables = [line.split('=', 1) for line in lines]
+    variables = {k: v.strip('"') for k, v in variables}
+    variables[name] = value
+
+    lines = [f'{k}="{v}"\n' for k, v in variables.items()]
+
+    with open(OS_CONF, 'wt') as f:
+        f.writelines(lines)
+
+
+def is_periodic_reboot_enabled() -> bool:
+    return get_os_conf_var('OS_PERIODIC_REBOOT') != 'false'
+
+
+def set_periodic_reboot_enabled(enabled: bool) -> None:
+    set_os_conf_var('OS_PERIODIC_REBOOT', str(enabled).lower())
 
 
 def is_ext_wifi_antenna_enabled() -> bool:
