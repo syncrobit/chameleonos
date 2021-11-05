@@ -349,21 +349,22 @@ async def reset_password(request: web.Request) -> web.Response:
         data = {}
 
     password = data.get('password')
-    if password:
-        logging.info('checking temporary password')
-        if user.verify_temporary_password(password):
+    code = data.get('code')
+    if password and code:
+        logging.info('checking reset code')
+        if user.verify_reset_code(code):
             user.set_password(user.DEFAULT_USERNAME, password)
             await ledstrip.resume()
             return web.Response(status=204)
         else:
-            logging.error('invalid temporary password')
+            logging.error('invalid reset code')
             await asyncio.sleep(2)
-            return web.json_response({'result': 'invalid_password'}, status=403)
+            return web.json_response({'result': 'invalid_code'}, status=403)
 
     else:
         logging.info('starting password reset flow')
-        colors = user.generate_temporary_password()
-        await ledstrip.pause(user.TEMPORARY_PASSWORD_TIMEOUT)
+        colors = user.generate_reset_code()
+        await ledstrip.pause(user.RESET_CODE_TIMEOUT)
         ledstrip.set_pattern(colors)
         return web.Response(status=204)
 

@@ -14,14 +14,14 @@ DEFAULT_USERNAME = 'admin'
 DEFAULT_PASSWORD = 'admin'
 INTERNAL_USERNAME = 'dashboard'
 
-TEMPORARY_PASSWORD_COLORS = ['red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'orange', 'white']
-TEMPORARY_PASSWORD_CHAR_BITS = 3
-TEMPORARY_PASSWORD_LEN = 6
-TEMPORARY_PASSWORD_TIMEOUT = 60
+RESET_CODE_COLORS = ['red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'orange', 'white']
+RESET_CODE_CHAR_BITS = 3
+RESET_CODE_LEN = 6
+RESET_CODE_TIMEOUT = 60
 
 
-_temporary_password: Optional[str] = None
-_temporary_password_time: float = 0
+_reset_code: Optional[str] = None
+_reset_code_time: float = 0
 
 
 def verify_credentials_internal(username: str, password: str) -> bool:
@@ -68,32 +68,32 @@ def set_password(username: str, password: str) -> None:
         f.write(f'{username}:{password}')
 
 
-def generate_temporary_password() -> List[str]:
-    global _temporary_password, _temporary_password_time
+def generate_reset_code() -> List[str]:
+    global _reset_code, _reset_code_time
 
-    password_list = [secrets.randbits(TEMPORARY_PASSWORD_CHAR_BITS) for _ in range(TEMPORARY_PASSWORD_LEN)]
-    _temporary_password = ''.join([TEMPORARY_PASSWORD_COLORS[c][0] for c in password_list])
-    _temporary_password_time = time.time()
-    colors = [TEMPORARY_PASSWORD_COLORS[c] for c in password_list]
+    code_list = [secrets.randbits(RESET_CODE_CHAR_BITS) for _ in range(RESET_CODE_LEN)]
+    _reset_code = ''.join([RESET_CODE_COLORS[c][0] for c in code_list])
+    _reset_code_time = time.time()
+    colors = [RESET_CODE_COLORS[c] for c in code_list]
 
-    logging.debug(f'temporary password is "{_temporary_password}"')
+    logging.debug(f'reset code is "{_reset_code}"')
 
     return colors
 
 
-def verify_temporary_password(password: str) -> bool:
-    global _temporary_password
+def verify_reset_code(code: str) -> bool:
+    global _reset_code
 
     # Check if password expired
-    if time.time() - _temporary_password_time > TEMPORARY_PASSWORD_TIMEOUT:
+    if time.time() - _reset_code_time > RESET_CODE_TIMEOUT:
         return False
 
     # Check if unset
-    if _temporary_password is None:
+    if _reset_code is None:
         return False
 
-    if _temporary_password == password or _temporary_password == reversed(password):
-        _temporary_password = None
+    if _reset_code == code or _reset_code == code[::-1]:
+        _reset_code = None
         return True
 
     return False
