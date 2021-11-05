@@ -24,7 +24,6 @@ function prepare_payload() {
     system_uptime=$(cat /proc/uptime | grep -oE '^[[:digit:]]+')
     test -r /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address)
     test -r /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address)
-    ecc_sn=$(cat /var/run/ecc_sn)
     address=$(cat /var/run/public_keys | grep -oE '[0-9a-zA-Z]{50,}' | head -n 1)
     pub_key=$(cat /var/run/public_key_hex)
     hotspot_name=$(cat /var/run/hotspot_name)
@@ -57,7 +56,6 @@ function prepare_payload() {
         \"concentrator_model\":\"${concentrator_model}\",
         \"region\":\"${REGION}\",
         \"fw_version\":\"${OS_VERSION}\",
-        \"ecc_sn\":\"${ecc_sn}\",
         \"swarm_key_mode\":${swarm_key_mode},
         \"address\":\"${address}\",
         \"pub_key\":\"${pub_key}\",
