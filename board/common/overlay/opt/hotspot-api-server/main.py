@@ -523,9 +523,11 @@ async def delete_delete(request: web.Request) -> web.Response:
 
 
 @router.get(r'/{path:[a-zA-Z0-9_/-]+}')
-@handle_auth
 async def html_page(request: web.Request) -> web.FileResponse:
     path = f'{request.match_info["path"]}.html'
+    if path.count('..'):
+        raise web.HTTPNotFound()
+
     full_path = os.path.join(settings.HTML_PATH, path)
     if not os.path.exists(full_path):
         raise web.HTTPNotFound()
