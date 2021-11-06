@@ -532,6 +532,7 @@ $(document).ready(function(){
                 $('.modal-append').find('#disablesync').prop("checked", data.force_sync_enabled);
                 $('.modal-append').find('#reboot-realy').prop("checked", data.panic_on_relayed);
                 $('.modal-append').find('#reboot-unreachable').prop("checked", data.panic_on_unreachable);
+                $('.modal-append').find('#periodic-reboot').prop("checked", data.periodic_reboot);
                 $('#miner-settings-modal').modal('show').on('hidden.bs.modal', function () {
                     $('.modal').remove();
                 });
@@ -590,8 +591,24 @@ $(document).ready(function(){
                     });
                 });
             });
-        }
 
+            $('.modal-append').on('click', '#periodic-reboot', function(){
+                $periodicReboot = $(this);
+                $.ajax({
+                    type: 'PATCH',
+                    url: '/config',
+                    data: JSON.stringify({
+                        periodic_reboot: ($periodicReboot.is(':checked')) ? true : false
+                    
+                    }),
+                    processData: false,
+                    contentType: 'application/merge-patch+json',
+                    complete: function(xhr, statusText){
+                        toastAppend('pr-settings-not', 'Periodic reboot settings applied.');
+                    }
+                });
+            });
+        }
     });
 
     //Help Modal
@@ -652,6 +669,7 @@ $(document).ready(function(){
                     data = JSON.parse(data);
                     console.log(data)
                     $('.modal-append').html(html);
+                    
                     if(!data.gw_status){
                         $('.view-explorer-m').attr("href", "https://explorer.helium.com/hotspots/" + gw_address);
                         $('.onboard-available').hide();
@@ -680,7 +698,7 @@ $(document).ready(function(){
                         showErrors: formErrorDisplay,
                         submitHandler: function (ev) {
                           $.ajax({
-                            type: 'Post',
+                            type: 'POST',
                             url: '/txn/add_gateway',
                             data: JSON.stringify({
                               owner: $('.modal-append').find('#inputOwner').val(),
@@ -693,8 +711,16 @@ $(document).ready(function(){
                                 $('.onboard-unit').hide();
                                 
                                 if(isBase64(data)){
-                                    $('.onboard-success').val('helium-wallet --format json hotspots add --onboarding "' +
-                                                              $('.modal-append').find('#inputPayer').val() +'" "' + data + '" --commit');
+                                    var qrcode = new QRCode(document.getElementById("onboard-qrcode"), {
+                                        text: "helium://add_gateway/:" + data,
+                                        width: 128,
+                                        height: 128,
+                                        colorDark : "#000000",
+                                        colorLight : "#ffffff",
+                                        correctLevel : QRCode.CorrectLevel.H
+                                    });
+
+                                    $('.onboard-success').val('helium-wallet --format json hotspots add --onboarding "' + gw_addr + '" "' + data + '" --commit');
                                 }else{
                                     $('.onboard-success').val('Onboarding transaction failed, please try again later...');
                                 }
@@ -708,6 +734,59 @@ $(document).ready(function(){
             });    
         }
 
+    });
+
+    $('.reset-pass').click(function(e){
+        e.preventDefault();
+        var html = getModal('reset-password');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+            $('#reset-pass-modal').modal('show').on('hidden.bs.modal', function () {
+                $('.modal').remove();
+            });
+
+            $.post( "/reset_password", function( data ) {});
+
+            $('.modal-append').find('#reset-pass-form').validate({
+                rules: {
+                    inputChallenge: {
+                    required: true,
+                  },
+                  inputNewPass: {
+                    required: true,
+                    minlength: 8,
+                    notEqual: "admin"
+                  },
+                  inputRNewPass:{
+                    required: true, 
+                    equalTo: '#inputNewPass'   
+                  }
+                },
+                showErrors: formErrorDisplay,
+                submitHandler: function (ev) {
+                    $element = $('.modal-append').find('#inputChallenge');
+                    $button = $('.modal-append').find('.re-save-password');
+                    $.ajax({
+                        url: "/reset_password",
+                        method: "POST",
+                        dataType: "json",
+                        data: JSON.stringify({ code: $element.val(), password: $('.modal-append').find('#inputNewPass').val()}),
+                        beforeSend: function(){
+                            $button.prop('disabled', true);
+                        },
+                        complete: function(xhr, statusText){
+                            if(xhr.status === 403){
+                                $element.addClass('is-valid').removeClass('is-invalid');
+                                setTimeout(function(){ $button.prop('disabled', false); }, 2000);
+                            }else{
+                                toastAppend('rp-changd-not', 'Pasword reset successful. Please login with your new password');
+                            }
+                        }
+                    });
+                }
+              });
+            
+        }
     });
 
 });

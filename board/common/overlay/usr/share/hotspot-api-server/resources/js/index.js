@@ -93,7 +93,7 @@ $(document).ready(function(){
       }else{
         $('.gw-notifications').html('<a href="javascript:void(0);" class="dropdown-notification-item">' +
                                     '<div class="dropdown-notification-info">' +
-                                    '<div class="title panic-title" style="text-align:center;"> No new notification...</div>' +
+                                    '<div class="title panic-title" style="text-align:center;"> No new notifications...</div>' +
                                     '</div>' +
                                     '</a>');
         $('.gw-label').hide();
