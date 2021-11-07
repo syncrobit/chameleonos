@@ -7,6 +7,7 @@ LOG="/var/log/gateway_config/startup.log"
 HCI_DIR="/sys/kernel/debug/bluetooth/hci0"
 PAIRING_FILE="/var/run/pairing"
 PAIR_BUTTON_HOLD_TIME=5  # seconds
+PAIR_BUTTON_RESET_HOLD_TIME=10  # seconds
 HARDWARE_CONF="/var/run/hardware.conf"
 
 
@@ -33,6 +34,7 @@ setup_bluetooth() {
 
 watch_pair_button() {
     count=0
+    pair_enabled=false
     while true; do
         sleep 1
         level=$(gpio.sh ${PAIR_BUTTON_GPIO})
@@ -41,10 +43,16 @@ watch_pair_button() {
         else
             count=0
         fi
-        if [[ ${count} -ge ${PAIR_BUTTON_HOLD_TIME} ]]; then
-            echo "pairing button held for ${PAIR_BUTTON_HOLD_TIME} seconds"
-            count=0
+        if [[ ${count} -ge ${PAIR_BUTTON_HOLD_TIME} ]] && [[ ${pair_enabled} != true ]]; then
+            echo "pairing button held for ${PAIR_BUTTON_HOLD_TIME} seconds, enabling pair mode"
+            pair_enabled=true
             HOME=/var/run ${FULL_PROG} advertise on
+        fi
+        if [[ ${count} -ge ${PAIR_BUTTON_RESET_HOLD_TIME} ]]; then
+            echo "pairing button held for ${PAIR_BUTTON_RESET_HOLD_TIME} seconds, resetting admin password"
+            count=0
+            pair_enabled=false
+            rm /var/lib/api_credentials
         fi
     done
 }
