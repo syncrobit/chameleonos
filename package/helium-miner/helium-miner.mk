@@ -32,6 +32,7 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
 
     patch -d $(@D)/_build/default/lib/erasure -p1 < package/helium-miner/erlang-erasure._patch
     patch -d $(@D)/_build/default/lib/procket -p1 < package/helium-miner/procket._patch
+    patch -d $(@D)/_build/default/lib/clique -p1 < package/helium-miner/clique._patch
 endef
 
 define HELIUM_MINER_UPDATE_VERSION

@@ -1,0 +1,12 @@
+diff -uNr clique-e4be0dae150061bec080502ed530091672880867/src/clique_table.erl clique-e4be0dae150061bec080502ed530091672880867-patched/src/clique_table.erl
+--- clique-e4be0dae150061bec080502ed530091672880867/src/clique_table.erl	2019-12-06 18:47:56.000000000 +0200
++++ clique-e4be0dae150061bec080502ed530091672880867-patched/src/clique_table.erl	2021-11-07 17:57:07.853719606 +0200
+@@ -27,7 +27,7 @@
+ 
+ -include("clique_status_types.hrl").
+ 
+--define(MAX_LINE_LEN, 100).
++-define(MAX_LINE_LEN, 300).
+ -define(else, true).
+ -define(MINWIDTH(W),
+         if W =< 0 ->

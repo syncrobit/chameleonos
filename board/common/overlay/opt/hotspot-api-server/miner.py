@@ -11,7 +11,7 @@ import subprocess
 MINER_CMD = '/opt/miner/bin/miner'
 MINER_HEIGHT_CMD = f'{MINER_CMD} info height'
 MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d "|"'
-MINER_PEER_BOOK_CMD = f"{MINER_CMD} peer book -s | grep -E '^\|([^\|]+\|){{4}}$' | tail -n +2"
+MINER_PEER_BOOK_CMD = f"{MINER_CMD} peer book -s | grep -E '^\\|([^\\|]+\\|){{4}}$' | tail -n +2"
 MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
 MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s ' \
                             f'--payer %(payer)s --nonce %(nonce)s'
