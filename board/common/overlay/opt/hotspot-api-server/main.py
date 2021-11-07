@@ -35,6 +35,9 @@ import user
 AUTH_REALM_PREFIX = 'Helium Hotspot'
 VPN_IP_REGEX = re.compile(r'^10\.2[4,5]\d\.\d+\.\d+$')
 
+DOWNLOAD_SPEED_OK_LIMIT = 200  # kB/s
+LATENCY_OK_LIMIT = 500  # ms
+
 router = web.RouteTableDef()
 
 
@@ -135,7 +138,7 @@ async def get_summary(request: web.Request) -> web.Response:
         summary['Temperature'] = f"{summary.pop('temperature')} C"
         summary['Miner Height'] = f"{summary.pop('miner_height')}/{blockchain_height} (lag is {lag})"
         summary['Miner Listen Address'] = summary.pop('miner_listen_addr')
-        summary['Miner Listen OK'] = ['no', 'yes'][summary.pop('miner_listen_ok')]
+        summary['Miner Listen OK'] = ['no', 'yes'][bool(summary.pop('miner_listen_ok'))]
         summary['Hotspot Name'] = summary.pop('hotspot_name')
         summary['Concentrator Model'] = summary.pop('concentrator_model')
         summary['Region'] = summary.pop('region')
@@ -180,16 +183,76 @@ async def get_net_test(request: web.Request) -> web.Response:
     return web.json_response(net_test)
 
 
-@router.get('/selftest')
+@router.get('/troubleshoot')
 @handle_auth
-async def get_self_test(request: web.Request) -> web.Response:
-    return web.json_response({
-        "eth": bool(system.get_eth_mac()),
-        "wlan": bool(system.get_wlan_mac()),
-        "bt": bool(system.get_bt_mac()),
-        "ecc": bool(pubkey.get_ecc_sn(direct=True)),
-        "lora": bool(pf.get_concentrator_id())
-    })
+async def get_troubleshoot(request: web.Request) -> web.Response:
+    ecc_present = bool(pubkey.get_ecc_sn(direct=True))
+    ecc_provisioned = ecc_present and not miner.is_swarm_key_mode() and bool(pubkey.get_address())
+    hw_info = {
+        'ethernet_present': bool(system.get_eth_mac()),
+        'wifi_present': bool(system.get_wlan_mac()),
+        'bluetooth_present': bool(system.get_bt_mac()),
+        'concentrator_present': bool(pf.get_concentrator_id()),
+        'ecc_present': ecc_present,
+        'ecc_provisioned': ecc_provisioned,
+    }
+    net_info = {
+        'download_speed': net.test_download_speed(),
+        'latency': net.test_latency(),
+        'sb_api_reachable': await sbapi.is_reachable(),
+        'helium_api_reachable': await heliumapi.is_reachable(),
+    }
+    listen_address = miner.get_listen_addr()
+    listen_reachable = listen_relayed = False
+    if listen_address:
+        listen_relayed = not listen_address.startswith('/ip4/')
+        if listen_relayed:
+            listen_reachable = True
+        else:
+            listen_reachable = await sbapi.test_listen_addr(listen_address)
+    miner_info = {
+        'region_ok': bool(miner.get_region(direct=True)),
+        'listening': bool(listen_address),
+        'reachable': listen_reachable,
+        'direct': not listen_relayed
+    }
+
+    if request.query.get('pretty') == 'true':
+        ecc_info = 'absent'
+        if hw_info['ecc_present']:
+            if hw_info['ecc_provisioned']:
+                ecc_info = 'ok'
+            else:
+                ecc_info = 'not provisioned'
+        download_speed = 'slow'
+        if net_info['download_speed'] > DOWNLOAD_SPEED_OK_LIMIT:
+            download_speed = 'ok'
+        latency = 'high'
+        if net_info['latency'] < LATENCY_OK_LIMIT:
+            latency = 'ok'
+        result = {
+            'Ethernet': ['absent', 'ok'][hw_info['ethernet_present']],
+            'Wi-Fi': ['absent', 'ok'][hw_info['wifi_present']],
+            'Bluetooth': ['absent', 'ok'][hw_info['bluetooth_present']],
+            'Concentrator': ['absent', 'ok'][hw_info['concentrator_present']],
+            'ECC': ecc_info,
+            'Download Speed': download_speed,
+            'Latency': latency,
+            'SB API Reachable': ['no', 'ok'][net_info['sb_api_reachable']],
+            'Helium API Reachable': ['no', 'ok'][net_info['helium_api_reachable']],
+            'Region': ['unavailable', 'ok'][miner_info['region_ok']],
+            'Miner Listening': ['no', 'ok'][miner_info['listening']],
+            'Miner Reachable': ['no', 'ok'][miner_info['reachable']],
+            'Miner Relayed': ['yes', 'ok'][miner_info['direct']]
+        }
+    else:
+        result = {
+            'hardware': hw_info,
+            'network': net_info,
+            'miner': miner_info
+        }
+
+    return web.json_response(result)
 
 
 @router.get('/stats')

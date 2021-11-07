@@ -93,7 +93,7 @@ async def test_listen_addr(listen_addr: str) -> Optional[bool]:
 
     try:
         return response['status'] == 'Port open'
-    except:
+    except Exception:
         return False
 
 

@@ -10,6 +10,7 @@ import subprocess
 
 MINER_CMD = '/opt/miner/bin/miner'
 MINER_HEIGHT_CMD = f'{MINER_CMD} info height'
+MINER_REGION_CMD = f'{MINER_CMD} info region'
 MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d "|"'
 MINER_PEER_BOOK_CMD = f"{MINER_CMD} peer book -s | grep -E '^\\|([^\\|]+\\|){{4}}$' | tail -n +2"
 MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
@@ -41,7 +42,18 @@ def get_listen_addr() -> Optional[str]:
         pass
 
 
-def get_region() -> str:
+def get_region(direct: bool = False) -> Optional[str]:
+    if direct:
+        try:
+            output = subprocess.check_output(MINER_REGION_CMD, shell=True, timeout=MINER_TIMEOUT).decode().strip()
+            if output == 'undefined':
+                return
+
+            return output
+
+        except Exception:
+            return
+
     try:
         with open(REG_FILE, 'rt') as f:
             return re.search(r'REGION=([a-zA-Z0-9]+)', f.read()).group(1)
