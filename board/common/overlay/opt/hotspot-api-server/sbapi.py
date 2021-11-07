@@ -59,7 +59,7 @@ async def is_reachable() -> bool:
     except Exception:
         return False
 
-    return response.get('status') == 'No Auth token found'
+    return response.get('status') == 'Port Closed'
 
 
 async def get_stats(address: str) -> Dict[str, Any]:

@@ -135,7 +135,7 @@ async def get_summary(request: web.Request) -> web.Response:
         summary['Temperature'] = f"{summary.pop('temperature')} C"
         summary['Miner Height'] = f"{summary.pop('miner_height')}/{blockchain_height} (lag is {lag})"
         summary['Miner Listen Address'] = summary.pop('miner_listen_addr')
-        summary['Miner Listen OK'] = summary.pop('miner_listen_ok')
+        summary['Miner Listen OK'] = ['no', 'yes'][summary.pop('miner_listen_ok')]
         summary['Hotspot Name'] = summary.pop('hotspot_name')
         summary['Concentrator Model'] = summary.pop('concentrator_model')
         summary['Region'] = summary.pop('region')
@@ -167,11 +167,15 @@ async def get_net_test(request: web.Request) -> web.Response:
     net_test['download_speed'] = net.test_download_speed()
     net_test['latency'] = net.test_latency()
     net_test['public_ip'] = net.get_public_ip()
+    net_test['sb_api_reachable'] = await sbapi.is_reachable()
+    net_test['helium_api_reachable'] = await heliumapi.is_reachable()
 
     if request.query.get('pretty') == 'true':
         net_test['Download Speed'] = f"{net_test.pop('download_speed')} kB/s"
         net_test['Latency'] = f"{net_test.pop('latency')} ms"
         net_test['Public IP'] = net_test.pop('public_ip')
+        net_test['SB API Reachable'] = ['no', 'yes'][net_test.pop('sb_api_reachable')]
+        net_test['Helium API Reachable'] = ['no', 'yes'][net_test.pop('helium_api_reachable')]
 
     return web.json_response(net_test)
 
