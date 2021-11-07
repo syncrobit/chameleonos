@@ -21,6 +21,7 @@ import gatewayconfig
 import ledstrip
 import logs
 import miner
+import net
 import pf
 import pubkey
 import remote
@@ -160,13 +161,14 @@ async def get_summary(request: web.Request) -> web.Response:
 
 @router.get('/nettest')
 async def get_net_test(request: web.Request) -> web.Response:
-    download_speed = request.query.get('download_speed') == 'true'
-    latency = request.query.get('latency') == 'true'
-    public_ip = request.query.get('public_ip') == 'true'
-    if not download_speed and not latency and not public_ip:
-        download_speed = latency = public_ip = True
+    net_test = {}
+    if request.query.get('download_speed') == 'true':
+        net_test['download_speed'] = net.test_download_speed()
+    if request.query.get('latency') == 'true':
+        net_test['latency'] = net.test_latency()
+    if request.query.get('public_ip') == 'true':
+        net_test['public_ip'] = net.get_public_ip()
 
-    net_test = system.net_test(download_speed, latency, public_ip)
     return web.json_response(net_test)
 
 
@@ -386,7 +388,7 @@ async def reboot(request: web.Request) -> web.Response:
 
 @router.post('/factory_reset')
 @handle_auth
-async def reboot(request: web.Request) -> web.Response:
+async def factory_reset(request: web.Request) -> web.Response:
     loop = asyncio.get_event_loop()
     loop.call_later(2, system.factory_reset)
 
