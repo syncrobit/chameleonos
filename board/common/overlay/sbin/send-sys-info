@@ -42,6 +42,12 @@ function prepare_payload() {
     else
         last_panic=null
     fi
+    
+    if [[ -s /var/run/led_state ]]; then
+        current_state=$(cat /var/run/led_state)
+    else
+        current_state=powered_up
+    fi
 
     payload="{
         \"cpu_usage\":${cpu_usage},
@@ -63,7 +69,8 @@ function prepare_payload() {
         \"wlan_mac\":\"${wlan_mac}\",
         \"uptime\":${system_uptime},
         \"time\":${time},
-        \"last_panic\":${last_panic}
+        \"last_panic\":${last_panic},
+        \"current_state\":\"${current_state}\"
     }"
 
     payload=$(echo ${payload} | jq -c)
