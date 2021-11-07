@@ -221,9 +221,12 @@ def get_os_conf_var(name: str) -> str:
 
 
 def set_os_conf_var(name: str, value: str) -> None:
-    with open(OS_CONF, 'rt') as f:
-        lines = f.readlines()
-        lines = [line.strip() for line in lines if line.strip()]
+    if os.path.exists(OS_CONF):
+        with open(OS_CONF, 'rt') as f:
+            lines = f.readlines()
+            lines = [line.strip() for line in lines if line.strip()]
+    else:
+        lines = []
 
     variables = [line.split('=', 1) for line in lines]
     variables = {k: v.strip('"') for k, v in variables}
