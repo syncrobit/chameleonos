@@ -162,12 +162,15 @@ async def get_summary(request: web.Request) -> web.Response:
 @router.get('/nettest')
 async def get_net_test(request: web.Request) -> web.Response:
     net_test = {}
-    if request.query.get('download_speed') == 'true':
-        net_test['download_speed'] = net.test_download_speed()
-    if request.query.get('latency') == 'true':
-        net_test['latency'] = net.test_latency()
-    if request.query.get('public_ip') == 'true':
-        net_test['public_ip'] = net.get_public_ip()
+
+    net_test['download_speed'] = net.test_download_speed()
+    net_test['latency'] = net.test_latency()
+    net_test['public_ip'] = net.get_public_ip()
+
+    if request.query.get('pretty') == 'true':
+        net_test['Download Speed'] = f"{net_test.pop('download_speed')} kB/s"
+        net_test['Latency'] = f"{net_test.pop('latency')} ms"
+        net_test['Public IP'] = net_test.pop('public_ip')
 
     return web.json_response(net_test)
 

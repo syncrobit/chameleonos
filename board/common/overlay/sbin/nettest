@@ -1,55 +1,10 @@
 #!/bin/bash
 
-SPEED_TEST_TIMEOUT=5  # Seconds
-SPEED_TEST_URL=http://speedtest-blr1.digitalocean.com/10mb.test
+CREDENTIALS_FILE=/var/lib/api_credentials
+DEF_CREDENTIALS="admin:admin"
 
-cmdline_args="$*"
-
-function arg_present() {
-    for arg in ${cmdline_args}; do
-        if [ "${arg}" == "$1" ]; then
-            return 0
-        fi
-    done
-
-    return 1
-}
-
-function test_download_speed() {
-    curl -o /dev/null --stderr /tmp/speedtest.txt -m ${SPEED_TEST_TIMEOUT} ${SPEED_TEST_URL}
-    speed=$(cat /tmp/speedtest.txt | grep -v 'timed out' | tail -n 1 | tr -s ' ' | rev | cut -d ' ' -f 1 | rev | sed -r 's/([0-9]+)/\1 /')
-    # Speed must start with a number
-    [[ "${speed}" =~ ^[0-9] ]] || speed=0
-    # Ensure speed is always expressed as kbytes/s
-    speed=(${speed})
-    if [[ ${#speed[@]} -gt 1 ]]; then
-        unit=${speed[1]}
-        speed=${speed[0]}
-        if [[ ${unit} == M ]]; then
-            speed=$(echo "${speed} * 1024" | bc -l)
-        fi
-    else  # Assuming no unit (bytes/s)
-        speed=$(echo "${speed} / 1024" | bc -l)
-    fi
-
-    speed=$(printf "%.1f" ${speed})
-
-    echo "Download Speed: ${speed} kB/s"
-}
-
-function test_latency() {
-    latency=$(ping -A -c 5 8.8.8.8 | tail -n 1 | cut -d '/' -f 4 | cut -d '.' -f 1)
-    echo "Latency:        ${latency} ms"
-}
-
-function test_public_ip() {
-    ip=$(curl -4 -s https://ipv4.icanhazip.com/)
-    echo "Public IP:      ${ip}"
-}
+credentials=${DEF_CREDENTIALS}
+test -s ${CREDENTIALS_FILE} && credentials=$(cat ${CREDENTIALS_FILE})
 
 echo "Testing network connection..."
-test -z "$1" || arg_present "--download-speed" && test_download_speed
-test -z "$1" || arg_present "--latency" && test_latency
-test -z "$1" || arg_present "--public-ip" && test_public_ip
-
-exit 0
+curl -u "${credentials}" -s http://localhost/nettest?pretty=true | jq -r 'to_entries[] | (.key + ": " + (.value|tostring))' | sed 's/: /|/' | column -t -s '|'
