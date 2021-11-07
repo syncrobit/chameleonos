@@ -1,0 +1,12 @@
+#!/bin/bash
+
+CREDENTIALS_FILE=/var/lib/api_credentials
+DEF_CREDENTIALS="admin:admin"
+
+function print_data() {
+    credentials=${DEF_CREDENTIALS}
+    test -s ${CREDENTIALS_FILE} && credentials=$(cat ${CREDENTIALS_FILE})
+    curl -u "${credentials}" -s http://localhost/troubleshoot?pretty=true | jq -r 'to_entries[] | (.key + ": " + (.value|tostring))' | sed 's/: /|/'
+}
+
+print_data | column -t -s '|'
