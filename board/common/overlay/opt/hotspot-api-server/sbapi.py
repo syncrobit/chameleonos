@@ -49,6 +49,19 @@ async def api_request(
         hdrs.AUTHORIZATION = auth_header_name
 
 
+async def is_reachable() -> bool:
+    body = {
+        'ip_address': 'test_reachable',
+        'port': -1
+    }
+    try:
+        response = await api_request('POST', '/minerlistencheck', body=body, timeout=10)
+    except Exception:
+        return False
+
+    return response.get('status') == 'No Auth token found'
+
+
 async def get_stats(address: str) -> Dict[str, Any]:
     stats = await api_request('POST', '/stats', body={'gw_addr': address})
     for k, v in stats.items():

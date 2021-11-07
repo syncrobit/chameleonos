@@ -1,10 +1,7 @@
 
-import logging
-import os.path
-import psutil
 import subprocess
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional
 
 
 DOWNLOAD_SPEED_TEST_URL = 'http://speedtest-blr1.digitalocean.com/10mb.test'

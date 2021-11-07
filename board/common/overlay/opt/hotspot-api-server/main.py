@@ -18,6 +18,7 @@ from aiohttp import web
 import cpufreq
 import fwupdate
 import gatewayconfig
+import heliumapi
 import ledstrip
 import logs
 import miner
@@ -122,7 +123,7 @@ async def get_summary(request: web.Request) -> web.Response:
     }
 
     if request.query.get('pretty') == 'true':
-        blockchain_height = await miner.get_blockchain_height()
+        blockchain_height = await heliumapi.get_blockchain_height()
         lag = blockchain_height - (summary['miner_height'] or 0)
 
         summary['Serial Number'] = summary.pop('serial_number')

@@ -32,13 +32,6 @@ def get_height() -> Optional[int]:
         pass
 
 
-async def get_blockchain_height() -> int:
-    url = 'https://api.helium.io/v1/blocks/height'
-    async with aiohttp.ClientSession() as client:
-        async with client.request(method='GET', url=url) as response:
-            return (await response.json())['data']['height']
-
-
 def get_listen_addr() -> Optional[str]:
     try:
         output = subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True, timeout=MINER_TIMEOUT)
