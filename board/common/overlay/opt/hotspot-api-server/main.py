@@ -194,6 +194,12 @@ async def get_activity(request: web.Request) -> web.Response:
     return web.json_response(activity)
 
 
+@router.get('/peer_book')
+async def get_peer_book(request: web.Request) -> web.Response:
+    peer_book = miner.get_peer_book()
+    return web.json_response(peer_book)
+
+
 @router.get('/config')
 @handle_auth
 async def get_config(request: web.Request) -> web.Response:

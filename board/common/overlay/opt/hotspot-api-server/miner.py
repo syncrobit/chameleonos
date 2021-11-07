@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 import logging
@@ -11,6 +11,7 @@ import subprocess
 MINER_CMD = '/opt/miner/bin/miner'
 MINER_HEIGHT_CMD = f'{MINER_CMD} info height'
 MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d "|"'
+MINER_PEER_BOOK_CMD = f"{MINER_CMD} peer book -s | grep -E '^\|([^\|]+\|){{4}}$' | tail -n +2"
 MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
 MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s ' \
                             f'--payer %(payer)s --nonce %(nonce)s'
@@ -58,6 +59,27 @@ def get_region() -> str:
 
 def is_swarm_key_mode() -> bool:
     return os.path.exists(SWARM_KEY_FILE)
+
+
+def get_peer_book() -> List[Dict[str, str]]:
+    try:
+        output = subprocess.check_output(MINER_PEER_BOOK_CMD, shell=True, timeout=MINER_TIMEOUT).decode()
+
+    except subprocess.SubprocessError:
+        return []
+
+    logging.critical(output)
+    lines = output.split('\n')
+    lines = [line.strip().strip('|').split('|') for line in lines if line.strip()]
+    return [
+        {
+            'local': line[0].strip(),
+            'remote': line[1].strip(),
+            'p2p': line[2].strip(),
+            'name': line[3].strip(),
+        }
+        for line in lines
+    ]
 
 
 def get_config() -> Dict[str, Any]:
