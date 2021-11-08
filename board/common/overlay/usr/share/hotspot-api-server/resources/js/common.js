@@ -408,7 +408,10 @@ $(document).ready(function(){
         $.get("/nettest", function( data ) {
             $('.modal-append').find('.progress').css("display", "none");
             $('.modal-append').find('.speed-results').html("<strong>Download speed:</strong> " + data.download_speed + 
-                                                           " kBytes/s <br><strong>Latency:</strong> " + data.latency + " ms");
+                                                           " kBytes/s <br><strong>Latency:</strong> " + data.latency + " ms<br>" +
+                                                           "<strong>Public IP:</strong> " + data.public_ip + "<br>" +
+                                                           "<strong>SB API Reachable:</strong> " + ((data.sb_api_reachable) ? "Yes" : "No") +
+                                                           "<br><strong>Helium API Reachable:</strong> " + ((data.helium_api_reachable) ? "Yes" : "No"));
             $('.modal-append').find('.progress-bar').animate({ width: '0%'});  
         });
     })
@@ -787,6 +790,58 @@ $(document).ready(function(){
               });
             
         }
+    });
+
+    //TroubleShoot
+    $('.gw-troubleshoot').click(function(e){
+        e.preventDefault();
+        var html = getModal('troubleshoot');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+            $('#troubleshoot-modal').modal('show').on('hidden.bs.modal', function () {
+                $('.modal').remove();
+            });
+
+            $.get("/troubleshoot", function(data) {
+                $('.t-eth').html((data.hardware.ethernet_present) ? "Good" : "Not present");
+                $('.t-dlspeed').html(data.network.download_speed + "kBytes/s");
+                $('.t-region').html((data.miner.region_ok) ? "Selected" : "No Region");
+                $('.t-wifi').html((data.hardware.wifi_present) ? "Good" : "Not Present");
+                $('.t-latency').html(data.network.latency + " ms");
+                $('.t-listening').html((data.miner.listening) ? "Yes" : "No");
+                $('.t-ble').html((data.hardware.bluetooth_present) ? "Good" : "Not present");
+                $('.t-sb-api').html((data.network.sb_api_reachable) ? "Reachable" : "Cannot be reached");
+                $('.t-reachable').html((data.miner.reachable) ? "Yes" : "Cannot be reached");
+                $('.t-concentrator').html((data.hardware.concentrator_present) ? "Present" : "Not Present");
+                $('.t-helium-api').html((data.network.helium_api_reachable) ? "Reachable" : "Cannot be reached");
+                $('.t-relayed').html((data.miner.direct) ? "No" : "Yes");
+                $('.t-ecc').html((data.hardware.ecc_present) ? "Present" : "Absent");
+                $('.t-eccprov').html((data.hardware.ecc_provisioned) ? "Yes" : "No");
+            });   
+        }
+    });
+
+    //Peer Book
+    $('.peer-book').click(function(e){
+        e.preventDefault();
+        var html = getModal('peerbook');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+            $.get("/peer_book", function(data) {
+                $.each( data, function( key, value ) {
+                    $('.peerbook-content').append('<tr>' +
+                                                '<th scope="row">' + value.name + '</th>' +
+                                                '<td>' + value.local + '</td>' +
+                                                '<td>' + value.remote + '</td>' +
+                                                '<td>' + value.p2p + '</td>' +
+                                                '</tr>');
+                });
+            
+                $('#peerbook-modal').modal('show').on('hidden.bs.modal', function () {
+                    $('.modal').remove();
+                });
+            }); 
+        } 
     });
 
 });
