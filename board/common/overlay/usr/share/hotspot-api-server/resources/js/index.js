@@ -151,15 +151,6 @@ $(document).ready(function(){
         $('.gw-status').removeClass('gw_lora_ready gw_power_up gw_ip_ready gw_miner_syncing gw_updating_firmware gw_no_net gw_panic gw_rebooting')
         .addClass('gw_' + data.current_state);
       });
-
-      //Check NetConnection
-      $.get( "/nettest?latency=true", function( data ) {
-        if(data.latency === null){
-          $('.network-activity-wrapper').show();
-        }else{
-          $('.network-activity-wrapper').hide();
-        }
-      });
     }, 5000);
 
     $('.refresh-summary').click(function(e){
