@@ -77,6 +77,10 @@ def handle_auth(
 
         logging.debug(f'authentication successful for %s', username)
 
+        request.user = {
+            'username': username
+        }
+
         return await func(request)
 
     return handler
@@ -376,12 +380,13 @@ async def set_config(request: web.Request) -> web.Response:
         needs_restart_pf = True
 
     if 'password' in config:
-        old_password = config.get('old_password')
-        if old_password is None:
-            raise web.HTTPBadRequest(body='old_password is required')
+        if request.user['username'] != user.INTERNAL_USERNAME:
+            old_password = config.get('old_password')
+            if old_password is None:
+                raise web.HTTPBadRequest(body='old_password is required')
 
-        if not user.verify_credentials(user.DEFAULT_USERNAME, old_password):
-            raise web.HTTPBadRequest(body='old_password is invalid')
+            if not user.verify_credentials(user.DEFAULT_USERNAME, old_password):
+                raise web.HTTPBadRequest(body='old_password is invalid')
 
         user.set_password(user.DEFAULT_USERNAME, config['password'])
         request._skip_auth = True

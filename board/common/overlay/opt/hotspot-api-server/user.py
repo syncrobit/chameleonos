@@ -2,11 +2,13 @@
 import hashlib
 import logging
 import os
-import pubkey
 import secrets
 import time
 
 from typing import List, Optional
+
+import pubkey
+import system
 
 
 CREDENTIALS_FILE = '/var/lib/api_credentials'
@@ -28,7 +30,10 @@ def verify_credentials_internal(username: str, password: str) -> bool:
     if username != INTERNAL_USERNAME:
         return False
 
-    actual_password = f'{pubkey.get_pub_key_hex()}:{pubkey.get_ecc_sn()}'
+    actual_password = (
+        f'{system.get_os_prefix()}-{system.get_rpi_sn()}:{system.get_wlan_mac()}:'
+        f'{pubkey.get_pub_key_hex()}:{pubkey.get_ecc_sn()}'
+    )
     actual_password = hashlib.sha256(actual_password.encode()).hexdigest()
 
     if password != actual_password:
