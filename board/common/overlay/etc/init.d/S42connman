@@ -10,6 +10,7 @@ ONLINE_TIMEOUT=20
 ONLINE_TIMEOUT_INITIAL=10
 ONLINE_TIMEOUT_CHECK=5
 ONLINE_HANDLER_SCRIPT="/usr/libexec/connman-online-handler"
+USER_NET_CONF="/data/etc/net.conf"
 
 
 test -x ${PROG} || exit 0
@@ -39,7 +40,14 @@ start() {
     msg_begin "Starting connman"
 
     mkdir -p ${RUN_DIR}
-    ln -sf ${RUN_DIR}/resolv.conf /tmp/resolv.conf
+    
+    test -s ${USER_NET_CONF} && source ${USER_NET_CONF}
+    if [[ -n "${DNS_SERVER}" ]]; then
+        rm -f /tmp/resolv.conf
+        echo "nameserver ${DNS_SERVER}" > /tmp/resolv.conf
+    else
+        ln -sf ${RUN_DIR}/resolv.conf /tmp/resolv.conf
+    fi
 
     ifconfig lo up
     ${PROG} -n -r &> ${LOG} &
