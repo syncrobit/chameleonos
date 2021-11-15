@@ -130,7 +130,10 @@ async def get_summary(request: web.Request) -> web.Response:
     }
 
     if request.query.get('pretty') == 'true':
-        blockchain_height = await heliumapi.get_blockchain_height()
+        try:
+            blockchain_height = await heliumapi.get_blockchain_height()
+        except Exception:
+            blockchain_height = 0
         lag = blockchain_height - (summary['miner_height'] or 0)
 
         summary['Serial Number'] = summary.pop('serial_number')
