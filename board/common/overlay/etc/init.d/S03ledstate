@@ -85,7 +85,7 @@ function state_loop() {
     while ! [[ -f ${HW_CONF} ]]; do  # Wait for hardware config to be ready
         sleep 1
     done
-    
+    sleep 1  # Allow another second for data to be written to HW_CONF
     source ${HW_CONF}
 
     renice -10 ${BASHPID}  # Run LEDs with high prio
