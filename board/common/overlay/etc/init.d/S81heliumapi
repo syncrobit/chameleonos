@@ -1,0 +1,51 @@
+#!/bin/bash
+
+SB_DOMAIN="helium-api.sbcloud.services"
+OFFICIAL_DOMAIN="api.helium.io"
+BASE_PATH="/v1"
+TEST_PATH="${BASE_PATH}/blocks/height"
+CONF="/var/run/helium-api.conf"
+
+source /etc/init.d/base
+
+
+test_provider() {
+    # $1 - domain
+    url="https://$1${TEST_PATH}"
+    output=$(curl --silent --location-trusted --fail --max-time 5 "${url}" 2>/dev/null) || return 1
+    height=$(jq .data.height <<< "${output}" 2>/dev/null) || return 1
+    [[ "${height}" =~ ^[0-9]+$ ]] || return 1
+}
+
+set_provider() {
+    # $1 - domain
+    echo "BASE_URL=https://$1${BASE_PATH}" > ${CONF}
+}
+
+start() {
+    msg_begin "Selecting Helium API provider"
+
+    if test_provider ${SB_DOMAIN}; then
+        domain=${SB_DOMAIN}
+    else
+        domain=${OFFICIAL_DOMAIN}
+    fi
+
+    set_provider ${domain}
+    msg_done ${domain}
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        ;;
+
+    *)
+        echo "Usage: $0 {start}"
+        exit 1
+esac
+
+exit $?
