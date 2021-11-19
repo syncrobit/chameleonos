@@ -1,4 +1,6 @@
 import json
+import logging
+import subprocess
 
 from typing import Any
 
@@ -7,8 +9,10 @@ import aiohttp
 from aiohttp import hdrs
 
 
-BASE_URL = 'https://api.helium.io/v1'
+HELIUM_API_CONF = '/var/run/helium-api.conf'
 DEFAULT_TIMEOUT = 60
+
+base_url = None
 
 
 async def api_request(
@@ -18,7 +22,14 @@ async def api_request(
     timeout: int = DEFAULT_TIMEOUT,
     use_json: bool = True
 ) -> Any:
-    url = f'{BASE_URL}{path}/'
+    global base_url
+
+    if base_url is None:
+        cmd = f'source {HELIUM_API_CONF} && echo ${{BASE_URL}}'
+        base_url = subprocess.check_output(cmd, shell=True).decode().strip()
+        logging.debug('using Helium API base URL = "%s"', base_url)
+
+    url = f'{base_url}{path}/'
     headers = {}
     if body:
         headers['Content-Type'] = 'application/json'
