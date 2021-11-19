@@ -11,6 +11,7 @@ USER_CONF="/data/etc/miner_sys.config"
 MINER_CONF="/data/etc/miner.conf"
 MINER_LEGACY_CONF="/data/etc/nat.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
+HELIUM_API_CONF="/var/run/helium-api.conf"
 
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
@@ -37,13 +38,16 @@ test -s ${MINER_CONF} && source ${MINER_CONF}
 
 source ${HARDWARE_CONF}
 
+soure ${HELIUM_API_CONF}
+HELIUM_API_BASE_URL=${BASE_URL}
+
 
 free_space() {
     df -m /data | tail -n1 | tr -s ' ' | cut -d ' ' -f 4
 }
 
 get_lag() {
-    current_height=$(curl --silent https://api.helium.io/v1/blocks/height | jq .data.height)
+    current_height=$(curl --silent https://${HELIUM_API_BASE_URL}/blocks/height | jq .data.height)
     test $? == 0 || return
     our_height=$(${FULL_PROG} info height | awk '{print $2}')
     test $? == 0 && [[ "${current_height}" =~ ^[0-9]+$ ]] && [[ "${our_height}" =~ ^[0-9]+$ ]] || return
@@ -296,6 +300,9 @@ start() {
         # Impose a snapshot memory limit
         sed -ri 's;\{honor_quick_sync;\{snapshot_memory_limit, 400\},\n   \{honor_quick_sync;' ${RELX_CONFIG_PATH}
         
+        # Adjust API base URL
+        sed -ri "s;https://api.helium.io/v1;${HELIUM_API_BASE_URL};" ${RELX_CONFIG_PATH}
+
         # If user swarm key is present, configure miner to use it instead of ECC
         if [[ -s ${USER_SWARM_KEY} ]]; then
             sed -ri 's/(.*key_slot.*)/%%\1/' ${RELX_CONFIG_PATH}
