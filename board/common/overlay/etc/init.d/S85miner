@@ -38,7 +38,7 @@ test -s ${MINER_CONF} && source ${MINER_CONF}
 
 source ${HARDWARE_CONF}
 
-soure ${HELIUM_API_CONF}
+source ${HELIUM_API_CONF}
 HELIUM_API_BASE_URL=${BASE_URL}
 
 
