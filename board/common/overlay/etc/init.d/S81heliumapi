@@ -5,6 +5,7 @@ OFFICIAL_DOMAIN="api.helium.io"
 BASE_PATH="/v1"
 TEST_PATH="${BASE_PATH}/blocks/height"
 CONF="/var/run/helium-api.conf"
+TIMEOUT=15
 
 source /etc/init.d/base
 
@@ -12,7 +13,7 @@ source /etc/init.d/base
 test_provider() {
     # $1 - domain
     url="https://$1${TEST_PATH}"
-    output=$(curl --silent --location-trusted --fail --max-time 5 "${url}" 2>/dev/null) || return 1
+    output=$(curl --silent --location-trusted --fail --max-time ${TIMEOUT} "${url}" 2>/dev/null) || return 1
     height=$(jq .data.height <<< "${output}" 2>/dev/null) || return 1
     [[ "${height}" =~ ^[0-9]+$ ]] || return 1
 }
