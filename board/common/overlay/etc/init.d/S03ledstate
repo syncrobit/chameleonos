@@ -13,7 +13,6 @@ SYS_CONF="/etc/ledstrip.conf"
 CONF="/data/etc/ledstrip.conf"
 
 
-
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
 # Defaults
@@ -24,7 +23,7 @@ test -s ${CONF} && source ${CONF}
 
 declare -A STATE_COLORS=( \
     [powered_up]=white \
-    [ip_ready]=white \
+    [ip_ready]=yellow \
     [miner_syncing]=orange \
     [lora_ready]=${LED_STRIP_OK_COLOR} \
     [updating_firmware]=cyan \
@@ -35,7 +34,7 @@ declare -A STATE_COLORS=( \
 
 declare -A STATE_PATTERNS=( \
     [powered_up]=fade \
-    [ip_ready]=fade \
+    [ip_ready]=steady \
     [miner_syncing]=progress \
     [lora_ready]=steady \
     [updating_firmware]=fade \
