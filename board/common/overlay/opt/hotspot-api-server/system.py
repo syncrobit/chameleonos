@@ -143,8 +143,11 @@ def get_storage_info() -> Tuple[int, int]:
     return int(du.used / 1024 / 1024), int(du.total / 1024 / 1024)
 
 
-def get_temperature() -> int:
-    return int(psutil.sensors_temperatures()['cpu_thermal'][0].current)
+def get_temperature() -> Optional[int]:
+    try:
+        return int(psutil.sensors_temperatures()['cpu_thermal'][0].current)
+    except Exception:
+        pass
 
 
 def get_last_panic_details() -> Optional[Dict[str, str]]:
