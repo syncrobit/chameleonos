@@ -47,7 +47,7 @@ free_space() {
 }
 
 get_lag() {
-    current_height=$(curl --silent https://${HELIUM_API_BASE_URL}/blocks/height | jq .data.height)
+    current_height=$(curl --silent ${HELIUM_API_BASE_URL}/blocks/height | jq .data.height)
     test $? == 0 || return
     our_height=$(${FULL_PROG} info height | awk '{print $2}')
     test $? == 0 && [[ "${current_height}" =~ ^[0-9]+$ ]] && [[ "${our_height}" =~ ^[0-9]+$ ]] || return
