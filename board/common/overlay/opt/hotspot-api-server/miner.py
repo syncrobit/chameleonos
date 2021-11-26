@@ -14,6 +14,7 @@ MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep "listen_addrs (priorit
 MINER_PING_CMD = f'{MINER_CMD} ping'
 MINER_PEER_BOOK_CMD = f"{MINER_CMD} peer book -s | grep -E '^\\|([^\\|]+\\|){{4}}$' | tail -n +2"
 MINER_PEER_PING_CMD = f'{MINER_CMD} peer ping /p2p/%(address)s'
+MINER_PEER_CONNECT_CMD = f'{MINER_CMD} peer connect /p2p/%(address)s'
 MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
 MINER_ASSERT_LOCATION_CMD = (
     f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s '
@@ -87,6 +88,7 @@ def get_peer_book() -> List[Dict[str, str]]:
             'local': line[0].strip(),
             'remote': line[1].strip(),
             'p2p': line[2].strip(),
+            'address': line[2].strip().replace('/p2p/', ''),
             'name': line[3].strip(),
         }
         for line in lines
@@ -94,15 +96,25 @@ def get_peer_book() -> List[Dict[str, str]]:
 
 
 def ping_peer(address: str) -> Optional[int]:
-    cmd = MINER_PEER_PING_CMD.format(address=address)
+    cmd = MINER_PEER_PING_CMD % {'address': address}
     try:
         output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT).decode().strip()
     except subprocess.SubprocessError:
         return
 
-    match = re.match(r'.*(\d)+ ms$', output)
+    match = re.match(r'.*?(\d+) ms$', output)
     if match:
         return int(match.group(1))
+
+
+def connect_peer(address: str) -> bool:
+    cmd = MINER_PEER_CONNECT_CMD % {'address': address}
+    try:
+        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT).decode().strip()
+    except subprocess.SubprocessError:
+        return False
+
+    return output.startswith('Connected')
 
 
 def get_config() -> Dict[str, Any]:

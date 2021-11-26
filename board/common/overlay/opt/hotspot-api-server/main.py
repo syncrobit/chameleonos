@@ -293,6 +293,16 @@ async def get_peers_ping(request: web.Request) -> web.Response:
     return web.json_response({'round_trip_time': result})
 
 
+@router.get('/peers/connect')
+async def get_peers_connect(request: web.Request) -> web.Response:
+    address = request.query.get('address')
+    if not address:
+        return web.json_response({'message': 'missing "address" field'}, status=400)
+
+    result = miner.connect_peer(address)
+    return web.json_response({'success': result})
+
+
 @router.get('/config')
 @handle_auth
 async def get_config(request: web.Request) -> web.Response:
