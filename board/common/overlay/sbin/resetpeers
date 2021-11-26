@@ -1,0 +1,5 @@
+#!/bin/bash
+
+service miner stop
+rm -rf /var/lib/miner/blockchain_swarm/peerbook/
+service miner start
