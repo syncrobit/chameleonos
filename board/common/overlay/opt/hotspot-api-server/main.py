@@ -218,6 +218,7 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
         else:
             listen_reachable = await sbapi.test_listen_addr(listen_address)
     miner_info = {
+        'ping': miner.ping(),
         'region_ok': bool(miner.get_region(direct=True)),
         'listening': bool(listen_address),
         'reachable': listen_reachable,
@@ -237,6 +238,7 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
         latency = 'high'
         if net_info['latency'] < LATENCY_OK_LIMIT:
             latency = 'ok'
+
         result = {
             'Ethernet': ['absent', 'ok'][hw_info['ethernet_present']],
             'Wi-Fi': ['absent', 'ok'][hw_info['wifi_present']],
@@ -247,6 +249,7 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
             'Latency': latency,
             'SB API Reachable': ['no', 'ok'][net_info['sb_api_reachable']],
             'Helium API Reachable': ['no', 'ok'][net_info['helium_api_reachable']],
+            'Miner Ping': ['error', 'ok'][miner_info['ping']],
             'Region': ['unavailable', 'ok'][miner_info['region_ok']],
             'Miner Listening': ['no', 'ok'][miner_info['listening']],
             'Miner Reachable': ['no', 'ok'][miner_info['reachable']],
