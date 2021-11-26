@@ -5,3 +5,4 @@
 */5 * * * * (sleep $(expr $RANDOM % 300); /sbin/fwupdate-check) >> /var/log/fwupdate-check.log
 * * * * * /sbin/send-sys-info &>> /var/log/send-sys-info.log
 14 3 * * * /usr/libexec/reboot-when-idle
+35 * * * * grep 'PERIODIC_RESET_PEERS=true' /data/etc/miner.conf && /sbin/resetpeers

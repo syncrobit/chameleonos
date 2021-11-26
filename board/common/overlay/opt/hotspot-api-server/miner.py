@@ -124,7 +124,8 @@ def get_config() -> Dict[str, Any]:
         'nat_internal_port': None,
         'panic_on_relayed': False,
         'panic_on_unreachable': False,
-        'force_sync_enabled': True
+        'force_sync_enabled': True,
+        'periodic_reset_peers': False,
     }
 
     if not os.path.exists(CONF_FILE):
