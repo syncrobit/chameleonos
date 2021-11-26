@@ -1,7 +1,6 @@
 
 from typing import Any, Dict, List, Optional
 
-import aiohttp
 import logging
 import os
 import re
@@ -14,9 +13,12 @@ MINER_REGION_CMD = f'{MINER_CMD} info region'
 MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d "|"'
 MINER_PING_CMD = f'{MINER_CMD} ping'
 MINER_PEER_BOOK_CMD = f"{MINER_CMD} peer book -s | grep -E '^\\|([^\\|]+\\|){{4}}$' | tail -n +2"
+MINER_PEER_PING_CMD = f'{MINER_CMD} peer ping /p2p/%(address)s'
 MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
-MINER_ASSERT_LOCATION_CMD = f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s ' \
-                            f'--payer %(payer)s --nonce %(nonce)s'
+MINER_ASSERT_LOCATION_CMD = (
+    f'{MINER_CMD} txn assert_location owner=%(owner)s location=%(location)s '
+    f'--payer %(payer)s --nonce %(nonce)s'
+)
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
 REG_FILE = '/var/lib/reg.conf'
@@ -29,7 +31,6 @@ def get_height() -> Optional[int]:
     try:
         info_height = subprocess.check_output(MINER_HEIGHT_CMD, shell=True, timeout=MINER_TIMEOUT)
         return int(info_height.decode().split()[1])
-
     except Exception:
         pass
 
@@ -38,7 +39,6 @@ def get_listen_addr() -> Optional[str]:
     try:
         output = subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True, timeout=MINER_TIMEOUT)
         return output.decode().strip() or None
-
     except Exception:
         pass
 
@@ -51,14 +51,12 @@ def get_region(direct: bool = False) -> Optional[str]:
                 return
 
             return output
-
         except Exception:
             return
 
     try:
         with open(REG_FILE, 'rt') as f:
             return re.search(r'REGION=([a-zA-Z0-9]+)', f.read()).group(1)
-
     except Exception:
         pass
 
@@ -70,7 +68,6 @@ def is_swarm_key_mode() -> bool:
 def ping() -> bool:
     try:
         output = subprocess.check_output(MINER_PING_CMD, shell=True, timeout=MINER_TIMEOUT).decode().strip()
-
     except subprocess.SubprocessError:
         return False
 
@@ -80,7 +77,6 @@ def ping() -> bool:
 def get_peer_book() -> List[Dict[str, str]]:
     try:
         output = subprocess.check_output(MINER_PEER_BOOK_CMD, shell=True, timeout=MINER_TIMEOUT).decode()
-
     except subprocess.SubprocessError:
         return []
 
@@ -95,6 +91,18 @@ def get_peer_book() -> List[Dict[str, str]]:
         }
         for line in lines
     ]
+
+
+def ping_peer(address: str) -> Optional[int]:
+    cmd = MINER_PEER_PING_CMD.format(address=address)
+    try:
+        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT).decode().strip()
+    except subprocess.SubprocessError:
+        return
+
+    match = re.match(r'.*(\d)+ ms$', output)
+    if match:
+        return int(match.group(1))
 
 
 def get_config() -> Dict[str, Any]:
@@ -116,7 +124,6 @@ def get_config() -> Dict[str, Any]:
 
             try:
                 k, v = line.split('=', 1)
-
             except ValueError:
                 continue
 
@@ -125,7 +132,6 @@ def get_config() -> Dict[str, Any]:
             if k.endswith('port'):
                 try:
                     v = int(v)
-
                 except ValueError:
                     continue
 
@@ -174,7 +180,6 @@ def restart() -> None:
     logging.info('restarting miner')
     try:
         subprocess.check_call(MINER_RESTART_CMD, shell=True, timeout=MINER_TIMEOUT)
-
     except Exception:
         pass
 
@@ -187,7 +192,6 @@ def txn_add_gateway(owner: str, payer: str) -> Optional[str]:
     try:
         output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT)
         return output.decode().strip() or None
-
     except Exception:
         pass
 
@@ -200,6 +204,5 @@ def txn_assert_location(owner: str, payer: str, location: str, nonce: int) -> Op
     try:
         output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT)
         return output.decode().strip() or None
-
     except Exception:
         pass

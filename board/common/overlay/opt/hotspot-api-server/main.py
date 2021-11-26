@@ -277,10 +277,20 @@ async def get_activity(request: web.Request) -> web.Response:
     return web.json_response(activity)
 
 
-@router.get('/peer_book')
-async def get_peer_book(request: web.Request) -> web.Response:
+@router.get('/peers/book')
+async def get_peers_book(request: web.Request) -> web.Response:
     peer_book = miner.get_peer_book()
     return web.json_response(peer_book)
+
+
+@router.get('/peers/ping')
+async def get_peers_ping(request: web.Request) -> web.Response:
+    address = request.query.get('address')
+    if not address:
+        return web.json_response({'message': 'missing "address" field'}, status=400)
+
+    result = miner.ping_peer(address)
+    return web.json_response({'round_trip_time': result})
 
 
 @router.get('/config')
