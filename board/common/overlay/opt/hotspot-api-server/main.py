@@ -303,6 +303,13 @@ async def get_peers_connect(request: web.Request) -> web.Response:
     return web.json_response({'success': result})
 
 
+@router.post('/peers/reset')
+@handle_auth
+async def post_peers_reset(request: web.Request) -> web.Response:
+    miner.reset_peer_book()
+    return web.json_response()
+
+
 @router.get('/config')
 @handle_auth
 async def get_config(request: web.Request) -> web.Response:

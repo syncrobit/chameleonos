@@ -13,6 +13,7 @@ MINER_REGION_CMD = f'{MINER_CMD} info region'
 MINER_LISTEN_ADDR_CMD = f'{MINER_CMD} peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d "|"'
 MINER_PING_CMD = f'{MINER_CMD} ping'
 MINER_PEER_BOOK_CMD = f"{MINER_CMD} peer book -s | grep -E '^\\|([^\\|]+\\|){{4}}$' | tail -n +2"
+MINER_RESET_PEER_BOOK_CMD = "/sbin/resetpeers"
 MINER_PEER_PING_CMD = f'{MINER_CMD} peer ping /p2p/%(address)s'
 MINER_PEER_CONNECT_CMD = f'{MINER_CMD} peer connect /p2p/%(address)s'
 MINER_ADD_GATEWAY_CMD = f'{MINER_CMD} txn add_gateway owner=%(owner)s --payer %(payer)s'
@@ -93,6 +94,10 @@ def get_peer_book() -> List[Dict[str, str]]:
         }
         for line in lines
     ]
+
+
+def reset_peer_book() -> None:
+    subprocess.check_call(MINER_RESET_PEER_BOOK_CMD, shell=True, timeout=MINER_TIMEOUT * 2, stdout=subprocess.DEVNULL)
 
 
 def ping_peer(address: str) -> Optional[int]:
