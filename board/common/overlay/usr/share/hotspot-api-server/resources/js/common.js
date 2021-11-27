@@ -536,6 +536,7 @@ $(document).ready(function(){
                 $('.modal-append').find('#reboot-realy').prop("checked", data.panic_on_relayed);
                 $('.modal-append').find('#reboot-unreachable').prop("checked", data.panic_on_unreachable);
                 $('.modal-append').find('#periodic-reboot').prop("checked", data.periodic_reboot);
+                $('.modal-append').find('#peer-reset').prop("checked", data.periodic_reset_peers);
                 $('#miner-settings-modal').modal('show').on('hidden.bs.modal', function () {
                     $('.modal').remove();
                 });
@@ -595,6 +596,7 @@ $(document).ready(function(){
                 });
             });
 
+            //Periodic Reboot
             $('.modal-append').on('click', '#periodic-reboot', function(){
                 $periodicReboot = $(this);
                 $.ajax({
@@ -608,6 +610,24 @@ $(document).ready(function(){
                     contentType: 'application/merge-patch+json',
                     complete: function(xhr, statusText){
                         toastAppend('pr-settings-not', 'Periodic reboot settings applied.');
+                    }
+                });
+            });
+
+            //Periodic Peer Reset
+            $('.modal-append').on('click', '#peer-reset', function(){
+                $periodicPeerReset = $(this);
+                $.ajax({
+                    type: 'PATCH',
+                    url: '/config',
+                    data: JSON.stringify({
+                        periodic_reset_peers: ($periodicPeerReset.is(':checked')) ? true : false
+                    
+                    }),
+                    processData: false,
+                    contentType: 'application/merge-patch+json',
+                    complete: function(xhr, statusText){
+                        toastAppend('ppr-settings-not', 'Periodic peer reset settings applied.');
                     }
                 });
             });
@@ -792,7 +812,7 @@ $(document).ready(function(){
         }
     });
 
-    //TroubleShoot
+    //Troubleshoot
     $('.gw-troubleshoot').click(function(e){
         e.preventDefault();
         var html = getModal('troubleshoot');
@@ -804,7 +824,7 @@ $(document).ready(function(){
 
             $.get("/troubleshoot", function(data) {
                 $('.t-eth').html((data.hardware.ethernet_present) ? "Good" : "Not present");
-                $('.t-dlspeed').html(data.network.download_speed + "kBytes/s");
+                $('.t-dlspeed').html(data.network.download_speed + " kBytes/s");
                 $('.t-region').html((data.miner.region_ok) ? "Selected" : "No Region");
                 $('.t-wifi').html((data.hardware.wifi_present) ? "Good" : "Not Present");
                 $('.t-latency').html(data.network.latency + " ms");
@@ -815,6 +835,7 @@ $(document).ready(function(){
                 $('.t-concentrator').html((data.hardware.concentrator_present) ? "Present" : "Not Present");
                 $('.t-helium-api').html((data.network.helium_api_reachable) ? "Reachable" : "Cannot be reached");
                 $('.t-relayed').html((data.miner.direct) ? "No" : "Yes");
+                $('.t-hnetwork').html((data.miner.ping) ? "Yes" : "No");
                 $('.t-ecc').html((data.hardware.ecc_present) ? "Present" : "Absent");
                 $('.t-eccprov').html((data.hardware.ecc_provisioned) ? "Yes" : "No");
             });   
@@ -827,21 +848,96 @@ $(document).ready(function(){
         var html = getModal('peerbook');
         if(html !== undefined){
             $('.modal-append').html(html);
-            $.get("/peer_book", function(data) {
+            $.get("/peers/book", function(data) {
                 $.each( data, function( key, value ) {
-                    $('.peerbook-content').append('<tr>' +
+                    $('.peerbook-content').append('<tr id="'+ value.address +'">' +
                                                 '<th scope="row">' + value.name + '</th>' +
                                                 '<td>' + value.local + '</td>' +
                                                 '<td>' + value.remote + '</td>' +
                                                 '<td>' + value.p2p + '</td>' +
-                                                '</tr>');
+                                                '<td><i class="fas fa-spinner fa-spin pairing-spinner"></i></td>' +
+                                                '</tr>');                             
                 });
             
                 $('#peerbook-modal').modal('show').on('hidden.bs.modal', function () {
                     $('.modal').remove();
                 });
+
+                //Ping each Peer
+                $.each( data, function( key, value ) {
+                    $.get("/peers/ping?address=" + value.address, function(data) {
+                        var peer_id = $('.peerbook-content').find('#' + value.address);
+                        if(data.round_trip_time != null){
+                            peer_id.css("background-color", "#1abd36").css("color", "#ffff");
+                        }else if(data.round_trip_time > 500){
+                            peer_id.css("background-color", "#ff9500").css("color", "#ffff");
+                        }else{
+                            peer_id.css("background-color", "#ff3b30").css("color", "#ffff");
+                        }
+                        peer_id.find('td:nth-child(5)').html((data.round_trip_time == null) ? "N/A" : data.round_trip_time + " ms").css("color", "#ffff");
+                    });
+                });
             }); 
         } 
+    });
+
+    $('.peer-config').click(function(e){
+        e.preventDefault();
+        var html = getModal('peer-settings');
+        if(html !== undefined){
+            $('.modal-append').html(html);
+
+            $('.btn-ping-peer').click(function(){
+                var address = $('#inputAddress');
+                if(!$.trim(address.val()).length) { // zero-length string AFTER a trim
+                    address.removeClass('is-valid').addClass('is-invalid');
+                }else{
+                    address.removeClass('is-invalid').addClass('is-valid');
+                    $('.peer-pc').html('Pinging...');
+                    $.get("/peers/ping?address=" + address.val(), function(data) {
+                        var result;
+                        if(data.round_trip_time == null){
+                            result = '<span class="badge badge-danger">N/A</span>';
+                        }else if(data.round_trip_time > 500){
+                            result = '<span class="badge badge-warning">'+ data.round_trip_time +' ms</span>';
+                        }else{
+                            result = '<span class="badge badge-success">'+ data.round_trip_time +' ms</span>';
+                        }
+                        $('.peer-pc').html(result);
+                    });
+                }
+                
+            });
+
+            $('.btn-connect-peer').click(function(){
+                var address = $('#inputAddress');
+                if(!$.trim(address.val()).length) { // zero-length string AFTER a trim
+                    address.removeClass('is-valid').addClass('is-invalid');
+                }else{
+                    address.removeClass('is-invalid').addClass('is-valid');
+                    $.get("/peers/connect?address=" + address.val(), function(data) {
+                        var result;
+                        if(data.success){
+                            result = '<span class="badge badge-success">Added</span>';
+                        }else{
+                            result = '<span class="badge badge-danger">Could not be added</span>';
+                        }
+                        $('.peer-pc').html(result);
+                    });
+
+                }
+            });
+
+            $('.btn-reset-peerbook').click(function(){
+                $.post("/peers/reset", function(data) {}).done(function() {
+                    toastAppend('ppb-reset-not', 'PeerBook succssfully reset.');
+                });
+            });
+
+            $('#peer-settings-modal').modal('show').on('hidden.bs.modal', function () {
+                $('.modal').remove();
+            });
+        }
     });
 
 });
