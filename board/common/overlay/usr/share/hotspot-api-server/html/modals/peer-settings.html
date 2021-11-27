@@ -1,0 +1,41 @@
+<div class="modal fade show" id="peer-settings-modal" aria-modal="true" style="padding-right: 15px;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" id="peer-settings-form">
+          <div class="modal-header">
+            <h5 class="modal-title">Peer Settings</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <h6>Peer Ping/Connect</h6>
+            <div class="form-group row">
+                <label for="inputAddress" class="col-sm-2 col-form-label">Address</label>
+                <div class="col-sm-6">
+                    <input type="email" class="form-control" id="inputAddress">
+                </div>
+                <div class="col-sm-2">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary btn-ping-peer">Ping!</button>
+                        <button type="button" class="btn btn-success btn-connect-peer">Connect</button>
+                      </div>
+                </div>
+                <div class="col-sm-12">
+                    Status: <p class="peer-pc" style="display: inline-block;"></p>
+                </div>
+            </div>
+            <h6>Peer Book Reset</h6>
+            <div class="form-group row">
+                <div class="col-sm-12 text-center">
+                    <button type="button" class="btn btn-primary btn-reset-peerbook">Reset PeerBook</button>
+                </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default close-modal" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
