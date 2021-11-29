@@ -133,6 +133,8 @@ def get_config() -> Dict[str, Any]:
         'periodic_reset_peers': False,
     }
 
+    bool_fields = {'panic_on_relayed', 'panic_on_unreachable', 'force_sync_enabled', 'periodic_reset_peers'}
+
     if not os.path.exists(CONF_FILE):
         return current_config
 
@@ -153,7 +155,7 @@ def get_config() -> Dict[str, Any]:
                 except ValueError:
                     continue
 
-            if k.startswith('panic_on') or k.endswith('enabled'):
+            if k in bool_fields:
                 v = v.lower() == 'true'
 
             current_config[k] = v
