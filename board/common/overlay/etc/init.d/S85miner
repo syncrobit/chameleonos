@@ -173,17 +173,22 @@ sync_from_snapshot() {
     logger -t miner "synchronizing miner data"
 
     echo "-------- $(date) --------"
-    msg_begin "Synchronizing miner data"
     
     # Kill any existing sync session
+    msg_begin "Cleaning up any existing sync session"
     ps aux | grep curl | grep snapshot.bin | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
     ps aux | grep 'snapshot load' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
     rm -f /data/snapshot.bin*
+    msg_done
     
+    msg_begin "Fetching snapshot metadata from ${SYNC_URL}"
     if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
         msg_fail "metadata download failed"
         return 1
     fi
+    msg_done
+    
+    msg_begin "Parsing snapshot metadata"
     if ! block_height=$(jq -r '.blockHeight' <<< ${data}); then
         msg_fail "metadata parsing failed"
         return 1
@@ -200,33 +205,51 @@ sync_from_snapshot() {
         msg_fail "metadata parsing failed"
         return 1
     fi
+    msg_done
+    
+    msg_begin "Downloading snapshot from ${ark}"
     if curl --fail -m 1800 --silent --show-error --location-trusted "${ark}" -o /data/snapshot.bin.xz; then
-        unxz /data/snapshot.bin.xz
-    else
-        msg_fail "compressed snapshot download failed"
-        msg_begin "retrying with uncompressed snapshot"
-        if ! curl --fail -m 1800 --silent --show-error --location-trusted "${file}" -o /data/snapshot.bin; then
-            msg_fail "snapshot download failed"
+        msg_done
+        msg_begin "Extracting snapshot"
+        if ! unxz /data/snapshot.bin.xz; then
+            msg_fail
             return 1
         fi
+        msg_done
+    else
+        msg_fail "compressed snapshot download failed"
+        msg_begin "Retrying with uncompressed snapshot"
+        if ! curl --fail -m 1800 --silent --show-error --location-trusted "${file}" -o /data/snapshot.bin; then
+            msg_fail
+            return 1
+        fi
+        msg_done
     fi
+    
+    msg_begin "Verifying checksum"
     local_check_sum=$(md5sum /data/snapshot.bin | awk '{print $1}')
     if [[ "${local_check_sum}" != "${check_sum}" ]]; then
-        msg_fail "invalid checksum"
+        msg_fail
         return 1
     fi
+    msg_done
+    
+    msg_begin "Loading snapshot into miner"
     
     # Avoid panic reboots during snapshot load
     panic_inhibit
 
     # Increase miner command timeout
-    export NODETOOL_TIMEOUT=600000
+    export NODETOOL_TIMEOUT=900000
     
     # Pause miner sync during snapshot load
     ${FULL_PROG} repair sync_pause >/dev/null
 
     # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
-    ${FULL_PROG} snapshot load /data/snapshot.bin &>/dev/null
+    if ! ${FULL_PROG} snapshot load /data/snapshot.bin &>/dev/null; then
+        msg_fail
+        return 1
+    fi
 
     # Resume miner sync after snapshot load
     ${FULL_PROG} repair sync_resume >/dev/null
@@ -366,6 +389,7 @@ start() {
     watch_prog &
     watch_lag &
     watch_p2p &
+    disown
 
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
     test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
@@ -383,6 +407,7 @@ start() {
     if [[ "${sync_needed}" == "true" ]] && [[ ${FORCE_SYNC_ENABLED} == true ]]; then
         msg_begin "Synchronizing miner data"
         sync_background &>/dev/null &
+        disown
         msg_done "background"
     fi
 }
