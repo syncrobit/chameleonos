@@ -1,12 +1,13 @@
 import json
 import logging
-import subprocess
 
 from typing import Any
 
 import aiohttp
 
 from aiohttp import hdrs
+
+import asyncsubprocess
 
 
 HELIUM_API_CONF = '/var/run/helium-api.conf'
@@ -26,7 +27,7 @@ async def api_request(
 
     if base_url is None:
         cmd = f'source {HELIUM_API_CONF} && echo ${{BASE_URL}}'
-        base_url = subprocess.check_output(cmd, shell=True).decode().strip()
+        base_url = await asyncsubprocess.check_output(cmd)
         logging.debug('using Helium API base URL = "%s"', base_url)
 
     url = f'{base_url}{path}/'

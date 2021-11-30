@@ -1,9 +1,10 @@
 
-from typing import Any, Dict, Optional
-
 import logging
 import os
-import subprocess
+
+from typing import Any, Dict, Optional
+
+import asyncsubprocess
 
 
 RESTART_CMD = 'service cpufreq start'
@@ -75,6 +76,6 @@ def set_config(config: Dict[str, Any]) -> None:
             f.write(line)
 
 
-def restart() -> None:
+async def restart() -> None:
     logging.info('restarting cpufreq')
-    subprocess.check_call(RESTART_CMD, shell=True)
+    await asyncsubprocess.check_call(RESTART_CMD)

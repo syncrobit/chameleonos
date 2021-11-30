@@ -1,11 +1,11 @@
 
-from typing import Any, Dict, Optional
-
 import logging
 import os
 import re
-import subprocess
 
+from typing import Any, Dict, Optional
+
+import asyncsubprocess
 import miner
 
 
@@ -19,18 +19,18 @@ PF_TIMEOUT = 10  # Seconds
 DEF_REGION = 'US915'
 
 
-def get_concentrator_id() -> Optional[str]:
+async def get_concentrator_id() -> Optional[str]:
     try:
-        return subprocess.check_output(PF_CONCENTRATOR_ID_CMD, shell=True)
+        return await asyncsubprocess.check_output(PF_CONCENTRATOR_ID_CMD)
 
     except Exception:
         pass
 
 
-def get_concentrator_model() -> Optional[str]:
+async def get_concentrator_model() -> Optional[str]:
     try:
-        output = subprocess.check_output(PF_CONCENTRATOR_MODEL_CMD, shell=True)
-        prog_path = output.split()[-1].decode()
+        output = await asyncsubprocess.check_output(PF_CONCENTRATOR_MODEL_CMD)
+        prog_path = output.split()[-1]
         return re.search(r'sx\d+', prog_path).group()
 
     except Exception:
@@ -54,7 +54,7 @@ def get_config(conf_file: Optional[str] = None) -> Dict[str, Any]:
         config = get_config(SYS_CONF_FILE)
         conf_file = CONF_FILE
 
-        config['tx_power'] = get_def_tx_power(miner.get_region() or DEF_REGION)
+        config['tx_power'] = get_def_tx_power(miner.get_cached_region() or DEF_REGION)
 
     else:
         config = {
@@ -115,6 +115,6 @@ def set_config(config: Dict[str, Any]) -> None:
             f.write(line)
 
 
-def restart() -> None:
+async def restart() -> None:
     logging.info('restarting packet-forwarder')
-    subprocess.check_call(PF_RESTART_CMD, shell=True, timeout=PF_TIMEOUT)
+    await asyncsubprocess.check_call(PF_RESTART_CMD, timeout=PF_TIMEOUT)

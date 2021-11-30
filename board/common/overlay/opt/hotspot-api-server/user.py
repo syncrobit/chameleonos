@@ -26,12 +26,12 @@ _reset_code: Optional[str] = None
 _reset_code_time: float = 0
 
 
-def verify_credentials_internal(username: str, password: str) -> bool:
+async def verify_credentials_internal(username: str, password: str) -> bool:
     if username != INTERNAL_USERNAME:
         return False
 
     actual_password = (
-        f'{system.get_os_prefix()}-{system.get_rpi_sn()}:{system.get_wlan_mac()}:'
+        f'{await system.get_os_prefix()}-{await system.get_rpi_sn()}:{system.get_wlan_mac()}:'
         f'{pubkey.get_pub_key_hex()}:{pubkey.get_ecc_sn()}'
     )
     actual_password = hashlib.sha256(actual_password.encode()).hexdigest()
@@ -43,8 +43,8 @@ def verify_credentials_internal(username: str, password: str) -> bool:
     return True
 
 
-def verify_credentials(username: str, password: str) -> bool:
-    if verify_credentials_internal(username, password):
+async def verify_credentials(username: str, password: str) -> bool:
+    if await verify_credentials_internal(username, password):
         return True
 
     if os.path.exists(CREDENTIALS_FILE) and os.path.getsize(CREDENTIALS_FILE) > 0:

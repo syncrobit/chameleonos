@@ -1,11 +1,11 @@
 
 import asyncio
+import logging
+import os
 
 from typing import Any, Dict, List, Optional
 
-import logging
-import os
-import subprocess
+import asyncsubprocess
 
 
 RESTART_CMD = 'service ledstate restart'
@@ -91,62 +91,63 @@ def set_config(config: Dict[str, Any]) -> None:
             f.write(line)
 
 
-def _set(params: List[str]) -> None:
+async def _set(params: List[str]) -> None:
     cmd = [LED_STRIP_PROG] + params
-    subprocess.check_call(cmd)
+    cmd = ' '.join(cmd)
+    await asyncsubprocess.check_call(cmd)
 
 
-def _get_def_brightness() -> int:
+async def _get_def_brightness() -> int:
     cmd = (
         f'test -f {SYS_CONF_FILE} && source {SYS_CONF_FILE};'
         f'test -f {CONF_FILE} && source {CONF_FILE};'
         'echo $LED_STRIP_BRIGHTNESS'
     )
-    return int(subprocess.check_output(cmd, shell=True).decode().strip())
+    return int(await asyncsubprocess.check_output(cmd))
 
 
-def set_on(color: str, brightness: int = -1) -> None:
+async def set_on(color: str, brightness: int = -1) -> None:
     if brightness < 0:
-        brightness = _get_def_brightness()
-    _set(['on', f'{brightness}', f'{color}'])
+        brightness = await _get_def_brightness()
+    await _set(['on', f'{brightness}', f'{color}'])
 
 
-def set_off() -> None:
-    _set(['off'])
+async def set_off() -> None:
+    await _set(['off'])
 
 
-def fade_in(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
+async def fade_in(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
     if brightness < 0:
-        brightness = _get_def_brightness()
+        brightness = await _get_def_brightness()
     colors = colors or []
-    _set(['fadein', f'{brightness}', f'{color}'] + colors)
+    await _set(['fadein', f'{brightness}', f'{color}'] + colors)
 
 
-def fade_out(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
+async def fade_out(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
     if brightness < 0:
-        brightness = _get_def_brightness()
+        brightness = await _get_def_brightness()
     colors = colors or []
-    _set(['fadeout', f'{brightness}', f'{color}'] + colors)
+    await _set(['fadeout', f'{brightness}', f'{color}'] + colors)
 
 
-def progress_lr(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
+async def progress_lr(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
     if brightness < 0:
-        brightness = _get_def_brightness()
+        brightness = await _get_def_brightness()
     colors = colors or []
-    _set(['progresslr', f'{brightness}', f'{color}'] + colors)
+    await _set(['progresslr', f'{brightness}', f'{color}'] + colors)
 
 
-def progress_rl(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
+async def progress_rl(color: str, colors: Optional[List[str]] = None, brightness: int = -1) -> None:
     if brightness < 0:
-        brightness = _get_def_brightness()
+        brightness = await _get_def_brightness()
     colors = colors or []
-    _set(['progressrl', f'{brightness}', f'{color}'] + colors)
+    await _set(['progressrl', f'{brightness}', f'{color}'] + colors)
 
 
-def set_pattern(colors: List[str], brightness: int = -1) -> None:
+async def set_pattern(colors: List[str], brightness: int = -1) -> None:
     if brightness < 0:
-        brightness = _get_def_brightness()
-    _set(['pattern', f'{brightness}'] + colors)
+        brightness = await _get_def_brightness()
+    await _set(['pattern', f'{brightness}'] + colors)
 
 
 async def pause(duration: Optional[int] = None) -> None:
@@ -175,7 +176,7 @@ async def pause(duration: Optional[int] = None) -> None:
     # Wait until ledstrip program exits
     while True:
         try:
-            subprocess.check_output(f'ps aux | grep {LED_STRIP_PROG} | grep -vq grep', shell=True)
+            await asyncsubprocess.check_call(f'ps aux | grep {LED_STRIP_PROG} | grep -vq grep')
             await asyncio.sleep(0.1)
         except Exception:
             break
@@ -195,6 +196,6 @@ async def resume() -> None:
         pass
 
 
-def restart() -> None:
+async def restart() -> None:
     logging.info('restarting ledstrip')
-    subprocess.check_call(RESTART_CMD, shell=True)
+    await asyncsubprocess.check_call(RESTART_CMD)

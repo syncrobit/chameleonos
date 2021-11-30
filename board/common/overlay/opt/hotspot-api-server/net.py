@@ -1,7 +1,7 @@
 
-import subprocess
-
 from typing import Optional
+
+import asyncsubprocess
 
 
 DOWNLOAD_SPEED_TEST_URL = 'http://speedtest-blr1.digitalocean.com/10mb.test'
@@ -27,28 +27,25 @@ LATENCY_TEST_CMD = 'ping -A -c 5 8.8.8.8 | tail -n 1 | cut -d "/" -f 4 | cut -d 
 PUBLIC_IP_CMD = 'curl -4 -s https://ipv4.icanhazip.com/'
 
 
-def test_download_speed() -> int:
+async def test_download_speed() -> int:
     """Return download speed in kB/s."""
     try:
-        return int(float(subprocess.check_output(DOWNLOAD_SPEED_TEST_CMD, shell=True).decode().strip()))
-
+        return int(float(await asyncsubprocess.check_output(DOWNLOAD_SPEED_TEST_CMD)))
     except Exception:
         return 0
 
 
-def test_latency() -> int:
+async def test_latency() -> int:
     """Return network latency in milliseconds."""
 
     try:
-        return int(subprocess.check_output(LATENCY_TEST_CMD, shell=True).decode().strip())
-
+        return int(await asyncsubprocess.check_output(LATENCY_TEST_CMD))
     except Exception:
         return 0
 
 
-def get_public_ip() -> Optional[str]:
+async def get_public_ip() -> Optional[str]:
     try:
-        return subprocess.check_output(PUBLIC_IP_CMD, shell=True).decode().strip()
-
+        return await asyncsubprocess.check_output(PUBLIC_IP_CMD)
     except Exception:
         pass
