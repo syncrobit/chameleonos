@@ -5,7 +5,7 @@ from typing import Optional
 
 try:
     import chamutils
-except:
+except Exception:
     pass
 
 

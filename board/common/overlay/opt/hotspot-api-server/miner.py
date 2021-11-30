@@ -1,10 +1,10 @@
-
-from typing import Any, Dict, List, Optional
-
 import logging
 import os
 import re
-import subprocess
+
+from typing import Any, Dict, List, Optional
+
+import asyncsubprocess
 
 
 MINER_CMD = '/opt/miner/bin/miner'
@@ -23,39 +23,40 @@ MINER_ASSERT_LOCATION_CMD = (
 )
 MINER_RESTART_CMD = 'service miner restart'
 MINER_TIMEOUT = 10  # Seconds
+MINER_RESTART_TIMEOUT = 20  # Seconds
 REG_FILE = '/var/lib/reg.conf'
 CONF_FILE = '/data/etc/miner.conf'
 FORCE_SYNC_FILE = '/var/lib/miner/force_sync'
 SWARM_KEY_FILE = '/var/lib/user_swarm_key'
 
 
-def get_height() -> Optional[int]:
+async def get_height() -> Optional[int]:
     try:
-        info_height = subprocess.check_output(MINER_HEIGHT_CMD, shell=True, timeout=MINER_TIMEOUT)
-        return int(info_height.decode().split()[1])
+        info_height = await asyncsubprocess.check_output(MINER_HEIGHT_CMD, timeout=MINER_TIMEOUT)
+        return int(info_height.split()[1])
     except Exception:
         pass
 
 
-def get_listen_addr() -> Optional[str]:
+async def get_listen_addr() -> Optional[str]:
     try:
-        output = subprocess.check_output(MINER_LISTEN_ADDR_CMD, shell=True, timeout=MINER_TIMEOUT)
-        return output.decode().strip() or None
+        return await asyncsubprocess.check_output(MINER_LISTEN_ADDR_CMD, timeout=MINER_TIMEOUT) or None
     except Exception:
         pass
 
 
-def get_region(direct: bool = False) -> Optional[str]:
-    if direct:
-        try:
-            output = subprocess.check_output(MINER_REGION_CMD, shell=True, timeout=MINER_TIMEOUT).decode().strip()
-            if output == 'undefined':
-                return
-
-            return output
-        except Exception:
+async def get_region() -> Optional[str]:
+    try:
+        output = await asyncsubprocess.check_output(MINER_REGION_CMD, timeout=MINER_TIMEOUT)
+        if output == 'undefined':
             return
 
+        return output
+    except Exception:
+        return
+
+
+def get_cached_region() -> Optional[str]:
     try:
         with open(REG_FILE, 'rt') as f:
             return re.search(r'REGION=([a-zA-Z0-9]+)', f.read()).group(1)
@@ -67,19 +68,19 @@ def is_swarm_key_mode() -> bool:
     return os.path.exists(SWARM_KEY_FILE)
 
 
-def ping() -> bool:
+async def ping() -> bool:
     try:
-        output = subprocess.check_output(MINER_PING_CMD, shell=True, timeout=MINER_TIMEOUT).decode().strip()
-    except subprocess.SubprocessError:
+        output = await asyncsubprocess.check_output(MINER_PING_CMD, timeout=MINER_TIMEOUT)
+    except Exception:
         return False
 
     return output == 'pong'
 
 
-def get_peer_book() -> List[Dict[str, str]]:
+async def get_peer_book() -> List[Dict[str, str]]:
     try:
-        output = subprocess.check_output(MINER_PEER_BOOK_CMD, shell=True, timeout=MINER_TIMEOUT).decode()
-    except subprocess.SubprocessError:
+        output = await asyncsubprocess.check_output(MINER_PEER_BOOK_CMD, timeout=MINER_TIMEOUT)
+    except Exception:
         return []
 
     lines = output.split('\n')
@@ -96,15 +97,15 @@ def get_peer_book() -> List[Dict[str, str]]:
     ]
 
 
-def reset_peer_book() -> None:
-    subprocess.check_call(MINER_RESET_PEER_BOOK_CMD, shell=True, timeout=MINER_TIMEOUT * 2, stdout=subprocess.DEVNULL)
+async def reset_peer_book() -> None:
+    await asyncsubprocess.check_call(MINER_RESET_PEER_BOOK_CMD, timeout=MINER_RESTART_TIMEOUT)
 
 
-def ping_peer(address: str) -> Optional[int]:
+async def ping_peer(address: str) -> Optional[int]:
     cmd = MINER_PEER_PING_CMD % {'address': address}
     try:
-        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT).decode().strip()
-    except subprocess.SubprocessError:
+        output = await asyncsubprocess.check_output(cmd, timeout=MINER_TIMEOUT)
+    except Exception:
         return
 
     match = re.match(r'.*?(\d+) ms$', output)
@@ -112,11 +113,11 @@ def ping_peer(address: str) -> Optional[int]:
         return int(match.group(1))
 
 
-def connect_peer(address: str) -> bool:
+async def connect_peer(address: str) -> bool:
     cmd = MINER_PEER_CONNECT_CMD % {'address': address}
     try:
-        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT).decode().strip()
-    except subprocess.SubprocessError:
+        output = await asyncsubprocess.check_output(cmd, timeout=MINER_TIMEOUT)
+    except Exception:
         return False
 
     return output.startswith('Connected')
@@ -186,43 +187,41 @@ def set_config(config: Dict[str, Any]) -> None:
             f.write(line)
 
 
-def resync() -> None:
+async def resync() -> None:
     logging.info('forcing miner sync')
 
     if os.path.exists(os.path.dirname(FORCE_SYNC_FILE)):
         with open(FORCE_SYNC_FILE, 'w'):
             pass
 
-    restart()
+    await restart()
 
 
-def restart() -> None:
+async def restart() -> None:
     logging.info('restarting miner')
     try:
-        subprocess.check_call(MINER_RESTART_CMD, shell=True, timeout=MINER_TIMEOUT)
+        await asyncsubprocess.check_call(MINER_RESTART_CMD, timeout=MINER_RESTART_TIMEOUT)
     except Exception:
         pass
 
 
-def txn_add_gateway(owner: str, payer: str) -> Optional[str]:
+async def txn_add_gateway(owner: str, payer: str) -> Optional[str]:
     logging.info('pushing add_gateway transaction to miner')
 
     cmd = MINER_ADD_GATEWAY_CMD % {'owner': owner, 'payer': payer}
 
     try:
-        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT)
-        return output.decode().strip() or None
+        return await asyncsubprocess.check_output(cmd, timeout=MINER_TIMEOUT) or None
     except Exception:
         pass
 
 
-def txn_assert_location(owner: str, payer: str, location: str, nonce: int) -> Optional[str]:
+async def txn_assert_location(owner: str, payer: str, location: str, nonce: int) -> Optional[str]:
     logging.info('pushing assert_location transaction to miner')
 
     cmd = MINER_ASSERT_LOCATION_CMD % {'owner': owner, 'payer': payer, 'location': location, nonce: nonce}
 
     try:
-        output = subprocess.check_output(cmd, shell=True, timeout=MINER_TIMEOUT)
-        return output.decode().strip() or None
+        return asyncsubprocess.check_output(cmd, timeout=MINER_TIMEOUT) or None
     except Exception:
         pass

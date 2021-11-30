@@ -1,9 +1,10 @@
 
 import logging
 import os
-import subprocess
 
 from typing import Optional
+
+import asyncsubprocess
 
 
 SEND_LOGS_ACTIVE_FILE = '/var/run/send_logs_active'
@@ -33,11 +34,12 @@ def disable_logs_sending() -> None:
         pass
 
 
-def get_log(name: str, max_lines: Optional[int] = None) -> Optional[str]:
+async def get_log(name: str, max_lines: Optional[int] = None) -> Optional[str]:
     file_path = LOG_FILES.get(name)
     if not file_path:
         return
     if max_lines is None:
         max_lines = DEF_MAX_LINES
 
-    return subprocess.check_output(LOG_TAIL_CMD.format(max_lines=max_lines, file_path=file_path), shell=True).decode()
+    cmd = LOG_TAIL_CMD.format(max_lines=max_lines, file_path=file_path)
+    return await asyncsubprocess.check_output(cmd)

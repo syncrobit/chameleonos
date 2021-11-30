@@ -1,9 +1,10 @@
+
+import logging
 import time
 
 from typing import Any, Dict
 
-import logging
-import subprocess
+import asyncsubprocess
 
 
 STATUS_CMD = 'fwupdate status'
@@ -12,15 +13,15 @@ UPGRADE_CMD = 'fwupdate-check --force &>>/var/log/fwupdate-check.log &'
 UPGRADE_START_TIMEOUT = 10  # seconds
 
 
-def get_status() -> str:
-    status = subprocess.check_output(STATUS_CMD, shell=True).decode().strip()
+async def get_status() -> str:
+    status = await asyncsubprocess.check_output(STATUS_CMD)
     status = status.replace('[custom]', '').strip()
 
     return status
 
 
-def get_latest() -> Dict[str, Any]:
-    output = subprocess.check_output(LATEST_CMD, shell=True).decode().strip()
+async def get_latest() -> Dict[str, Any]:
+    output = await asyncsubprocess.check_output(LATEST_CMD)
     lines = output.split('\n')
     latest = {}
     for line in lines:
@@ -40,12 +41,12 @@ def get_latest() -> Dict[str, Any]:
     return latest
 
 
-def start_upgrade() -> None:
+async def start_upgrade() -> None:
     logging.info('starting firmware upgrade')
-    subprocess.check_call(UPGRADE_CMD, shell=True)
+    await asyncsubprocess.check_call(UPGRADE_CMD)
 
     for _ in range(UPGRADE_START_TIMEOUT):
-        if get_status() != 'idle':
+        if await get_status() != 'idle':
             return
 
         time.sleep(1)

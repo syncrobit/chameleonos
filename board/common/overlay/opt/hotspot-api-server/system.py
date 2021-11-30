@@ -2,9 +2,10 @@
 import logging
 import os.path
 import psutil
-import subprocess
 
 from typing import Dict, Optional, Tuple
+
+import asyncsubprocess
 
 
 ETH_MAC_FILE = '/sys/class/net/eth0/address'
@@ -34,18 +35,18 @@ FACTORY_RESET_CONNMAN_PATH_PREFIXES = [
 ]
 
 
-def remount_boot(rw: bool) -> None:
+async def remount_boot(rw: bool) -> None:
     how = ['ro', 'rw'][rw]
     logging.debug('remounting boot %s', how)
-    subprocess.check_call(f'mount -o remount,{how} /boot', shell=True)
+    await asyncsubprocess.check_call(f'mount -o remount,{how} /boot')
 
 
-def get_rpi_sn() -> str:
-    return subprocess.check_output(BOARD_SN_CMD, shell=True).decode().strip()
+async def get_rpi_sn() -> str:
+    return await asyncsubprocess.check_output(BOARD_SN_CMD)
 
 
-def get_os_prefix() -> str:
-    return subprocess.check_output('source /etc/version && echo ${OS_PREFIX}', shell=True).decode().strip()
+async def get_os_prefix() -> str:
+    return await asyncsubprocess.check_output('source /etc/version && echo ${OS_PREFIX}')
 
 
 def reboot() -> None:
@@ -53,14 +54,13 @@ def reboot() -> None:
     os.system(REBOOT_CMD)
 
 
-def factory_reset() -> None:
+async def factory_reset() -> None:
     logging.info('factory resetting')
 
     for service in FACTORY_RESET_SERVICES:
         try:
             logging.info('stopping %s', service)
-            subprocess.check_output(f'service {service} stop', shell=True)
-
+            await asyncsubprocess.check_call(f'service {service} stop')
         except Exception:
             pass
 
@@ -86,7 +86,6 @@ def get_eth_mac() -> Optional[str]:
     try:
         with open(ETH_MAC_FILE, 'rt') as f:
             return f.read().strip()
-
     except Exception:
         pass
 
@@ -95,31 +94,27 @@ def get_wlan_mac() -> Optional[str]:
     try:
         with open(WLAN_MAC_FILE, 'rt') as f:
             return f.read().strip()
-
     except Exception:
         pass
 
 
-def get_bt_mac() -> Optional[str]:
+async def get_bt_mac() -> Optional[str]:
     try:
-        return subprocess.check_output(BT_MAC_CMD, shell=True).decode().strip().lower()
-
+        return (await asyncsubprocess.check_output(BT_MAC_CMD)).lower()
     except Exception:
         pass
 
 
-def get_uptime() -> Optional[int]:
+async def get_uptime() -> Optional[int]:
     try:
-        return int(subprocess.check_output(UPTIME_CMD, shell=True).decode().strip())
-
+        return int(await asyncsubprocess.check_output(UPTIME_CMD))
     except Exception:
         pass
 
 
-def get_fw_version() -> Optional[str]:
+async def get_fw_version() -> Optional[str]:
     try:
-        return subprocess.check_output(FW_VERSION_CMD, shell=True).decode().strip()
-
+        return await asyncsubprocess.check_output(FW_VERSION_CMD)
     except Exception:
         pass
 
@@ -176,9 +171,9 @@ def get_last_panic_details() -> Optional[Dict[str, str]]:
     return details
 
 
-def get_os_conf_var(name: str) -> str:
+async def get_os_conf_var(name: str) -> str:
     cmd = f'source /etc/init.d/os_conf && echo ${{{name}}}'
-    return subprocess.check_output(cmd, shell=True).decode().strip()
+    return await asyncsubprocess.check_output(cmd)
 
 
 def set_os_conf_var(name: str, value: str) -> None:
@@ -199,8 +194,8 @@ def set_os_conf_var(name: str, value: str) -> None:
         f.writelines(lines)
 
 
-def is_periodic_reboot_enabled() -> bool:
-    return get_os_conf_var('OS_PERIODIC_REBOOT') != 'false'
+async def is_periodic_reboot_enabled() -> bool:
+    return (await get_os_conf_var('OS_PERIODIC_REBOOT')) != 'false'
 
 
 def set_periodic_reboot_enabled(enabled: bool) -> None:
@@ -220,7 +215,7 @@ def is_ext_wifi_antenna_enabled() -> bool:
     return False
 
 
-def set_ext_wifi_antenna_enabled(enabled: bool) -> None:
+async def set_ext_wifi_antenna_enabled(enabled: bool) -> None:
     if is_ext_wifi_antenna_enabled() == enabled:
         return  # We're already there
 
@@ -242,7 +237,7 @@ def set_ext_wifi_antenna_enabled(enabled: bool) -> None:
     if enabled and not found:
         modified_lines.append('dtparam=ant2\n')
 
-    remount_boot(rw=True)
+    await remount_boot(rw=True)
     with open(CONFIG_TXT, 'wt') as f:
         f.writelines(modified_lines)
-    remount_boot(rw=False)
+    await remount_boot(rw=False)

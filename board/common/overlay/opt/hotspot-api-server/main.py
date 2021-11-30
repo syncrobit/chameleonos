@@ -41,8 +41,8 @@ LATENCY_OK_LIMIT = 500  # ms
 router = web.RouteTableDef()
 
 
-def make_auth_error_response() -> web.Response:
-    www_authenticate = f'Basic realm="{AUTH_REALM_PREFIX} {system.get_rpi_sn()}"'
+async def make_auth_error_response() -> web.Response:
+    www_authenticate = f'Basic realm="{AUTH_REALM_PREFIX} {await system.get_rpi_sn()}"'
     return web.Response(status=401, headers={'WWW-Authenticate': www_authenticate})
 
 
@@ -57,23 +57,23 @@ def handle_auth(
             auth = request.headers['Authorization']
 
         except KeyError:
-            return make_auth_error_response()
+            return await make_auth_error_response()
 
         try:
             unpw = base64.urlsafe_b64decode(auth[5:].strip()).decode()
 
         except (ValueError, TypeError):
-            return make_auth_error_response()
+            return await make_auth_error_response()
 
         try:
             username, password = unpw.split(':')
 
         except ValueError:
-            return make_auth_error_response()
+            return await make_auth_error_response()
 
-        if not user.verify_credentials(username, password):
+        if not await user.verify_credentials(username, password):
             logging.error(f'invalid credentials for %s', username)
-            return make_auth_error_response()
+            return await make_auth_error_response()
 
         logging.debug(f'authentication successful for %s', username)
 
@@ -93,14 +93,14 @@ async def get_summary(request: web.Request) -> web.Response:
     storage_used, storage_total = system.get_storage_info()
 
     quick = request.query.get('quick') == 'true'
-    miner_listen_addr = miner.get_listen_addr() if not quick else None
+    miner_listen_addr = await miner.get_listen_addr() if not quick else None
     miner_listen_ok = None
     if miner_listen_addr:
         miner_listen_ok = await sbapi.test_listen_addr(miner_listen_addr)
 
     summary = {
-        'serial_number': system.get_rpi_sn(),
-        'os_prefix': system.get_os_prefix(),
+        'serial_number': await system.get_rpi_sn(),
+        'os_prefix': await system.get_os_prefix(),
         'cpu_usage': system.get_cpu_usage(),
         'mem_used': mem_used,
         'mem_total': mem_total,
@@ -109,21 +109,21 @@ async def get_summary(request: web.Request) -> web.Response:
         'storage_used': storage_used,
         'storage_total': storage_total,
         'temperature': system.get_temperature(),
-        'miner_height': miner.get_height() if not quick else None,
+        'miner_height': await miner.get_height() if not quick else None,
         'miner_listen_addr': miner_listen_addr,
         'miner_listen_ok': miner_listen_ok,
         'hotspot_name': pubkey.get_name(),
-        'concentrator_model': pf.get_concentrator_model() if not quick else None,
-        'region': miner.get_region() if not quick else None,
-        'fw_version': system.get_fw_version(),
+        'concentrator_model': await pf.get_concentrator_model() if not quick else None,
+        'region': miner.get_cached_region() if not quick else None,
+        'fw_version': await system.get_fw_version(),
         'ecc_sn': [None, 'ok'][bool(pubkey.get_ecc_sn())],
         'swarm_key_mode': miner.is_swarm_key_mode(),
         'address': pubkey.get_address(),
         'pub_key': pubkey.get_pub_key_hex(),
         'eth_mac': system.get_eth_mac(),
         'wlan_mac': system.get_wlan_mac(),
-        'bt_mac': system.get_bt_mac(),
-        'uptime': system.get_uptime(),
+        'bt_mac': await system.get_bt_mac(),
+        'uptime': await system.get_uptime(),
         'time': int(time.time()),
         'last_panic': system.get_last_panic_details(),
         'current_state': ledstrip.get_current_state()
@@ -174,9 +174,9 @@ async def get_summary(request: web.Request) -> web.Response:
 async def get_net_test(request: web.Request) -> web.Response:
     net_test = {}
 
-    net_test['download_speed'] = net.test_download_speed()
-    net_test['latency'] = net.test_latency()
-    net_test['public_ip'] = net.get_public_ip()
+    net_test['download_speed'] = await net.test_download_speed()
+    net_test['latency'] = await net.test_latency()
+    net_test['public_ip'] = await net.get_public_ip()
     net_test['sb_api_reachable'] = await sbapi.is_reachable()
     net_test['helium_api_reachable'] = await heliumapi.is_reachable()
 
@@ -198,18 +198,18 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
     hw_info = {
         'ethernet_present': bool(system.get_eth_mac()),
         'wifi_present': bool(system.get_wlan_mac()),
-        'bluetooth_present': bool(system.get_bt_mac()),
-        'concentrator_present': bool(pf.get_concentrator_id()),
+        'bluetooth_present': bool(await system.get_bt_mac()),
+        'concentrator_present': bool(await pf.get_concentrator_id()),
         'ecc_present': ecc_present,
         'ecc_provisioned': ecc_provisioned,
     }
     net_info = {
-        'download_speed': net.test_download_speed(),
-        'latency': net.test_latency(),
+        'download_speed': await net.test_download_speed(),
+        'latency': await net.test_latency(),
         'sb_api_reachable': await sbapi.is_reachable(),
         'helium_api_reachable': await heliumapi.is_reachable(),
     }
-    listen_address = miner.get_listen_addr()
+    listen_address = await miner.get_listen_addr()
     listen_reachable = listen_relayed = False
     if listen_address:
         listen_relayed = not listen_address.startswith('/ip4/')
@@ -218,8 +218,8 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
         else:
             listen_reachable = await sbapi.test_listen_addr(listen_address)
     miner_info = {
-        'ping': miner.ping(),
-        'region_ok': bool(miner.get_region(direct=True)),
+        'ping': await miner.ping(),
+        'region_ok': bool(await miner.get_region()),
         'listening': bool(listen_address),
         'reachable': listen_reachable,
         'direct': not listen_relayed
@@ -279,7 +279,7 @@ async def get_activity(request: web.Request) -> web.Response:
 
 @router.get('/peers/book')
 async def get_peers_book(request: web.Request) -> web.Response:
-    peer_book = miner.get_peer_book()
+    peer_book = await miner.get_peer_book()
     return web.json_response(peer_book)
 
 
@@ -289,7 +289,7 @@ async def get_peers_ping(request: web.Request) -> web.Response:
     if not address:
         return web.json_response({'message': 'missing "address" field'}, status=400)
 
-    result = miner.ping_peer(address)
+    result = await miner.ping_peer(address)
     return web.json_response({'round_trip_time': result})
 
 
@@ -299,14 +299,14 @@ async def get_peers_connect(request: web.Request) -> web.Response:
     if not address:
         return web.json_response({'message': 'missing "address" field'}, status=400)
 
-    result = miner.connect_peer(address)
+    result = await miner.connect_peer(address)
     return web.json_response({'success': result})
 
 
 @router.post('/peers/reset')
 @handle_auth
 async def post_peers_reset(request: web.Request) -> web.Response:
-    miner.reset_peer_book()
+    await miner.reset_peer_book()
     return web.json_response()
 
 
@@ -338,7 +338,7 @@ async def get_config(request: web.Request) -> web.Response:
 
         'remote_enabled': remote.is_enabled(),
         'external_wifi_antenna': system.is_ext_wifi_antenna_enabled(),
-        'periodic_reboot': system.is_periodic_reboot_enabled()
+        'periodic_reboot': await system.is_periodic_reboot_enabled()
     }
 
     if request.query.get('pretty') == 'true':
@@ -365,7 +365,7 @@ async def get_config(request: web.Request) -> web.Response:
 
 @router.patch('/config')
 @handle_auth
-async def set_config(request: web.Request) -> web.Response:
+async def patch_config(request: web.Request) -> web.Response:
     config = await request.json()
     needs_restart_miner = False
     needs_restart_pf = False
@@ -378,7 +378,7 @@ async def set_config(request: web.Request) -> web.Response:
 
     if cpu_freq_config:
         cpufreq.set_config(cpu_freq_config)
-        cpufreq.restart()
+        await cpufreq.restart()
 
     led_strip_config = {}
     for field in ('brightness', 'ok_color'):
@@ -387,7 +387,7 @@ async def set_config(request: web.Request) -> web.Response:
 
     if led_strip_config:
         ledstrip.set_config(led_strip_config)
-        ledstrip.restart()
+        await ledstrip.restart()
 
     miner_config = {}
     for field in (
@@ -421,17 +421,17 @@ async def set_config(request: web.Request) -> web.Response:
             if old_password is None:
                 raise web.HTTPBadRequest(body='old_password is required')
 
-            if not user.verify_credentials(user.DEFAULT_USERNAME, old_password):
+            if not await user.verify_credentials(user.DEFAULT_USERNAME, old_password):
                 raise web.HTTPBadRequest(body='old_password is invalid')
 
         user.set_password(user.DEFAULT_USERNAME, config['password'])
         request._skip_auth = True
 
     if 'remote_enabled' in config:
-        remote.set_enabled(config['remote_enabled'])
+        await remote.set_enabled(config['remote_enabled'])
 
     if 'external_wifi_antenna' in config:
-        system.set_ext_wifi_antenna_enabled(config['external_wifi_antenna'])
+        await system.set_ext_wifi_antenna_enabled(config['external_wifi_antenna'])
         needs_reboot = True
 
     if 'periodic_reboot' in config:
@@ -443,9 +443,9 @@ async def set_config(request: web.Request) -> web.Response:
 
     else:
         if needs_restart_miner:
-            miner.restart()
+            await miner.restart()
         if needs_restart_pf:
-            pf.restart()
+            await pf.restart()
 
     return await get_config(request)
 
@@ -454,7 +454,7 @@ async def set_config(request: web.Request) -> web.Response:
 async def verify_password(request: web.Request) -> web.Response:
     data = await request.json()
     password = data.get('password', '')
-    if user.verify_credentials(user.DEFAULT_USERNAME, password):
+    if await user.verify_credentials(user.DEFAULT_USERNAME, password):
         return web.Response(status=204)
 
     else:
@@ -485,7 +485,7 @@ async def reset_password(request: web.Request) -> web.Response:
         logging.info('starting password reset flow')
         colors = user.generate_reset_code()
         await ledstrip.pause(user.RESET_CODE_TIMEOUT)
-        ledstrip.set_pattern(colors)
+        await ledstrip.set_pattern(colors)
         return web.Response(status=204)
 
 
@@ -510,7 +510,7 @@ async def factory_reset(request: web.Request) -> web.Response:
 @router.post('/pair')
 @handle_auth
 async def pair(request: web.Request) -> web.Response:
-    gatewayconfig.enable_pair()
+    await gatewayconfig.enable_pair()
 
     return web.Response(status=204)
 
@@ -535,7 +535,7 @@ async def txn_add_gateway(request: web.Request) -> web.Response:
     if not payer:
         return web.json_response({'message': 'missing "payer" field'}, status=400)
 
-    result = miner.txn_add_gateway(owner, payer)
+    result = await miner.txn_add_gateway(owner, payer)
     return web.Response(status=201, body=result)
 
 
@@ -554,25 +554,25 @@ async def txn_assert_location(request: web.Request) -> web.Response:
         return web.json_response({'message': 'missing "location" field'}, status=400)
     nonce = data.get('nonce', 1)
 
-    result = miner.txn_assert_location(owner, payer, location, nonce)
+    result = await miner.txn_assert_location(owner, payer, location, nonce)
     return web.Response(status=201, body=result)
 
 
 @router.get('/fwupdate')
 async def get_fwupdate(request: web.Request) -> web.Response:
-    fwupdate_info = fwupdate.get_latest()
-    fwupdate_info['status'] = fwupdate.get_status()
+    fwupdate_info = await fwupdate.get_latest()
+    fwupdate_info['status'] = await fwupdate.get_status()
     return web.json_response(fwupdate_info)
 
 
 @router.patch('/fwupdate')
 @handle_auth
 async def patch_fwupdate(request: web.Request) -> web.Response:
-    fwupdate_info = fwupdate.get_latest()
+    fwupdate_info = await fwupdate.get_latest()
     if fwupdate_info['current'] == fwupdate_info['latest']:
         return web.json_response({'message': 'already running latest version'}, status=400)
 
-    fwupdate.start_upgrade()
+    await fwupdate.start_upgrade()
 
     return web.Response(status=204)
 
@@ -605,7 +605,7 @@ async def get_log(request: web.Request) -> web.Response:
         except ValueError:
             max_lines = None
 
-    content = logs.get_log(name, max_lines)
+    content = await logs.get_log(name, max_lines)
     if content is None:
         raise web.HTTPNotFound()
 
