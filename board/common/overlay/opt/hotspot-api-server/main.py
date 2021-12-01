@@ -221,7 +221,7 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
         'ping': await miner.ping(),
         'region_ok': bool(await miner.get_region()),
         'listening': bool(listen_address),
-        'reachable': listen_reachable,
+        'reachable': listen_reachable or False,
         'direct': not listen_relayed
     }
 
