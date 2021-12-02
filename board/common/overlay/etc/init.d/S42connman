@@ -65,7 +65,7 @@ start() {
 
 stop() {
     msg_begin "Stopping connman"
-    killall -q $(basename ${PROG})
+    ps | grep connman | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
     msg_done
 }
 
@@ -81,6 +81,7 @@ case "$1" in
 
     restart)
         stop
+        sleep 2
         start
         ;;
 
