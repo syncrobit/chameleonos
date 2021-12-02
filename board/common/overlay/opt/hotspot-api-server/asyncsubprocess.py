@@ -13,7 +13,7 @@ class StatusCodeError(Exception):
         super().__init__(msg)
 
 
-async def check_output(cmd: str, timeout=DEF_TIMEOUT, strip: bool = True) -> str:
+async def check_output(cmd: str, timeout=DEF_TIMEOUT, strip: bool = True, stderr: bool = False) -> str:
     p = await asyncio.wait_for(
         asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE),
         timeout=timeout
@@ -24,11 +24,11 @@ async def check_output(cmd: str, timeout=DEF_TIMEOUT, strip: bool = True) -> str
     if p.returncode != 0:
         raise StatusCodeError('Command returned non-zero exit status', stdout_data, stderr_data)
 
-    stdout_data = stdout_data
     if strip:
         stdout_data = stdout_data.strip()
+        stderr_data = stderr_data.strip()
 
-    return stdout_data
+    return stdout_data + (stderr_data if stderr else '')
 
 
 async def check_call(cmd: str, timeout=DEF_TIMEOUT) -> None:

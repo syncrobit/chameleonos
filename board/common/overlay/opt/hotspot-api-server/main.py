@@ -15,6 +15,7 @@ from typing import Awaitable, Callable, Optional
 
 from aiohttp import web
 
+import connman
 import cpufreq
 import fwupdate
 import gatewayconfig
@@ -318,11 +319,16 @@ async def get_config(request: web.Request) -> web.Response:
     miner_config = miner.get_config()
     pf_config = pf.get_config()
 
+    current_network = await connman.get_current_network() or {}
+
     config = {
         'cpu_freq_max': cpu_freq_config['max'],
 
         'led_brightness': led_strip_config['brightness'],
         'led_ok_color': led_strip_config['ok_color'],
+
+        'network_type': current_network.get('type'),
+        'network_ssid': current_network.get('ssid'),
 
         'nat_external_ip': miner_config['nat_external_ip'],
         'nat_external_port': miner_config['nat_external_port'],
@@ -389,6 +395,22 @@ async def patch_config(request: web.Request) -> web.Response:
         ledstrip.set_config(led_strip_config)
         await ledstrip.restart()
 
+    if 'network_type' in config:
+        if config['network_type'] == 'ethernet':
+            await connman.forget_wifi()
+            if await connman.has_ethernet():
+                try:
+                    await connman.connect_ethernet()
+                except Exception:
+                    return web.json_response({'message': 'failed to connect to Ethernet'}, status=400)
+
+        elif config['network_type'] == 'wifi' and config.get('network_ssid'):
+            await connman.forget_wifi()
+            try:
+                await connman.connect_wifi(config['network_ssid'], config.get('network_psk', ''))
+            except Exception:
+                return web.json_response({'message': 'failed to connect to Wi-Fi'}, status=400)
+
     miner_config = {}
     for field in (
         'nat_external_ip',
@@ -448,6 +470,18 @@ async def patch_config(request: web.Request) -> web.Response:
             await pf.restart()
 
     return await get_config(request)
+
+
+@router.get('/networks')
+@handle_auth
+async def get_networks(request: web.Request) -> web.Response:
+    wifi_networks = await connman.scan_wifi()
+    wifi_networks.sort()
+
+    return web.json_response({
+        'ethernet': await connman.has_ethernet(),
+        'wifi': wifi_networks
+    })
 
 
 @router.post('/verify_password')
