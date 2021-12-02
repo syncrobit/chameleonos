@@ -12,6 +12,10 @@ function prepare_payload() {
     mem_info=($(free -m | grep '^Mem:' | tr -s ' ' | cut -d ' ' -f 2,3))
     storage_info=($(df -m /data | tail -n 1 | tr -s ' ' | cut -d ' ' -f 2,3))
     temperature=$(echo $(cat /sys/class/thermal/thermal_zone0/temp)/1000 | bc)
+    latency=$(ping -w 2 -c 5 -A 1.1.1.1 | grep -oE '/[0-9.]+/' | tr -d '/' | grep -oE '^[0-9]+')
+    test -n "${latency}" || latency=1000
+    test "${latency}" -le 1000 || latency=1000
+
     # Don't bother miner while syncing
     if ps aux | grep snapshot | grep -qv grep; then
         miner_height="null"
@@ -56,6 +60,7 @@ function prepare_payload() {
         \"storage_used\":${storage_info[1]},
         \"storage_total\":${storage_info[0]},
         \"temperature\":${temperature},
+        \"latency\":${latency},
         \"miner_height\":${miner_height},
         \"miner_listen_address\":\"${miner_listen_addr}\",
         \"hotspot_name\":\"${hotspot_name}\",
