@@ -31,6 +31,7 @@ import sbapi
 import settings
 import system
 import user
+import utils
 
 
 AUTH_REALM_PREFIX = 'Helium Hotspot'
@@ -535,8 +536,7 @@ async def reboot(request: web.Request) -> web.Response:
 @router.post('/factory_reset')
 @handle_auth
 async def factory_reset(request: web.Request) -> web.Response:
-    loop = asyncio.get_event_loop()
-    loop.call_later(2, system.factory_reset)
+    asyncio.create_task(utils.call_with_delay(system.factory_reset(), delay=2))
 
     return web.Response(status=204)
 
@@ -552,8 +552,7 @@ async def pair(request: web.Request) -> web.Response:
 @router.post('/resync')
 @handle_auth
 async def resync(request: web.Request) -> web.Response:
-    loop = asyncio.get_event_loop()
-    loop.call_later(2, miner.resync)
+    asyncio.create_task(utils.call_with_delay(miner.resync(), delay=2))
 
     return web.Response(status=204)
 
