@@ -349,9 +349,11 @@ async def get_config(request: web.Request) -> web.Response:
     }
 
     if request.query.get('pretty') == 'true':
+        config.pop('network_ssid')
         config['CPU Max Frequency'] = f"{int(config.pop('cpu_freq_max') / 1000)} MHz"
         config['LED Brightness'] = f"{config.pop('led_brightness')} %"
         config['LED OK Color'] = config.pop('led_ok_color')
+        config['Network Type'] = config.pop('network_type')
         config['NAT External IP:Port'] = (
             f"{config.pop('nat_external_ip') or ''}:{config.pop('nat_external_port') or ''}"
         )
