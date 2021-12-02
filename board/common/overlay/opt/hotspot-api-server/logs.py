@@ -8,7 +8,7 @@ import asyncsubprocess
 
 
 SEND_LOGS_ACTIVE_FILE = '/var/run/send_logs_active'
-LOG_TAIL_CMD = 'tail -n {max_lines} {file_path}'
+LOG_TAIL_CMD = 'tail -n {max_lines} {file_path} | tac'
 DEF_MAX_LINES = 1000
 
 LOG_FILES = {
