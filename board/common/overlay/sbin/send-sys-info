@@ -5,6 +5,8 @@ source /etc/init.d/base
 source /etc/mqtt-send.conf
 
 MQTT_TOPIC="units/${OS_PREFIX}/${BOARD_SN}/sys_info"
+MQTT_TIMEOUT=10
+MQTT_RETRIES=5
 
 
 function prepare_payload() {
@@ -12,7 +14,7 @@ function prepare_payload() {
     mem_info=($(free -m | grep '^Mem:' | tr -s ' ' | cut -d ' ' -f 2,3))
     storage_info=($(df -m /data | tail -n 1 | tr -s ' ' | cut -d ' ' -f 2,3))
     temperature=$(echo $(cat /sys/class/thermal/thermal_zone0/temp)/1000 | bc)
-    latency=$(ping -w 2 -c 5 -A 1.1.1.1 | grep -oE '/[0-9.]+/' | tr -d '/' | grep -oE '^[0-9]+')
+    latency=$(ping -w 2 -c 10 -A 1.1.1.1 | grep -oE '/[0-9.]+/' | tr -d '/' | grep -oE '^[0-9]+')
     test -n "${latency}" || latency=1000
     test "${latency}" -le 1000 || latency=1000
 
@@ -95,6 +97,10 @@ fi
 
 echo "preparing payload"
 payload=$(prepare_payload)
-echo "sending MQTT message"
-mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${MQTT_TOPIC} -u "${MQTT_BROKER_USERNAME}" -P "${MQTT_BROKER_PASSWORD}" -m "${payload}" -i ${BOARD_SN} ${MQTT_EXTRA_ARGS}
+for ((i=0; i < ${MQTT_RETRIES}; i++)); do
+    echo "sending MQTT message (try $((i + 1))/${MQTT_RETRIES})"
+    if timeout ${MQTT_TIMEOUT} mosquitto_pub -h ${MQTT_BROKER_HOST} -p ${MQTT_BROKER_PORT} -t ${MQTT_TOPIC} -u "${MQTT_BROKER_USERNAME}" -P "${MQTT_BROKER_PASSWORD}" -m "${payload}" -i ${BOARD_SN} ${MQTT_EXTRA_ARGS}; then
+        break
+    fi
+done
 echo "done"

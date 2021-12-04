@@ -270,14 +270,14 @@ start() {
     free_mb=$(free_space)
     if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
         msg_begin "Removing miner data due to low space"
-        msg_done "${free_mb} MB"
         rm -rf /var/lib/miner
+        msg_done "${free_mb} MB"
     fi
     
     if [[ -f ${FORCE_SYNC_FILE} ]]; then
-        msg_begin "Forcing miner data sync"
-        msg_done
+        msg_begin "Removing miner data due to forced sync"
         rm -rf /var/lib/miner
+        msg_done
     fi
     
     msg_begin "Starting miner"
