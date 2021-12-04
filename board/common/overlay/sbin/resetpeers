@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ps aux | grep snapshot | grep -qv grep; then
+    echo "Refusing to reset peers while syncing from snapshot"
+    exit 1
+fi
+
 service miner stop
 rm -rf /var/lib/miner/blockchain_swarm/peerbook/
 service miner start
