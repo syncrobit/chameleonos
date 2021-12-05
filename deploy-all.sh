@@ -14,7 +14,9 @@ if [[ -z "$1" ]]; then
     exit 1
 fi
 
-VENDORS=$(ls -1 vendors/ | sed s/.conf//)
+if [[ -z "${VENDORS}" ]]; then
+    VENDORS=$(ls -1 vendors/ | sed s/.conf//)
+fi
 
 set -a
 for VENDOR in ${VENDORS}; do
