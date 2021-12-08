@@ -55,8 +55,8 @@ get_lag() {
 }
 
 force_sync() {
-    snapshot_height=$(get_snapshot_height)
-    our_height=$(${FULL_PROG} info height | awk '{print $2}')
+    snapshot_height=$(get_snapshot_height | grep -E '^[[:digit:]]+$')
+    our_height=$(${FULL_PROG} info height | awk '{print $2}' | grep -E '^[[:digit:]]+$')
     if [[ -z "${snapshot_height}" ]]; then
         logger -t miner "force_sync: skipping due to unknown snapshot height"
         return
@@ -240,7 +240,7 @@ sync_from_snapshot() {
     panic_inhibit
 
     # Increase miner command timeout
-    export NODETOOL_TIMEOUT=900000
+    export NODETOOL_TIMEOUT=1800000
     
     # Pause miner sync during snapshot load
     ${FULL_PROG} repair sync_pause >/dev/null
