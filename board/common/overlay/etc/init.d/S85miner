@@ -47,29 +47,30 @@ free_space() {
 }
 
 get_lag() {
-    current_height=$(curl --silent ${HELIUM_API_BASE_URL}/blocks/height | jq .data.height)
+    current_height=$(curl --silent ${HELIUM_API_BASE_URL}/blocks/height | jq .data.height | grep -E '^[[:digit:]]+$')
     test $? == 0 || return
-    our_height=$(${FULL_PROG} info height | awk '{print $2}')
-    test $? == 0 && [[ "${current_height}" =~ ^[0-9]+$ ]] && [[ "${our_height}" =~ ^[0-9]+$ ]] || return
-    expr ${current_height} - ${our_height}
+    own_height=$(${FULL_PROG} info height | awk '{print $2}' | grep -E '^[[:digit:]]+$')
+    test $? == 0 || return
+    lag=$(expr ${current_height} - ${own_height})
+    echo "${lag} ${own_height} ${current_height}"
 }
 
 force_sync() {
+    # $1 - optional own height
+
+    own_height=$1
     snapshot_height=$(get_snapshot_height | grep -E '^[[:digit:]]+$')
-    our_height=$(${FULL_PROG} info height | awk '{print $2}' | grep -E '^[[:digit:]]+$')
+
     if [[ -z "${snapshot_height}" ]]; then
         logger -t miner "force_sync: skipping due to unknown snapshot height"
         return
     fi
-    if [[ -z "${our_height}" ]]; then
-        logger -t miner "force_sync: skipping due to unknown own miner height"
-        return
-    fi
-    if [[ ${our_height} -ge ${snapshot_height} ]]; then
-        logger -t miner "force_sync: skipping due to old snapshot (own=${our_height} >= snapshot=${snapshot_height})"
+    if [[ -n "${own_height}" ]] && [[ ${own_height} -ge ${snapshot_height} ]]; then
+        logger -t miner "force_sync: skipping due to old snapshot (own=${own_height} >= snapshot=${snapshot_height})"
         return
     fi
 
+    logger -t miner "force_sync: miner will sync from snapshot at restart"
     mkdir -p $(dirname ${FORCE_SYNC_FILE}) && touch ${FORCE_SYNC_FILE}
 }
 
@@ -111,14 +112,17 @@ watch_lag() {
             continue
         fi
 
-        lag=$(get_lag)
-        test -n "${lag}" || continue
+        lag_info=$(get_lag)
+        test -n "${lag_info}" || continue
+        lag_info=(${lag_info})
+        lag=${lag_info[0]}
+        own_height=${lag_info[1]}
         if [[ ${lag} -le ${MAX_LAG} ]]; then
             logger -t miner "lag is ${lag}"
             continue
         fi
         if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
-            force_sync
+            force_sync ${own_height}
         fi
         panic_action miner "lag is ${lag} > ${MAX_LAG}"
     done
