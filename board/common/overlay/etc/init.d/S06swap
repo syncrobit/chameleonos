@@ -1,30 +1,43 @@
 #!/bin/bash
 
 SWAP_FILE="/data/varlib/swapfile"
-SWAP_SIZE=1024  # MB
-SWAP_MIN_SYS=1048576  # MB
+MIN_TOTAL_MEM=3  # GB
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
-# Don't add swap on systems with memory above 1GB
-total_mem=$(cat /proc/meminfo  | grep MemTotal | tr -s ' ' | cut -d ' ' -f 2)
-if [[ ${total_mem} -gt ${SWAP_MIN_SYS} ]]; then
-    exit 0
-fi
-
 
 case "$1" in
     start)
-        if ! [[ -s ${SWAP_FILE} ]]; then
-            msg_begin "Allocating swap file"
-            dd if=/dev/zero of=${SWAP_FILE} bs=1M count=${SWAP_SIZE} conv=fsync &> /dev/null
-            if [[ $? == 0 ]]; then
-                msg_done
-            else
-                msg_fail
-                exit 0  # Continue booting without swap
-            fi
+        msg_begin "Checking available memory"
+        installed_mem=$(cat /proc/meminfo | grep MemTotal | tr -s ' ' | cut -d ' ' -f 2)
+        installed_mem=$((installed_mem / 1048576 + 1))  # GB
+        test -s ${SWAP_FILE} && swap_mem=$(stat -c %s ${SWAP_FILE}) || swap_mem=0
+        swap_mem=$((swap_mem / 1073741824))  # GB
+        total_mem=$((installed_mem + swap_mem))
+
+        if [[ ${total_mem} -ge ${MIN_TOTAL_MEM} ]]; then
+            msg_done "${installed_mem}GB + ${swap_mem}GB"
+            exit 0
+        fi
+        
+        required_swap_size=$((MIN_TOTAL_MEM - installed_mem))
+        if [[ ${required_swap_size} -le 0 ]]; then
+            msg_done  # should not happen
+            exit 0
+        fi
+        
+        msg_done "${installed_mem}GB + ${swap_mem}GB (${required_swap_size}GB swap needed)"
+        
+        msg_begin "Allocating swap file"
+        swapoff ${SWAP_FILE} &>/dev/null
+        rm -f ${SWAP_FILE}
+        dd if=/dev/zero of=${SWAP_FILE} bs=1G count=${required_swap_size} conv=fsync &> /dev/null
+        if [[ $? == 0 ]]; then
+            msg_done
+        else
+            msg_fail
+            exit 0  # Continue booting without swap
         fi
 
         mkswap ${SWAP_FILE} &> /dev/null
@@ -47,4 +60,5 @@ case "$1" in
         exit 1
 esac
 
-exit $?
+# Continue booting even if we failed to set up swap
+exit 0
