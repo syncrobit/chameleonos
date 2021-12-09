@@ -305,7 +305,7 @@ start() {
     export ERL_FULLSWEEP_AFTER=5
     export HOME=/var/run
     export RELX_CONFIG_PATH="/var/run/miner_sys.config"
-    ulimit -n 8192
+    ulimit -n 32768
     
     # Use custom config, if present
     if [[ -s ${USER_CONF} ]]; then
