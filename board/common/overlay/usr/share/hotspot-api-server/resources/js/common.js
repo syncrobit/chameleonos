@@ -427,7 +427,7 @@ $(document).ready(function(){
             });
 
             $('.fab-reset').click(function(){
-                $.post( "/factory-reset", function( data ) {});
+                $.post( "/factory_reset", function( data ) {});
                 $('.modal-append #fab-reset-modal .modal-body')
                 .html('<strong>Wiping Unit!</strong><br>' + 
                       'Unit will automatically reboot. If you are using wifi please use the app to re-configure wifi settings.');
