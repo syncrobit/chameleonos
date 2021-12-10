@@ -1,0 +1,61 @@
+#!/bin/bash
+
+CONF="/data/etc/ssh_tunnel.conf"
+LOG="/var/log/ssh_tunnel.log"
+
+test -s ${CONF} || exit 0
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+LOCAL_TUNNELS=""
+REMOTE_TUNNELS=""
+SSH_HOST=""
+SSH_PORT="22"
+SSH_OPTS="-o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+RETRY_SLEEP=10
+
+source ${CONF}
+
+test -n "${SSH_HOST}" || exit 0
+
+
+run_tunnel() {
+    local_tunnels=$(for t in ${LOCAL_TUNNELS}; do echo -L$t; done)
+    remote_tunnels=$(for t in ${REMOTE_TUNNELS}; do echo -R$t; done)
+    while true; do
+        echo "---- $(date) ----"
+        ssh -N ${SSH_OPTS} ${local_tunnels} ${remote_tunnels} ${SSH_HOST} -p${SSH_PORT}
+        sleep ${RETRY_SLEEP}
+    done
+}
+
+start() {
+    msg_begin "Starting SSH tunnel"
+    run_tunnel &>> ${LOG} &
+    msg_done
+}
+
+stop() {
+    msg_begin "Stopping SSH tunnel"
+    ps | grep $(basename $0) | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill 2>/dev/null
+    ps | grep "UserKnownHostsFile=/dev/null" | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill 2>/dev/null
+    msg_done
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    restart)
+        stop
+        start
+        ;;
+    
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
