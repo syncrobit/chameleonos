@@ -7,6 +7,16 @@ MIN_TOTAL_MEM=2  # GB
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
 
+function enable_swap() {
+    test -s ${SWAP_FILE} || return
+    mkswap ${SWAP_FILE} &> /dev/null
+    
+    msg_begin "Enabling swap"
+    swapon ${SWAP_FILE}
+    test $? == 0 && msg_done || msg_fail
+}
+
+
 case "$1" in
     start)
         msg_begin "Checking available memory"
@@ -18,12 +28,14 @@ case "$1" in
 
         if [[ ${total_mem} -ge ${MIN_TOTAL_MEM} ]]; then
             msg_done "${installed_mem}GB + ${swap_mem}GB"
+            enable_swap
             exit 0
         fi
         
         required_swap_size=$((MIN_TOTAL_MEM - installed_mem))
         if [[ ${required_swap_size} -le 0 ]]; then
             msg_done  # should not happen
+            enable_swap
             exit 0
         fi
         
@@ -40,16 +52,7 @@ case "$1" in
             exit 0  # Continue booting without swap
         fi
 
-        mkswap ${SWAP_FILE} &> /dev/null
-        
-        msg_begin "Enabling swap"
-        swapon ${SWAP_FILE}
-        if [[ $? == 0 ]]; then
-            msg_done
-        else
-            msg_fail
-            exit 0  # Continue booting without swap
-        fi
+        enable_swap
         ;;
 
     stop)
