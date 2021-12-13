@@ -79,6 +79,8 @@ find_reg() {
     if [[ "${region}" =~ ^region_ ]]; then
         region=${region:7}
     fi
+    
+    region=$(echo "${region}" | tr a-z A-Z)
 
     # Can't detect region when provisioning, so we use a default instead of bailing out
     test -f /var/log/provision.log && test -z "${region}" && region=${DEF_REG}

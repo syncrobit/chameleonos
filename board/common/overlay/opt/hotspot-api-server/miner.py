@@ -53,7 +53,7 @@ async def get_region() -> Optional[str]:
         if output == 'undefined':
             return
 
-        return output
+        return output.upper()
     except Exception:
         return
 
