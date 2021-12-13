@@ -75,6 +75,10 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 find_reg() {
     region=$(${PROG_M} info region 2>/dev/null)
     test $? == 0 || region=""
+    # Strip leading "region_" prefix
+    if [[ "${region}" =~ ^region_ ]]; then
+        region=${region:7}
+    fi
 
     # Can't detect region when provisioning, so we use a default instead of bailing out
     test -f /var/log/provision.log && test -z "${region}" && region=${DEF_REG}

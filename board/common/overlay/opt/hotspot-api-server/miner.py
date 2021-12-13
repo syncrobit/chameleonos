@@ -48,6 +48,8 @@ async def get_listen_addr() -> Optional[str]:
 async def get_region() -> Optional[str]:
     try:
         output = await asyncsubprocess.check_output(MINER_REGION_CMD, timeout=MINER_TIMEOUT)
+        if output.startswith('region_'):
+            output = output[7:]
         if output == 'undefined':
             return
 
