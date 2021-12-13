@@ -44,7 +44,7 @@ case "$1" in
         msg_begin "Allocating swap file"
         swapoff ${SWAP_FILE} &>/dev/null
         rm -f ${SWAP_FILE}
-        dd if=/dev/zero of=${SWAP_FILE} bs=1G count=${required_swap_size} conv=fsync &> /dev/null
+        dd if=/dev/zero of=${SWAP_FILE} bs=103M count=$((required_swap_size * 10)) conv=fsync &> /dev/null
         if [[ $? == 0 ]]; then
             msg_done
         else
