@@ -305,6 +305,7 @@ start() {
     export ERL_FULLSWEEP_AFTER=5
     export HOME=/var/run
     export RELX_CONFIG_PATH="/var/run/miner_sys.config"
+    test -n "${REGION_OVERRIDE}" && export ${REGION_OVERRIDE}
     ulimit -n 32768
     
     # Use custom config, if present
