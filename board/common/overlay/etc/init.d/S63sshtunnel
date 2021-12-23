@@ -36,7 +36,7 @@ start() {
 
 stop() {
     msg_begin "Stopping SSH tunnel"
-    ps | grep $(basename $0) | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill 2>/dev/null
+    ps | grep sshtunnel | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill 2>/dev/null
     ps | grep "UserKnownHostsFile=/dev/null" | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill 2>/dev/null
     msg_done
 }
