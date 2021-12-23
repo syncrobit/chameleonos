@@ -353,7 +353,7 @@ start() {
         if [[ -n "${NAT_EXTERNAL_PORT}" ]]; then
             NAT_INTERNAL_PORT=${NAT_INTERNAL_PORT:-${DEF_PORT}}
             if [[ -z "${NAT_EXTERNAL_IP}" ]]; then
-                NAT_EXTERNAL_IP=$(curl --silent --show-error --location-trusted --fail https://ifconfig.co)
+                NAT_EXTERNAL_IP=$(curl --silent --show-error --location-trusted --fail -4 https://ifconfig.co)
             fi
             if [[ -z "${NAT_INTERNAL_IP}" ]]; then
                 eth_addr=$(
