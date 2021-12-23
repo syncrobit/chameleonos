@@ -109,7 +109,9 @@ function state_loop() {
                 ${LED_STRIP} progresslr ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
                 usleep 100000
             else  # Assuming "steady"
-                ${LED_STRIP} on ${LED_STRIP_BRIGHTNESS} ${color} $(get_fixed_colors)
+                fixed_colors=$(get_fixed_colors)
+                pattern=${fixed_colors//off/${color}}
+                ${LED_STRIP} pattern ${LED_STRIP_BRIGHTNESS} ${pattern}
                 sleep 2
             fi
         else
