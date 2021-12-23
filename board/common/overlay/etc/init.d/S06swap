@@ -10,6 +10,7 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 function enable_swap() {
     test -s ${SWAP_FILE} || return
     mkswap ${SWAP_FILE} &> /dev/null
+    chmod 0600 ${SWAP_FILE}
     
     msg_begin "Enabling swap"
     swapon ${SWAP_FILE}
