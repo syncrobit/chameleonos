@@ -12,17 +12,20 @@ MINER_CONF="/data/etc/miner.conf"
 MINER_LEGACY_CONF="/data/etc/nat.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
 HELIUM_API_CONF="/var/run/helium-api.conf"
+SSH_TUNNEL_CONF="/data/etc/ssh_tunnel.conf"
 
 WATCH_PROG_INTERVAL=10
 WATCH_LAG_INTERVAL=3600
 WATCH_LAG_INTERVAL_STARTUP=300
 WATCH_P2P_INTERVAL=3600
+WATCH_P2P_INTERVAL_STARTUP=600
 NETWORK_TIMEOUT=3600
 MAX_LAG=250
 MIN_FREE_SPACE=1024 # MB
 MIN_FREE_SPACE_LEEWAY=512 # MB
 SYNC_URL="https://msync.syncrob.it/"
 FORCE_SYNC_FILE="/var/lib/miner/force_sync"
+SOFT_RESTART_FILE="/var/run/miner_soft_restart"
 DEF_PORT=44158
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 
@@ -80,6 +83,10 @@ watch_prog() {
     min_free_space_watch=$((${MIN_FREE_SPACE} - ${MIN_FREE_SPACE_LEEWAY})) # MB
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
+
+        # Don't check miner liveness while soft-restarting
+        test -f ${SOFT_RESTART_FILE} && continue
+        
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
             if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
                 force_sync
@@ -129,9 +136,16 @@ watch_lag() {
 }
 
 watch_p2p() {
+    startup=true
     while true; do
-        sleep ${WATCH_P2P_INTERVAL}
-        
+        if [[ ${startup} == true ]]; then
+            # Sleep for a smaller amount of time at startup so that we detect relayed miner earlier
+            sleep ${WATCH_P2P_INTERVAL_STARTUP}
+            startup=false
+        else
+            sleep ${WATCH_P2P_INTERVAL}
+        fi
+
         # Don't check p2p during syncing
         if ps aux | grep snapshot | grep -qv grep; then
             continue
@@ -155,7 +169,13 @@ watch_p2p() {
             fi
         else
             if [[ ${PANIC_ON_RELAYED} == true ]]; then
-                panic_action miner "connection is relayed: ${listen_addr}"
+                # Only panic on relayed if SSH tunnel is not configured
+                if [[ -s ${SSH_TUNNEL_CONF} ]]; then
+                    logger -t miner "connection is relayed: ${listen_addr}"
+                    soft_restart
+                else
+                    panic_action miner "connection is relayed: ${listen_addr}"
+                fi
             else
                 logger -t miner "connection is relayed: ${listen_addr}"
             fi
@@ -390,11 +410,15 @@ start() {
     # Start the miner
     nice -n 10 ${PROG} foreground &>> ${LOG} &
     
+    rm -f ${SOFT_RESTART_FILE}
+
     # Start the watchers
-    watch_prog &
-    watch_lag &
-    watch_p2p &
-    disown
+    if [[ "$1" != soft ]]; then
+        watch_prog &
+        watch_lag &
+        watch_p2p &
+        disown
+    fi
 
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
     test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
@@ -421,16 +445,33 @@ stop() {
     msg_begin "Stopping miner"
     
     base_prog=$(basename ${PROG})
-    if killall -q ${base_prog}; then
-        # Allow 2 seconds for a gracefulish shutdown
-        sleep 2
-        msg_done
-    else
-        msg_fail
-    fi
+    # Allow for a few seconds of graceful shutdown
+    for ((i = 0; i < 20; i++)); do
+        if ! killall -q ${base_prog}; then
+            break
+        fi
+        sleep 1
+    done
     
-    # Kill any remainings with SIGKILL
-    ps | grep miner | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9
+    killall -q -9 ${base_prog}
+
+    if [[ "$1" != soft ]]; then
+        # Kill any remainings with SIGKILL
+        ps | grep miner | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill -9 2>/dev/null
+    fi
+
+    msg_done
+}
+
+restart() {
+    stop
+    start
+}
+
+soft_restart() {
+    touch ${SOFT_RESTART_FILE}
+    stop soft &>/dev/null
+    start soft &>/dev/null
 }
 
 case "$1" in
@@ -443,8 +484,7 @@ case "$1" in
         ;;
 
     restart)
-        stop
-        start
+        restart
         ;;
 
     *)
