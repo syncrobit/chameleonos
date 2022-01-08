@@ -240,16 +240,21 @@ sync_from_snapshot() {
             return 1
         fi
         msg_done
-    else
-        msg_fail "compressed snapshot download failed"
+    fi
+    
+    msg_begin "Checking compressed snapshot"
+    if ! [[ -s /data/snapshot.bin ]]; then
+        msg_fail "failed"
         msg_begin "Retrying with uncompressed snapshot"
         if ! curl --fail -m 1800 --silent --show-error --location-trusted "${file}" -o /data/snapshot.bin; then
             msg_fail
             return 1
         fi
         msg_done
+    else
+        msg_done
     fi
-    
+
     msg_begin "Verifying checksum"
     local_check_sum=$(md5sum /data/snapshot.bin | awk '{print $1}')
     if [[ "${local_check_sum}" != "${check_sum}" ]]; then
