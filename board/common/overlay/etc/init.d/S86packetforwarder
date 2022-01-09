@@ -19,6 +19,8 @@ REG_CONF="/var/lib/reg.conf"
 DEF_REG="US915"
 MINER_READY_FILE="/var/run/miner_ready"
 
+HARDWARE_CONF="/var/run/hardware.conf"
+
 # TX power:      12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
 SX1301_MIX_GAIN=( 9 15 10 10 11 12 13 14  9 10 10 10 10 11 12 14)
 SX1301_PA_GAIN=(  2  1  2  2  2  2  2  2  3  3  3  3  3  3  3  3)
@@ -71,6 +73,8 @@ declare -A DEF_TX_POWER=( \
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
+source ${HARDWARE_CONF}
+
 
 find_reg() {
     region=$(${PROG_M} info region 2>/dev/null)
@@ -118,12 +122,15 @@ prepare_conf_json() {
         export PF_RSSI_OFFSET=$(echo "${PF_RSSI_OFFSET} + ${SX1302_RSSI_OFFSET[${reg}]}" | bc)
     fi
     cat ${template} | envsubst > ${JSON_CONF}
+    
+    # Replace SPI device
+    sed -ri "s,/dev/spidev...,${SPI_DEV}," ${JSON_CONF}
 }
 
 start() {
     msg_begin "Starting packet-forwarder"
     
-    if ! [[ -e /dev/spidev0.0 ]]; then
+    if ! [[ -e ${SPI_DEV} ]]; then
         msg_fail "no SPI device"
         return
     fi
@@ -181,6 +188,7 @@ start() {
     # Must be run from the bin directory
     cd $(dirname ${PROG_TEMPLATE})
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${LIB_DIR}
+    export SPI_DEV_PATH=${SPI_DEV}
     
     # stdbuf here forces line buffering, allowing real-time log
     stdbuf -oL -eL ${prog} &> ${LOG} &
