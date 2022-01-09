@@ -1,0 +1,19 @@
+diff -uNr dir1/extern/lora_gateway/libloragw/src/loragw_spi.native.c dir2/extern/lora_gateway/libloragw/src/loragw_spi.native.c
+--- dir1/extern/lora_gateway/libloragw/src/loragw_spi.native.c	2021-03-30 23:53:36.000000000 +0300
++++ dir2/extern/lora_gateway/libloragw/src/loragw_spi.native.c	2022-01-09 19:17:11.503342608 +0200
+@@ -78,9 +78,13 @@
+     }
+ 
+     /* open SPI device */
+-    dev = open(SPI_DEV_PATH, O_RDWR);
++    char *spi_dev_path = getenv("SPI_DEV_PATH");
++    if (!spi_dev_path) {
++        spi_dev_path = SPI_DEV_PATH;
++    }
++    dev = open(spi_dev_path, O_RDWR);
+     if (dev < 0) {
+-        DEBUG_PRINTF("ERROR: failed to open SPI device %s\n", SPI_DEV_PATH);
++        DEBUG_PRINTF("ERROR: failed to open SPI device %s\n", spi_dev_path);
+         return LGW_SPI_ERROR;
+     }
+ 
