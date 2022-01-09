@@ -8,9 +8,12 @@ DEFAULT_ECC_ADDRESS=0x60
 DEFAULT_ECC_SLOT=0
 DEFAULT_PAIR_BUTTON_GPIO=
 DEFAULT_PAIR_BUTTON_ACTIVE_LEVEL=1
+DEFAULT_SPI_DEV=/dev/spidev0.0
 
 EXPANDER_GPIO=13
 OG_LGW_RESET_GPIO=25
+NEBRA_CM3_LGW_RESET_GPIO=38
+NEBRA_CM3_SPI_DEV=/dev/spidev1.2
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
@@ -41,9 +44,14 @@ start() {
     fi
     
     HAS_LED_STRIP=false
-    if grep -q Compute /proc/device-tree/model &>/dev/null; then
+    SPI_DEV=${DEFAULT_SPI_DEV}
+    if grep -q "Compute Module 4" /proc/device-tree/model &>/dev/null; then
         # Assume all CM4-based units have LED strip
         HAS_LED_STRIP=true
+    elif grep -q "Compute Module 3" /proc/device-tree/model &>/dev/null; then
+        # Assume Nebra CM3-based unit
+        LGW_RESET_GPIO=${NEBRA_CM3_LGW_RESET_GPIO}
+        SPI_DEV=${NEBRA_CM3_SPI_DEV}
     fi
     
     # Set the ECC slot number
@@ -63,6 +71,7 @@ start() {
     echo "LGW_RESET_GPIO=${LGW_RESET_GPIO}" >> ${HW_CONF}
     echo "PAIR_BUTTON_GPIO=${DEFAULT_PAIR_BUTTON_GPIO}" >> ${HW_CONF}
     echo "PAIR_BUTTON_ACTIVE_LEVEL=${DEFAULT_PAIR_BUTTON_ACTIVE_LEVEL}" >> ${HW_CONF}
+    echo "SPI_DEV=${SPI_DEV}" >> ${HW_CONF}
 
     msg_done
 }
