@@ -15,7 +15,7 @@ cp ${DTB_DIR}/bcm2711-rpi-cm4.dtb ${BOOT_DIR}
 cp ${DTB_DIR}/bcm2710-rpi-3-b.dtb ${BOOT_DIR}
 cp ${DTB_DIR}/bcm2710-rpi-3-b-plus.dtb ${BOOT_DIR}
 cp ${DTB_DIR}/bcm2710-rpi-cm3.dtb ${BOOT_DIR}
-cp ${DTB_DIR}/bcm2710-rpi-cm3-io3.dtb ${BOOT_DIR}
+cp ${DTB_DIR}/bcm2837-rpi-cm3-io3.dtb ${BOOT_DIR}
 
 cp ${RPI_FW_DIR}/start.elf ${BOOT_DIR}
 cp ${RPI_FW_DIR}/fixup.dat ${BOOT_DIR}
