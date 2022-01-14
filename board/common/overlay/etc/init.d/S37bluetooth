@@ -46,7 +46,7 @@ start() {
         # on RPi boards, the absence of an on-board BT can be detected earlier, preventing 10s timeout
         
         count=$((count + 1))
-        if [[ ${count} -ge 10 ]] || [[ -f "${NO_ON_BOARD_BT}" ]]; then
+        if [[ ${count} -ge 10 ]]; then
             msg_fail "no device"
             logger -t bluetooth "bluetooth device not available"
             return 0
