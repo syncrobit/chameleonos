@@ -92,7 +92,7 @@ else
 fi
 if [[ -n "${SPI_DEV}" ]]; then
     echo "Using SPI_DEV=${SPI_DEV}"
-    sed -ri "s/DEFAULT_SPI_DEV=.*/DEFAULT_SPI_DEV=${SPI_DEV}/" ${TARGET}/etc/init.d/S*hwdetect
+    sed -ri "s,DEFAULT_SPI_DEV=.*,DEFAULT_SPI_DEV=${SPI_DEV}," ${TARGET}/etc/init.d/S*hwdetect
 else
     echo "Using default SPI_DEV"
 fi
