@@ -3,30 +3,33 @@
 HW_CONF=/var/run/hardware.conf
 USER_HW_CONF=/data/etc/hardware.conf
 
-DEFAULT_LGW_RESET_GPIO=17
-DEFAULT_ECC_ADDRESS=0x60
-DEFAULT_ECC_SLOT=0
-DEFAULT_PAIR_BUTTON_GPIO=
-DEFAULT_PAIR_BUTTON_ACTIVE_LEVEL=1
-DEFAULT_SPI_DEV=/dev/spidev0.0
+ECC_ADDRESS=0x60
+ECC_SLOT=0
+LGW_RESET_GPIO=17
+HAS_LED_STRIP=false
+PAIR_BUTTON_GPIO=
+PAIR_BUTTON_ACTIVE_LEVEL=1
+SPI_DEV=/dev/spidev0.0
 
 EXPANDER_GPIO=13
 OG_LGW_RESET_GPIO=25
-NEBRA_CM3_LGW_RESET_GPIO=38
-NEBRA_CM3_SPI_DEV=/dev/spidev1.2
+
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
+
+VENDOR_CONF=/etc/vendors/${OS_PREFIX}.conf
 
 
 start() {
     msg_begin "Detecting hardware"
 
+    # Vendor settings override defaults
+    test -s ${VENDOR_CONF} && source ${VENDOR_CONF}
+
     # Enable GPIO expander that is present on OG and RAK models
     gpio.sh ${EXPANDER_GPIO} 1
     usleep 100000
     
-    truncate -s0 ${HW_CONF}
-
     # Detect I2C peripherals
     HAS_EXPANDER=false
     HAS_GPS=false
@@ -37,33 +40,25 @@ start() {
     grep -q 58 <<< "${i2c_output}" && ECC_ADDRESS=0x58
     grep -q 60 <<< "${i2c_output}" && ECC_ADDRESS=0x60
 
-    LGW_RESET_GPIO=${DEFAULT_LGW_RESET_GPIO}
+    # OG models have GPS and use a different GPIO for reset
     if [[ ${HAS_GPS} == true ]]; then
-        # OG models have GPS and use a different GPIO for reset
         LGW_RESET_GPIO=${OG_LGW_RESET_GPIO}
     fi
-    
-    HAS_LED_STRIP=false
-    SPI_DEV=${DEFAULT_SPI_DEV}
-    if grep -q "Compute Module 4" /proc/device-tree/model &>/dev/null; then
-        # Assume all CM4-based units have LED strip
-        HAS_LED_STRIP=true
-    elif grep -q "Compute Module 3" /proc/device-tree/model &>/dev/null; then
-        # Assume Nebra CM3-based unit
-        LGW_RESET_GPIO=${NEBRA_CM3_LGW_RESET_GPIO}
-        SPI_DEV=${NEBRA_CM3_SPI_DEV}
+
+    # For now, only CM4-based units have LED strip
+    if ! grep -q "Compute Module 4" /proc/device-tree/model &>/dev/null; then
+        HAS_LED_STRIP=false
     fi
     
-    # Set the ECC slot number
-    ECC_SLOT=${DEFAULT_ECC_SLOT}
+    # Some ECC models are on 0x58 and have slots 0 and 1 preprovisioned
     if [[ ${ECC_ADDRESS} == 0x58 ]]; then
-        ECC_SLOT=2  # Some ECC models are on 0x58 and have slots 0 and 1 preprovisioned
+        ECC_SLOT=2
     fi
     
     # User settings override detected ones
     test -s ${USER_HW_CONF} && source ${USER_HW_CONF}
     
-    echo "HAS_GPS=${HAS_GPS}" >> ${HW_CONF}
+    echo "HAS_GPS=${HAS_GPS}" > ${HW_CONF}
     echo "ECC_ADDRESS=${ECC_ADDRESS}" >> ${HW_CONF}
     echo "ECC_SLOT=${ECC_SLOT}" >> ${HW_CONF}
     echo "HAS_EXPANDER=${HAS_EXPANDER}" >> ${HW_CONF}
