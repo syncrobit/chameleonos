@@ -74,9 +74,13 @@ function get_state() {
     return 0
 }
 
+function is_pairing() {
+    test -f ${PAIRING_FILE}
+}
+
 function get_fixed_colors() {
     pairing=off
-    test -f ${PAIRING_FILE} && pairing=${PAIRING_COLOR}
+    is_pairing && pairing=${PAIRING_COLOR}
     echo "off off off off off ${pairing}"
 }
 
@@ -86,6 +90,8 @@ function state_loop() {
     done
     sleep 1  # Allow another second for data to be written to HW_CONF
     source ${HW_CONF}
+    
+    test -n "${PAIR_LED_ACTIVE_LEVEL}" && pair_led_inactive_level=$(( 1 - ${PAIR_LED_ACTIVE_LEVEL} ))
 
     renice -10 ${BASHPID}  # Run LEDs with high prio
     echo > ${STATE_FILE}
@@ -114,8 +120,17 @@ function state_loop() {
                 ${LED_STRIP} pattern ${LED_STRIP_BRIGHTNESS} ${pattern}
                 sleep 2
             fi
+        elif [[ -n "${PAIR_LED_GPIO}" ]]; then
+            if is_pairing; then
+                gpio.sh ${PAIR_LED_GPIO} ${PAIR_LED_ACTIVE_LEVEL}
+                usleep 500000
+                gpio.sh ${PAIR_LED_GPIO} ${pair_led_inactive_level}
+                usleep 500000
+            else
+                gpio.sh ${PAIR_LED_GPIO} ${pair_led_inactive_level}
+            fi
         else
-            sleep 2
+            sleep 1
         fi
     done
 }
