@@ -1,0 +1,95 @@
+#!/bin/bash
+
+GC_WORK_DIR="/opt/gateway_config"
+GC_PROG="bin/gateway_config"
+GC_FULL_PROG=${WORK_DIR}/${PROG}
+GC_LOG_FILE="/var/log/gateway_config/console.log"
+
+PAIRING_FILE="/var/run/pairing"
+LOG_FILE="/var/log/pair_button.log"
+PAIR_BUTTON_HOLD_TIME=5  # seconds
+PAIR_BUTTON_RESET_HOLD_TIME=10  # seconds
+HARDWARE_CONF="/var/run/hardware.conf"
+
+
+test -n "${OS_VERSION}" || source /etc/init.d/base
+
+source ${HARDWARE_CONF}
+
+
+watch_pair_button() {
+    count=0
+    pair_enabled=false
+    cd ${GC_WORK_DIR}
+    while true; do
+        sleep 1
+        level=$(gpio.sh ${PAIR_BUTTON_GPIO})
+        if [[ "${level}" == "${PAIR_BUTTON_ACTIVE_LEVEL}" ]]; then
+            count=$((count + 1))
+        else
+            count=0
+        fi
+        if [[ ${count} -ge ${PAIR_BUTTON_HOLD_TIME} ]] && [[ ${pair_enabled} != true ]]; then
+            echo "pairing button held for ${PAIR_BUTTON_HOLD_TIME} seconds, enabling pair mode"
+            pair_enabled=true
+            HOME=/var/run ${GC_FULL_PROG} advertise on
+        fi
+        if [[ ${count} -ge ${PAIR_BUTTON_RESET_HOLD_TIME} ]]; then
+            echo "pairing button held for ${PAIR_BUTTON_RESET_HOLD_TIME} seconds, resetting admin password"
+            count=0
+            pair_enabled=false
+            rm /var/lib/api_credentials
+        fi
+    done
+}
+
+watch_advertise_status() {
+    while true; do
+        line=$(grep ble_advertisement: ${GC_LOG_FILE} 2>/dev/null | tail -n 1)
+        if grep -q Started <<< "${line}"; then
+            touch ${PAIRING_FILE}
+        else
+            rm -f ${PAIRING_FILE}
+        fi
+        sleep 1
+    done
+}
+
+start() {
+    msg_begin "Starting pair-button"
+    
+    if [[ -n "${PAIR_BUTTON_GPIO}" ]]; then
+        watch_pair_button &>>${LOG_FILE} &
+    fi
+
+    watch_advertise_status &>>${LOG_FILE} &
+
+    msg_done
+}
+
+stop() {
+    msg_begin "Stopping pair-button"
+    ps | grep -E pairbutton | grep -v $$ | grep -v grep | tr -s ' ' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill
+    msg_done
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    restart)
+        stop
+        start
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

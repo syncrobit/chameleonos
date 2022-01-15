@@ -5,9 +5,6 @@ PROG="bin/gateway_config"
 FULL_PROG=${WORK_DIR}/${PROG}
 LOG="/var/log/gateway_config/startup.log"
 HCI_DIR="/sys/kernel/debug/bluetooth/hci0"
-PAIRING_FILE="/var/run/pairing"
-PAIR_BUTTON_HOLD_TIME=5  # seconds
-PAIR_BUTTON_RESET_HOLD_TIME=10  # seconds
 HARDWARE_CONF="/var/run/hardware.conf"
 
 
@@ -28,45 +25,8 @@ setup_bluetooth() {
     
     echo -e "pairable off\nquit" | /usr/bin/bluetoothctl &>/dev/null
 
-    # Since we don't have a button, just enable pairing at boot, with a short delay
+    # Automatically enable pairing at boot
     (/bin/sleep 5 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
-}
-
-watch_pair_button() {
-    count=0
-    pair_enabled=false
-    while true; do
-        sleep 1
-        level=$(gpio.sh ${PAIR_BUTTON_GPIO})
-        if [[ "${level}" == "${PAIR_BUTTON_ACTIVE_LEVEL}" ]]; then
-            count=$((count + 1))
-        else
-            count=0
-        fi
-        if [[ ${count} -ge ${PAIR_BUTTON_HOLD_TIME} ]] && [[ ${pair_enabled} != true ]]; then
-            echo "pairing button held for ${PAIR_BUTTON_HOLD_TIME} seconds, enabling pair mode"
-            pair_enabled=true
-            HOME=/var/run ${FULL_PROG} advertise on
-        fi
-        if [[ ${count} -ge ${PAIR_BUTTON_RESET_HOLD_TIME} ]]; then
-            echo "pairing button held for ${PAIR_BUTTON_RESET_HOLD_TIME} seconds, resetting admin password"
-            count=0
-            pair_enabled=false
-            rm /var/lib/api_credentials
-        fi
-    done
-}
-
-watch_advertise_status() {
-    cd ${WORK_DIR}
-    while true; do
-        if [[ $(${PROG} advertise status 2>/dev/null) == on ]]; then
-            touch ${PAIRING_FILE}
-        else
-            rm -f ${PAIRING_FILE}
-        fi
-        sleep 1
-    done
 }
 
 start() {
@@ -79,9 +39,6 @@ start() {
     
     mkdir -p $(dirname ${LOG})
     setup_bluetooth
-    if [[ -n "${PAIR_BUTTON_GPIO}" ]]; then
-        watch_pair_button &>/var/log/pair_button.log &
-    fi
 
     cd ${WORK_DIR}
     
@@ -93,7 +50,6 @@ start() {
     export HOME=/var/run
 
     ${PROG} foreground &>> ${LOG} &
-    watch_advertise_status &>> ${LOG} &
 
     msg_done
 }
