@@ -19,6 +19,10 @@ test -n "${OS_VERSION}" || source /etc/init.d/base
 
 VENDOR_CONF=/etc/vendors/${OS_PREFIX}.conf
 
+tweak_nbra() {
+    # Enable button internal pull-up on GPIO26
+    raspi-gpio set 26 pu
+}
 
 start() {
     msg_begin "Detecting hardware"
@@ -67,6 +71,12 @@ start() {
     echo "PAIR_BUTTON_GPIO=${DEFAULT_PAIR_BUTTON_GPIO}" >> ${HW_CONF}
     echo "PAIR_BUTTON_ACTIVE_LEVEL=${DEFAULT_PAIR_BUTTON_ACTIVE_LEVEL}" >> ${HW_CONF}
     echo "SPI_DEV=${SPI_DEV}" >> ${HW_CONF}
+    
+    # Vendor-specific tweaks
+    tweak_func=tweak_${OS_PREFIX}
+    if [[ $(type -t ${tweak_func}) == function ]]; then
+        ${tweak_func}
+    fi
 
     msg_done
 }
