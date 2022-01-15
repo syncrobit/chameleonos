@@ -1,14 +1,12 @@
 #!/bin/bash
 
-GC_WORK_DIR="/opt/gateway_config"
-GC_PROG="bin/gateway_config"
-GC_FULL_PROG=${WORK_DIR}/${PROG}
+GC_PROG="/opt/gateway_config/bin/gateway_config"
 GC_LOG_FILE="/var/log/gateway_config/console.log"
 
 PAIRING_FILE="/var/run/pairing"
 LOG_FILE="/var/log/pair_button.log"
 PAIR_BUTTON_HOLD_TIME=5  # seconds
-PAIR_BUTTON_RESET_HOLD_TIME=10  # seconds
+PAIR_BUTTON_RESET_HOLD_TIME=20  # seconds
 HARDWARE_CONF="/var/run/hardware.conf"
 
 
@@ -20,7 +18,6 @@ source ${HARDWARE_CONF}
 watch_pair_button() {
     count=0
     pair_enabled=false
-    cd ${GC_WORK_DIR}
     while true; do
         sleep 1
         level=$(gpio.sh ${PAIR_BUTTON_GPIO})
@@ -32,13 +29,13 @@ watch_pair_button() {
         if [[ ${count} -ge ${PAIR_BUTTON_HOLD_TIME} ]] && [[ ${pair_enabled} != true ]]; then
             echo "pairing button held for ${PAIR_BUTTON_HOLD_TIME} seconds, enabling pair mode"
             pair_enabled=true
-            HOME=/var/run ${GC_FULL_PROG} advertise on
+            HOME=/var/run ${GC_PROG} advertise on
         fi
         if [[ ${count} -ge ${PAIR_BUTTON_RESET_HOLD_TIME} ]]; then
             echo "pairing button held for ${PAIR_BUTTON_RESET_HOLD_TIME} seconds, resetting admin password"
             count=0
             pair_enabled=false
-            rm /var/lib/api_credentials
+            rm -f /var/lib/api_credentials
         fi
     done
 }
