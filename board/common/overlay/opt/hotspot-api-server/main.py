@@ -735,13 +735,14 @@ def create_cors_middleware():
 
 def create_redirect_tls_middleware():
     def should_redirect(request: web.Request) -> bool:
-        url = request.url
-        return (
-            request.method == 'GET' and
-            url.scheme == 'http' and
-            url.host not in ('localhost', '127.0.0.1') and
-            not VPN_IP_REGEX.match(url.host)
-        )
+        return False
+        # url = request.url
+        # return (
+        #     request.method == 'GET' and
+        #     url.scheme == 'http' and
+        #     url.host not in ('localhost', '127.0.0.1') and
+        #     not VPN_IP_REGEX.match(url.host)
+        # )
 
     @web.middleware
     async def redirect_tls_middleware(request: web.Request, handler):
