@@ -1,10 +1,14 @@
 #!/bin/bash
 
+MAX_SLEEP=7200
+
 source /etc/init.d/os_conf
 
 if [[ "${OS_PERIODIC_REBOOT}" == false ]]; then
     exit 0
 fi
+
+sleep $(( RANDOM % MAX_SLEEP ))
 
 while panic_inhibit -q > /dev/null; do
     sleep 60
