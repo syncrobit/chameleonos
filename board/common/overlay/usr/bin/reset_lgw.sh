@@ -2,9 +2,13 @@
 
 source /var/run/hardware.conf
 
-gpio.sh ${LGW_RESET_GPIO} 0
-usleep 100000
-gpio.sh ${LGW_RESET_GPIO} 1
-usleep 100000
-gpio.sh ${LGW_RESET_GPIO} 0
-usleep 100000
+IFS=, GPIOS=(${LGW_RESET_GPIO}); unset IFS
+
+for gpio in ${GPIOS[@]}; do
+    gpio.sh ${gpio} 0
+    usleep 100000
+    gpio.sh ${gpio} 1
+    usleep 100000
+    gpio.sh ${gpio} 0
+    usleep 100000
+done
