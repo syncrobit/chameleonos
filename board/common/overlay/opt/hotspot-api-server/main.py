@@ -68,7 +68,7 @@ def handle_auth(
             return await make_auth_error_response()
 
         try:
-            username, password = unpw.split(':')
+            username, password = unpw.split(':', 1)
 
         except ValueError:
             return await make_auth_error_response()
