@@ -867,12 +867,12 @@ $(document).ready(function(){
                 $.each( data, function( key, value ) {
                     $.get("/peers/ping?address=" + value.address, function(data) {
                         var peer_id = $('.peerbook-content').find('#' + value.address);
-                        if(data.round_trip_time != null){
-                            peer_id.css("background-color", "#1abd36").css("color", "#ffff");
+                        if(data.round_trip_time == null){
+                            peer_id.css("background-color", "#ff3b30").css("color", "#ffff");
                         }else if(data.round_trip_time > 500){
                             peer_id.css("background-color", "#ff9500").css("color", "#ffff");
                         }else{
-                            peer_id.css("background-color", "#ff3b30").css("color", "#ffff");
+                            peer_id.css("background-color", "#1abd36").css("color", "#ffff");
                         }
                         peer_id.find('td:nth-child(5)').html((data.round_trip_time == null) ? "N/A" : data.round_trip_time + " ms").css("color", "#ffff");
                     });
