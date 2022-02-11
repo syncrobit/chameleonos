@@ -8,11 +8,14 @@ REG_CONF="/var/lib/reg.conf"
 MIN_UPTIME=1800
 #ACTIVE_CHECK_ENDPOINT_URL="https://api-%s.syncrob.it/activecheck/"  # Use if service can't do region redirection
 ACTIVE_CHECK_ENDPOINT_URL="https://api.syncrob.it/activecheck/"
+#PENDING_UNITS_ENDPOINT_URL="https://api-%s.syncrob.it/pendingunits/"  # Use if service can't do region redirection
+PENDING_UNITS_ENDPOINT_URL="https://api.syncrob.it/unitspending/"
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
 
 test -s ${REG_CONF} && source ${REG_CONF}
 BASE_URL=$(printf "${BASE_URL}" "${REGION_PREFIX}")
 ACTIVE_CHECK_ENDPOINT_URL=$(printf "${ACTIVE_CHECK_ENDPOINT_URL}" "${REGION_PREFIX}")
+PENDING_UNITS_ENDPOINT_URL=$(printf "${PENDING_UNITS_ENDPOINT_URL}" "${REGION_PREFIX}")
 
 cmdline_args="$*"
 
@@ -74,13 +77,33 @@ if ps aux | grep '{fwupdate}' | grep -vq grep && ! arg_present "--force"; then
 fi
 
 address=$(cat /var/run/public_keys | grep -oE '[0-9a-zA-Z]{50,}' | head -n 1)
-curl --silent --show-error --location-trusted --fail "${ACTIVE_CHECK_ENDPOINT_URL}" \
-     -H "Content-Type: application/json" \
-     -H "Authorization: ${AUTH_TOKEN}" \
-     -X POST -d "{\"rpi_sn\": \"${BOARD_SN}\", \"miner_address\": \"${address}\"}" > /dev/null
+output=$(
+    curl --silent --show-error --location-trusted "${ACTIVE_CHECK_ENDPOINT_URL}" \
+         -H "Content-Type: application/json" \
+         -H "Authorization: ${AUTH_TOKEN}" \
+         -X POST -d "{\"rpi_sn\": \"${BOARD_SN}\", \"miner_address\": \"${address}\"}"
+)
 
-if [[ $? != 0 ]]; then
+if grep -q "Not found" <<< "${output}"; then
     echo "Skipping firmware update check for inactive unit"
+    if [[ -s /var/run/public_keys ]] && [[ -s /var/run/ecc_sn ]] && [[ -s /var/run/public_key_hex ]]; then
+        animal_name=$(cut -d '"' -f 6 < /var/run/public_keys)
+        miner_address=$(cut -d '"' -f 2 < /var/run/public_keys)
+        ecc_sn=$(cat /var/run/ecc_sn)
+        pub_key_hex=$(cat /var/run/public_key_hex)
+        hostname=$(hostname)
+        test -s /sys/class/net/eth0/address && eth_mac=$(cat /sys/class/net/eth0/address) || eth_mac=""
+        test -s /sys/class/net/wlan0/address && wlan_mac=$(cat /sys/class/net/wlan0/address) || wlan_mac=""
+        curl --silent --show-error --location-trusted --fail "${PENDING_UNITS_ENDPOINT_URL}" \
+             -H "Content-Type: application/json" \
+             -H "Authorization: ${AUTH_TOKEN}" \
+             -X POST -d "{\"rpi_sn\": \"${BOARD_SN}\", \"onboard_address\": \"${miner_address}\", \"ecc_sn\": \"${ecc_sn}\", \"pub_key\": \"${pub_key_hex}\", \"eth_mac\": \"${eth_mac}\", \"wlan_mac\": \"${wlan_mac}\", \"sb_sn\": \"${hostname}\", \"miner_name\": \"${animal_name}\"}"
+        if [[ $? == 0 ]]; then
+            echo "Pushed pending unit details"
+        else
+            echo "Failed to push pending unit details"
+        fi
+    fi
     exit
 fi
 
