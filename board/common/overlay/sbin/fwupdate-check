@@ -87,6 +87,7 @@ output=$(
 if grep -q "Not found" <<< "${output}"; then
     echo "Skipping firmware update check for inactive unit"
     if [[ -s /var/run/public_keys ]] && [[ -s /var/run/ecc_sn ]] && [[ -s /var/run/public_key_hex ]]; then
+        /etc/init.d/S87pubkeyinfo start &>/dev/null
         animal_name=$(cut -d '"' -f 6 < /var/run/public_keys)
         miner_address=$(cut -d '"' -f 2 < /var/run/public_keys)
         ecc_sn=$(cat /var/run/ecc_sn)
@@ -97,7 +98,7 @@ if grep -q "Not found" <<< "${output}"; then
         curl --silent --show-error --location-trusted --fail "${PENDING_UNITS_ENDPOINT_URL}" \
              -H "Content-Type: application/json" \
              -H "Authorization: ${AUTH_TOKEN}" \
-             -X POST -d "{\"rpi_sn\": \"${BOARD_SN}\", \"onboard_address\": \"${miner_address}\", \"ecc_sn\": \"${ecc_sn}\", \"pub_key\": \"${pub_key_hex}\", \"eth_mac\": \"${eth_mac}\", \"wlan_mac\": \"${wlan_mac}\", \"sb_sn\": \"${hostname}\", \"miner_name\": \"${animal_name}\"}"
+             -X POST -d "{\"rpi_sn\": \"${BOARD_SN}\", \"onboard_address\": \"${miner_address}\", \"ecc_sn\": \"${ecc_sn}\", \"pub_key\": \"${pub_key_hex}\", \"eth_mac\": \"${eth_mac}\", \"wlan_mac\": \"${wlan_mac}\", \"sb_sn\": \"${hostname}\", \"miner_name\": \"${animal_name}\"}" > /dev/null
         if [[ $? == 0 ]]; then
             echo "Pushed pending unit details"
         else
