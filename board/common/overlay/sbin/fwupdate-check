@@ -86,8 +86,8 @@ output=$(
 
 if grep -q "Not found" <<< "${output}"; then
     echo "Skipping firmware update check for inactive unit"
+    /etc/init.d/S87pubkeyinfo start &>/dev/null
     if [[ -s /var/run/public_keys ]] && [[ -s /var/run/ecc_sn ]] && [[ -s /var/run/public_key_hex ]]; then
-        /etc/init.d/S87pubkeyinfo start &>/dev/null
         animal_name=$(cut -d '"' -f 6 < /var/run/public_keys)
         miner_address=$(cut -d '"' -f 2 < /var/run/public_keys)
         ecc_sn=$(cat /var/run/ecc_sn)
