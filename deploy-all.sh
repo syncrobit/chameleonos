@@ -22,5 +22,5 @@ set -a
 for VENDOR in ${VENDORS}; do
     echo "Deploying for ${VENDOR}"
     source vendors/${VENDOR}.conf
-    ./deploy.sh $1 output/raspberrypi4arm64/images/chameleonos-${THINGOS_PREFIX}-raspberrypi4arm64-${VERSION}.img.xz
+    ./deploy.sh $1 output/raspberrypi64/images/chameleonos-${THINGOS_PREFIX}-raspberrypi64-${VERSION}.img.xz
 done

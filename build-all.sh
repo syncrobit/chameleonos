@@ -17,7 +17,7 @@ export THINGOS_VERSION=${VERSION}
 
 for VENDOR in ${VENDORS}; do
     echo "Building for ${VENDOR}"
-    ./build.sh raspberrypi4arm64
-    ./build.sh raspberrypi4arm64 mkimage
-    ./build.sh raspberrypi4arm64 mkrelease
+    ./build.sh raspberrypi64
+    ./build.sh raspberrypi64 mkimage
+    ./build.sh raspberrypi64 mkrelease
 done
