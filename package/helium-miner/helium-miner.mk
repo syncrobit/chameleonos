@@ -14,20 +14,7 @@ HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_FETCH_PATCH_DEPS
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_UPDATE_VERSION
 
 define HELIUM_MINER_FETCH_PATCH_DEPS
-    (cd $(@D); \
-            CC="$(TARGET_CC)" \
-            CXX="$(TARGET_CXX)" \
-            CFLAGS="$(TARGET_CFLAGS) -U__sun__" \
-            CXXFLAGS="$(TARGET_CXXFLAGS)" \
-            LDFLAGS="$(TARGET_LDFLAGS) -L $(STAGING_DIR)/usr/lib/erlang/lib/erl_interface-$(ERLANG_EI_VSN)/lib" \
-            ERLANG_ROCKSDB_OPTS="-DWITH_BUNDLE_SNAPPY=ON -DWITH_BUNDLE_LZ4=ON" \
-            ERL_COMPILER_OPTIONS="[deterministic]" \
-            ERTS_INCLUDE_DIR="$(STAGING_DIR)/usr/lib/erlang/erts-10.6/include" \
-            CARGO_HOME=$(HOST_DIR)/share/cargo \
-            $(TARGET_MAKE_ENV) \
-            CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
-            ./rebar3 get-deps \
-    )
+    (cd $(@D); $(TARGET_MAKE_ENV) ./rebar3 get-deps)
 
     patch -d $(@D)/_build/default/lib/erasure -p1 < package/helium-miner/erlang-erasure._patch
     patch -d $(@D)/_build/default/lib/procket -p1 < package/helium-miner/procket._patch
@@ -39,7 +26,7 @@ define HELIUM_MINER_UPDATE_VERSION
 endef
             
 define HELIUM_MINER_BUILD_CMDS
-    (cd $(@D); \
+    (cd $(@D); ERTS_VERSION=$$(ls -d $(STAGING_DIR)/usr/lib/erlang/erts-* | head -n1 | xargs basename | grep -oE [0-9.]+); \
             CC="$(TARGET_CC)" \
             CXX="$(TARGET_CXX)" \
             CFLAGS="$(TARGET_CFLAGS) -U__sun__" \
@@ -47,7 +34,7 @@ define HELIUM_MINER_BUILD_CMDS
             LDFLAGS="$(TARGET_LDFLAGS) -L $(STAGING_DIR)/usr/lib/erlang/lib/erl_interface-$(ERLANG_EI_VSN)/lib" \
             ERLANG_ROCKSDB_OPTS="-DWITH_BUNDLE_SNAPPY=ON -DWITH_BUNDLE_LZ4=ON" \
             ERL_COMPILER_OPTIONS="[deterministic]" \
-            ERTS_INCLUDE_DIR="$(STAGING_DIR)/usr/lib/erlang/erts-10.6/include" \
+            ERTS_INCLUDE_DIR="$(STAGING_DIR)/usr/lib/erlang/erts-$${ERTS_VERSION}/include" \
             $(TARGET_MAKE_ENV) \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
