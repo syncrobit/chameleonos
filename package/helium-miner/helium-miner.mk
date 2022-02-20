@@ -8,7 +8,7 @@ HELIUM_MINER_VERSION = 2022.01.29.0
 HELIUM_MINER_SITE = $(call github,helium,miner,$(HELIUM_MINER_VERSION))
 HELIUM_MINER_LICENSE = Apache-2.0
 HELIUM_MINER_LICENSE_FILES = LICENSE
-HELIUM_MINER_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin host-erlang-rebar
+HELIUM_MINER_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin
             
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_FETCH_PATCH_DEPS
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_UPDATE_VERSION
@@ -24,7 +24,6 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
             ERL_COMPILER_OPTIONS="[deterministic]" \
             ERTS_INCLUDE_DIR="$(STAGING_DIR)/usr/lib/erlang/erts-10.6/include" \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
-            $(REBAR_TARGET_DEPS_ENV) \
             $(TARGET_MAKE_ENV) \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
             ./rebar3 get-deps \
@@ -49,7 +48,6 @@ define HELIUM_MINER_BUILD_CMDS
             ERLANG_ROCKSDB_OPTS="-DWITH_BUNDLE_SNAPPY=ON -DWITH_BUNDLE_LZ4=ON" \
             ERL_COMPILER_OPTIONS="[deterministic]" \
             ERTS_INCLUDE_DIR="$(STAGING_DIR)/usr/lib/erlang/erts-10.6/include" \
-            $(REBAR_TARGET_DEPS_ENV) \
             $(TARGET_MAKE_ENV) \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \

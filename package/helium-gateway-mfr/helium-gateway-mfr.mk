@@ -8,7 +8,7 @@ HELIUM_GATEWAY_MFR_VERSION = bd523a1f80fc262b930a1cda98229dd10215a885
 HELIUM_GATEWAY_MFR_SITE = $(call github,helium,gateway_mfr,$(HELIUM_GATEWAY_MFR_VERSION))
 HELIUM_GATEWAY_MFR_LICENSE = Apache-2.0
 HELIUM_GATEWAY_MFR_LICENSE_FILES = LICENSE
-HELIUM_GATEWAY_MFR_DEPENDENCIES = erlang host-erlang-rebar
+HELIUM_GATEWAY_MFR_DEPENDENCIES = erlang
             
 HELIUM_GATEWAY_MFR_POST_EXTRACT_HOOKS += HELIUM_GATEWAY_MFR_FETCH_PATCH_DEPS
 
@@ -19,7 +19,6 @@ define HELIUM_GATEWAY_MFR_FETCH_PATCH_DEPS
             CFLAGS="$(TARGET_CFLAGS) -U__sun__" \
             CXXFLAGS="$(TARGET_CXXFLAGS)" \
             LDFLAGS="$(TARGET_LDFLAGS) -L $(STAGING_DIR)/usr/lib/erlang/lib/erl_interface-$(ERLANG_EI_VSN)/lib" \
-            $(REBAR_TARGET_DEPS_ENV) \
             $(TARGET_MAKE_ENV) \
             ./rebar3 get-deps \
     )
@@ -34,7 +33,6 @@ define HELIUM_GATEWAY_MFR_BUILD_CMDS
             CFLAGS="$(TARGET_CFLAGS) -U__sun__" \
             CXXFLAGS="$(TARGET_CXXFLAGS)" \
             LDFLAGS="$(TARGET_LDFLAGS) -L $(STAGING_DIR)/usr/lib/erlang/lib/erl_interface-$(ERLANG_EI_VSN)/lib" \
-            $(REBAR_TARGET_DEPS_ENV) \
             $(TARGET_MAKE_ENV) \
             ./rebar3 as prod tar -n gateway_mfr \
     )

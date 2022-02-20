@@ -8,7 +8,7 @@ HELIUM_GATEWAY_CONFIG_VERSION = 2021.03.09.0
 HELIUM_GATEWAY_CONFIG_SITE = $(call github,helium,gateway-config,$(HELIUM_GATEWAY_CONFIG_VERSION))
 HELIUM_GATEWAY_CONFIG_LICENSE = Apache-2.0
 HELIUM_GATEWAY_CONFIG_LICENSE_FILES = LICENSE
-HELIUM_GATEWAY_CONFIG_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin host-erlang-rebar
+HELIUM_GATEWAY_CONFIG_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin
             
 define HELIUM_GATEWAY_CONFIG_BUILD_CMDS
     (cd $(@D); \
@@ -17,7 +17,6 @@ define HELIUM_GATEWAY_CONFIG_BUILD_CMDS
             CFLAGS="$(TARGET_CFLAGS) -U__sun__" \
             CXXFLAGS="$(TARGET_CXXFLAGS)" \
             LDFLAGS="$(TARGET_LDFLAGS) -L $(STAGING_DIR)/usr/lib/erlang/lib/erl_interface-$(ERLANG_EI_VSN)/lib" \
-            $(REBAR_TARGET_DEPS_ENV) \
             $(TARGET_MAKE_ENV) \
             ./rebar3 as prod tar -n gateway_config \
     )
