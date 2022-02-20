@@ -41,6 +41,7 @@ start() {
     msg_begin "Starting connman"
 
     mkdir -p ${RUN_DIR}
+    ln -sf ${RUN_DIR}/resolv.conf /tmp/resolv.conf
     
     test -s ${USER_NET_CONF} && source ${USER_NET_CONF}
     if [[ -n "${DNS_SERVER}" ]]; then
