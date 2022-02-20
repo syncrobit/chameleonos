@@ -1,0 +1,23 @@
+diff -uNr gateway_mfr-orig/rebar.lock gateway_mfr-patched/rebar.lock
+--- gateway_mfr-orig/rebar.lock	2021-10-15 04:18:54.000000000 +0300
++++ gateway_mfr-patched/rebar.lock	2022-02-20 15:00:49.915464664 +0200
+@@ -9,16 +9,16 @@
+   1},
+  {<<"ecc508">>,
+   {git,"https://github.com/helium/ecc508.git",
+-       {ref,"91d20ce3caf4f0567e95f71926d03ad3dcc2061d"}},
++       {ref,"13c79760e79eb9c065e6362156c07e6a15f62764"}},
+   0},
+  {<<"ecc_compact">>,
+   {git,"https://github.com/helium/ecc_compact.git",
+-       {ref,"a4508cbfa31f7c6f1a5b4e0391c1cc7d185ae0b1"}},
++       {ref,"f7b9c0a403611a7727c27ee5e5354cff6ad30dac"}},
+   0},
+  {<<"erl_base58">>,{pkg,<<"erl_base58">>,<<"0.0.1">>},0},
+  {<<"erlang_ale">>,
+   {git,"https://github.com/helium/erlang_ale",
+-       {ref,"9db629ebf946e9b32a4dd5efefea3d16c3f808b9"}},
++       {ref,"07e10e656693f07a0d577f3651e76e52680c3768"}},
+   1},
+  {<<"getopt">>,{pkg,<<"getopt">>,<<"1.0.1">>},2},
+  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
