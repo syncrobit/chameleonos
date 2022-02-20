@@ -18,13 +18,14 @@ def get_pub_key_hex():
         data = f.read()
 
     address = re.search(r'[a-zA-Z0-9]{50,}', data).group()
-    erlang_cmd = '{ecc_compact, {{\'ECPoint\', Key}, _}} = libp2p_crypto:b58_to_pubkey("%(address)s"), binary_to_list(Key).'
+    erlang_cmd = '{ecc_compact, {{\'ECPoint\', Key}, _}} = libp2p_crypto:b58_to_pubkey("%(address)s"), F = io_lib:format(\"~p\", [Key]), lists:flatten(F).'
     erlang_cmd = erlang_cmd % {'address': address}
 
     cmd = [MINER_CMD, 'eval', erlang_cmd]
     output = subprocess.check_output(cmd)
+    output = b'[' + re.sub(rb'[^0-9,]', b'', output) + b']'
     values = eval(output)
-    
+
     return binascii.hexlify(bytes(values))[2:].decode()
 
 
