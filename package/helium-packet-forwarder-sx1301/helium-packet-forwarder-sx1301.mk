@@ -12,10 +12,12 @@ HELIUM_PACKET_FORWARDER_SX1301_CONF_OPTS = -DWITH_VENDORED_HAL=ON
 HELIUM_PACKET_FORWARDER_SX1301_POST_EXTRACT_HOOKS += HELIUM_PACKET_FORWARDER_SX1301_POST_EXTRACT
 
 define HELIUM_PACKET_FORWARDER_SX1301_POST_EXTRACT
-    cd $(@D) && \
+    ( \
+        cd $(@D) && \
         git clone git@github.com:helium/lora_gateway.git extern/lora_gateway && \
         cd extern/lora_gateway && \
-        git checkout $(HELIUM_PACKET_FORWARDER_SX1301_VERSION)
+        git checkout $(HELIUM_PACKET_FORWARDER_SX1301_VERSION) \
+    )
     sed -ri 's/SPI_SPEED\s+1/SPI_SPEED 2/' $(@D)/extern/lora_gateway/libloragw/src/loragw_spi.native.c
 endef
 
