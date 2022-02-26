@@ -88,9 +88,6 @@ watch_prog() {
         test -f ${SOFT_RESTART_FILE} && continue
         
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
-            if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
-                force_sync
-            fi
             panic_action miner "service dead"
             break
         fi
