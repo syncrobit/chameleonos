@@ -11,6 +11,8 @@ PAIR_BUTTON_GPIO=
 PAIR_BUTTON_ACTIVE_LEVEL=1
 PAIR_LED_GPIO=
 PAIR_LED_ACTIVE_LEVEL=1
+FAN_GPIO=
+FAN_ACTIVE_LEVEL=1
 SPI_DEV=/dev/spidev0.0
 
 EXPANDER_GPIO=13
@@ -58,18 +60,28 @@ start() {
     # User settings override detected ones
     test -s ${USER_HW_CONF} && source ${USER_HW_CONF}
     
-    echo "HAS_GPS=${HAS_GPS}" > ${HW_CONF}
-    echo "ECC_ADDRESS=${ECC_ADDRESS}" >> ${HW_CONF}
-    echo "ECC_SLOT=${ECC_SLOT}" >> ${HW_CONF}
-    echo "HAS_EXPANDER=${HAS_EXPANDER}" >> ${HW_CONF}
-    echo "HAS_LED_STRIP=${HAS_LED_STRIP}" >> ${HW_CONF}
-    echo "LGW_RESET_GPIO=${LGW_RESET_GPIO}" >> ${HW_CONF}
-    echo "PAIR_BUTTON_GPIO=${PAIR_BUTTON_GPIO}" >> ${HW_CONF}
-    echo "PAIR_BUTTON_ACTIVE_LEVEL=${PAIR_BUTTON_ACTIVE_LEVEL}" >> ${HW_CONF}
-    echo "PAIR_LED_GPIO=${PAIR_LED_GPIO}" >> ${HW_CONF}
-    echo "PAIR_LED_ACTIVE_LEVEL=${PAIR_LED_ACTIVE_LEVEL}" >> ${HW_CONF}
-    echo "SPI_DEV=${SPI_DEV}" >> ${HW_CONF}
+    {
+        echo "HAS_GPS=${HAS_GPS}"
+        echo "ECC_ADDRESS=${ECC_ADDRESS}"
+        echo "ECC_SLOT=${ECC_SLOT}"
+        echo "HAS_EXPANDER=${HAS_EXPANDER}"
+        echo "HAS_LED_STRIP=${HAS_LED_STRIP}"
+        echo "LGW_RESET_GPIO=${LGW_RESET_GPIO}"
+        echo "PAIR_BUTTON_GPIO=${PAIR_BUTTON_GPIO}"
+        echo "PAIR_BUTTON_ACTIVE_LEVEL=${PAIR_BUTTON_ACTIVE_LEVEL}"
+        echo "PAIR_LED_GPIO=${PAIR_LED_GPIO}"
+        echo "PAIR_LED_ACTIVE_LEVEL=${PAIR_LED_ACTIVE_LEVEL}"
+        echo "FAN_GPIO=${FAN_GPIO}"
+        echo "FAN_ACTIVE_LEVEL=${FAN_ACTIVE_LEVEL}"
+        echo "SPI_DEV=${SPI_DEV}"
+    } > ${HW_CONF}
     
+    # Turn on the fan
+    if [[ -n "${FAN_GPIO}" ]]; then
+        test ${FAN_ACTIVE_LEVEL} == 1 && l=dh || l=dl
+        raspi-gpio set ${FAN_GPIO} op ${l}
+    fi
+
     # Vendor-specific tweaks
     tweak_func=tweak_${OS_PREFIX}
     if [[ $(type -t ${tweak_func}) == function ]]; then
