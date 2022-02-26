@@ -368,7 +368,7 @@ start() {
             
         # Configure ECC address and slot
         else
-            sed -ri "s/key_slot, [[:digit:]]+/key_slot, ${ECC_SLOT}/" ${RELX_CONFIG_PATH}
+            sed -ri "s/key_slot, [[:digit:]]+/key_slot, ${ECC_SLOT}/g" ${RELX_CONFIG_PATH}
             sed -ri "s/address, 16#[[:digit:]]+/address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
         fi
         
