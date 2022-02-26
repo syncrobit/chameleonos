@@ -29,6 +29,21 @@ CONF_FILE = '/data/etc/miner.conf'
 FORCE_SYNC_FILE = '/var/lib/miner/force_sync'
 SWARM_KEY_FILE = '/var/lib/user_swarm_key'
 
+# These will be initialized by `initialize_defaults()`
+DEF_MAX_INBOUND_CONNECTIONS = 0
+DEF_OUTBOUND_GOSSIP_CONNECTIONS = 0
+
+
+async def initialize_defaults() -> None:
+    global DEF_MAX_INBOUND_CONNECTIONS
+    global DEF_OUTBOUND_GOSSIP_CONNECTIONS
+
+    cmd = 'cat /opt/miner/releases/*/sys.config | grep max_inbound_connections | sed "s/[^0-9]//g"'
+    DEF_MAX_INBOUND_CONNECTIONS = int(await asyncsubprocess.check_output(cmd))
+
+    cmd = 'cat /opt/miner/releases/*/sys.config | grep outbound_gossip_connections | sed "s/[^0-9]//g"'
+    DEF_OUTBOUND_GOSSIP_CONNECTIONS = int(await asyncsubprocess.check_output(cmd))
+
 
 async def get_height() -> Optional[int]:
     try:
@@ -134,6 +149,8 @@ def get_config() -> Dict[str, Any]:
         'panic_on_unreachable': False,
         'force_sync_enabled': True,
         'periodic_reset_peers': False,
+        'max_inbound_connections': DEF_MAX_INBOUND_CONNECTIONS,
+        'outbound_gossip_connections': DEF_OUTBOUND_GOSSIP_CONNECTIONS,
     }
 
     bool_fields = {'panic_on_relayed', 'panic_on_unreachable', 'force_sync_enabled', 'periodic_reset_peers'}
@@ -150,15 +167,15 @@ def get_config() -> Dict[str, Any]:
             except ValueError:
                 continue
 
+            v = v.strip('"')
             k = k.lower()
 
-            if k.endswith('port'):
-                try:
-                    v = int(v)
-                except ValueError:
-                    continue
+            try:
+                v = int(v)
+            except ValueError:
+                pass
 
-            if k in bool_fields:
+            if k in bool_fields and isinstance(v, str):
                 v = v.lower() == 'true'
 
             current_config[k] = v

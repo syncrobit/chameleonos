@@ -375,6 +375,15 @@ start() {
             sed -ri "s/address, 16#[[:digit:]]+/address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
         fi
         
+        # Configure P2P
+        if [[ -n "${MAX_INBOUND_CONNECTIONS}" ]]; then
+            sed -ri "s/max_inbound_connections, [0-9]+/max_inbound_connections, ${MAX_INBOUND_CONNECTIONS}/g" ${RELX_CONFIG_PATH}
+        fi
+        if [[ -n "${OUTBOUND_GOSSIP_CONNECTIONS}" ]]; then
+            sed -ri "s/outbound_gossip_connections, [0-9]+/outbound_gossip_connections, ${OUTBOUND_GOSSIP_CONNECTIONS}/g" ${RELX_CONFIG_PATH}
+        fi
+        
+        # Manual NAT mapping
         if [[ -n "${NAT_EXTERNAL_PORT}" ]]; then
             NAT_INTERNAL_PORT=${NAT_INTERNAL_PORT:-${DEF_PORT}}
             if [[ -z "${NAT_EXTERNAL_IP}" ]]; then

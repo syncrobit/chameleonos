@@ -338,6 +338,8 @@ async def get_config(request: web.Request) -> web.Response:
         'panic_on_unreachable': miner_config['panic_on_unreachable'],
         'force_sync_enabled': miner_config['force_sync_enabled'],
         'periodic_reset_peers': miner_config['periodic_reset_peers'],
+        'max_inbound_connections': miner_config['max_inbound_connections'],
+        'outbound_gossip_connections': miner_config['outbound_gossip_connections'],
 
         'pf_antenna_gain': pf_config['antenna_gain'],
         'pf_rssi_offset': pf_config['rssi_offset'],
@@ -423,6 +425,8 @@ async def patch_config(request: web.Request) -> web.Response:
         'panic_on_unreachable',
         'force_sync_enabled',
         'periodic_reset_peers',
+        'max_inbound_connections',
+        'outbound_gossip_connections',
     ):
         if field in config:
             miner_config[field] = config[field]
@@ -797,6 +801,8 @@ def main():
     logging.info('hello!')
 
     loop = asyncio.get_event_loop()
+
+    loop.run_until_complete(miner.initialize_defaults())
 
     app = make_app()
     runner = loop.run_until_complete(start_app(app, ssl_context=None, port=settings.PORT))
