@@ -50,11 +50,6 @@ start() {
         LGW_RESET_GPIO=${OG_LGW_RESET_GPIO}
     fi
 
-    # For now, only CM4-based units have LED strip
-    if ! grep -q "Compute Module 4" /proc/device-tree/model &>/dev/null; then
-        HAS_LED_STRIP=false
-    fi
-    
     # Some ECC models are on 0x58 and have slots 0 and 1 preprovisioned
     if [[ ${ECC_ADDRESS} == 0x58 ]]; then
         ECC_SLOT=2
