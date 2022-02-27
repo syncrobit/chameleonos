@@ -31,9 +31,9 @@ function arg_present() {
 
 function get_latest_info() {
     if [[ "${OS_PRERELEASES}" == "true" ]]; then
-        latest_file="latest.json"
+        latest_file="latest_beta_info.json"
     else
-        latest_file="latest_stable.json"
+        latest_file="latest_stable_info.json"
     fi
 
     latest_url="${BASE_URL}/${OS_PREFIX}/${latest_file}"

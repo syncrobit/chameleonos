@@ -80,17 +80,21 @@ function main() {
                 exit 1
             fi
             s3upload ${THINGOS_PREFIX} ${image_path}
-            latest_file="latest"
-            [[ ${cmd} == *stable ]] && latest_file+="_stable"
-            latest_file+=".json"
+            if [[ ${cmd} == *stable ]]; then
+                latest_file="latest_stable_info.json"
+            else
+                latest_file="latest_beta_info.json"
+            fi
             make_latest "/${THINGOS_PREFIX}/${image_name}" ${version} > /tmp/${latest_file}
             s3upload ${THINGOS_PREFIX} /tmp/${latest_file}
             ;;
 
         unrelease-stable | unrelease-beta)
-            latest_file="latest"
-            [[ ${cmd} == *stable ]] && latest_file+="_stable"
-            latest_file+=".json"
+            if [[ ${cmd} == *stable ]]; then
+                latest_file="latest_stable_info.json"
+            else
+                latest_file="latest_beta_info.json"
+            fi
             s3delete ${THINGOS_PREFIX} ${latest_file}
             ;;
         
@@ -99,13 +103,13 @@ function main() {
                 echo "Invalid OS image prefix: ${os_prefix}"
                 exit 1
             fi
-            latest_file="latest.json"
+            latest_file="latest_beta_info.json"
             make_latest "/${THINGOS_PREFIX}/${image_name}" ${version} > /tmp/${latest_file}
             s3upload ${THINGOS_PREFIX} /tmp/${latest_file}
             ;;
             
         promote-stable)
-            s3copy ${THINGOS_PREFIX} latest.json latest_stable.json
+            s3copy ${THINGOS_PREFIX} latest_beta_info.json latest_stable_info.json
             ;;
             
         upload)
