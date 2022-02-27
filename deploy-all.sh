@@ -20,7 +20,9 @@ fi
 
 set -a
 for VENDOR in ${VENDORS}; do
-    echo "Deploying for ${VENDOR}"
     source vendors/${VENDOR}.conf
-    ./deploy.sh $1 output/raspberrypi64/images/chameleonos-${THINGOS_PREFIX}-raspberrypi64-${VERSION}.img.xz
+    for PLATFORM in ${PLATFORMS}; do
+        echo "Deploying ${VENDOR}/${PLATFORM}"
+        ./deploy.sh $1 output/${PLATFORM}/images/chameleonos-${THINGOS_PREFIX}-${PLATFORM}-${VERSION}.img.xz
+    done
 done

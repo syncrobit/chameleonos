@@ -56,7 +56,7 @@ function make_latest() {
 }
 
 function get_image_params() {
-    # $1 - image name (e.g. chameleonos-cham-raspberrypi4arm64-2021.03.14.1.img.xz)
+    # $1 - image name (e.g. chameleonos-cham-raspberrypi64-2021.03.14.1.img.xz)
     image_name=$1
     image_name=${image_name:0:-7}  # strip trailing ".img.gz"
     IFS=-; image_params=(${image_name}); unset IFS

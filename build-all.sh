@@ -16,8 +16,11 @@ fi
 export THINGOS_VERSION=${VERSION}
 
 for VENDOR in ${VENDORS}; do
-    echo "Building for ${VENDOR}"
-    ./build.sh raspberrypi64
-    sudo ./build.sh raspberrypi64 mkimage
-    ./build.sh raspberrypi64 mkrelease
+    source vendors/${VENDOR}.conf
+    for PLATFORM in ${PLATFORMS}; do
+        echo "Building ${VENDOR}/${PLATFORM}"
+        ./build.sh ${PLATFORM}
+        sudo -E ./build.sh ${PLATFORM} mkimage
+        ./build.sh ${PLATFORM} mkrelease
+    done
 done
