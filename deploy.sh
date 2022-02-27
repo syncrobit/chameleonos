@@ -4,7 +4,7 @@ BUCKET="syncrobit-firmware"
 S3CMD="s3cmd -c ${HOME}/.s3cfg-chameleon"
 
 function exit_usage() {
-    echo "Usage: $0 <release-stable|release-beta|unrelease-stable|unrelease-beta|promote-stable|promote-beta|upload> [image.xz]"
+    echo "Usage: $0 <upload|promote-beta|promote-stable|unrelease-stable|unrelease-beta> [image.xz]"
     exit 1
 }
 
@@ -58,7 +58,7 @@ function make_latest() {
 function get_image_params() {
     # $1 - image name (e.g. chameleonos-cham-raspberrypi64-2021.03.14.1.img.xz)
     image_name=$1
-    image_name=${image_name:0:-7}  # strip trailing ".img.gz"
+    image_name=${image_name:0:-7}  # strip trailing ".img.xz"
     IFS=-; image_params=(${image_name}); unset IFS
     echo "${image_params[@]}"
 }
@@ -69,24 +69,32 @@ function main() {
         image_params=($(get_image_params ${image_name}))
         os_name=${image_params[0]}
         os_prefix=${image_params[1]}
-        board=${image_params[2]}
+        platform=${image_params[2]}
         version=${image_params[3]}
     fi
     
     case ${cmd} in
-        release-stable | release-beta)
+        upload)
             if [[ "${os_prefix}" != "${THINGOS_PREFIX}" ]]; then
                 echo "Invalid OS image prefix: ${os_prefix}"
                 exit 1
             fi
             s3upload ${THINGOS_PREFIX} ${image_path}
-            if [[ ${cmd} == *stable ]]; then
-                latest_file="latest_stable_info.json"
-            else
-                latest_file="latest_beta_info.json"
+            ;;
+
+        promote-beta)
+            if [[ "${os_prefix}" != "${THINGOS_PREFIX}" ]]; then
+                echo "Invalid OS image prefix: ${os_prefix}"
+                exit 1
             fi
-            make_latest "/${THINGOS_PREFIX}/${image_name}" ${version} > /tmp/${latest_file}
+            latest_file="latest_beta_info.json"
+            path="/${THINGOS_PREFIX}/${os_name}-${os_prefix}-${platform}-${version}.img.xz"
+            make_latest "${path}" ${version} > /tmp/${latest_file}
             s3upload ${THINGOS_PREFIX} /tmp/${latest_file}
+            ;;
+
+        promote-stable)
+            s3copy ${THINGOS_PREFIX} latest_beta_info.json latest_stable_info.json
             ;;
 
         unrelease-stable | unrelease-beta)
@@ -96,28 +104,6 @@ function main() {
                 latest_file="latest_beta_info.json"
             fi
             s3delete ${THINGOS_PREFIX} ${latest_file}
-            ;;
-        
-        promote-beta)
-            if [[ "${os_prefix}" != "${THINGOS_PREFIX}" ]]; then
-                echo "Invalid OS image prefix: ${os_prefix}"
-                exit 1
-            fi
-            latest_file="latest_beta_info.json"
-            make_latest "/${THINGOS_PREFIX}/${image_name}" ${version} > /tmp/${latest_file}
-            s3upload ${THINGOS_PREFIX} /tmp/${latest_file}
-            ;;
-            
-        promote-stable)
-            s3copy ${THINGOS_PREFIX} latest_beta_info.json latest_stable_info.json
-            ;;
-            
-        upload)
-            if [[ "${os_prefix}" != "${THINGOS_PREFIX}" ]]; then
-                echo "Invalid OS image prefix: ${os_prefix}"
-                exit 1
-            fi
-            s3upload ${THINGOS_PREFIX} ${image_path}
             ;;
     esac
 }

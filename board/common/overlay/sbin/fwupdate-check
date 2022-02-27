@@ -36,11 +36,13 @@ function get_latest_info() {
         latest_file="latest_stable_info.json"
     fi
 
+    export platform=${BOARD_NAME}
     latest_url="${BASE_URL}/${OS_PREFIX}/${latest_file}"
     latest=$(curl --fail -sSL ${latest_url})
     latest=$(jq -r '.path,.version,.date' <<<"${latest}")
     latest=(${latest})
     latest_path=${latest[0]}
+    latest_path=$(envsubst <<<"${latest_path}")
     latest_version=${latest[1]}
     firmware_url="${BASE_URL}${latest_path}"
 
