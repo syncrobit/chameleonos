@@ -19,6 +19,7 @@ for VENDOR in ${VENDORS}; do
     source vendors/${VENDOR}.conf
     for PLATFORM in ${PLATFORMS}; do
         echo "Building ${VENDOR}/${PLATFORM}"
+        rm -f output/${PLATFORM}/.config
         ./build.sh ${PLATFORM}
         sudo -E ./build.sh ${PLATFORM} mkimage
         ./build.sh ${PLATFORM} mkrelease
