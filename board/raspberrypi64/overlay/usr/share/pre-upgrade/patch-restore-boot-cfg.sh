@@ -1,5 +1,9 @@
 #!/bin/bash
 
-mount -o remount,rw /
-echo -e '#!/bin/bash\ngrep -q dtparam=ant2 $1/config.txt && echo dtparam=ant2 >> /boot/config.txt' > /usr/libexec/fw-restore-boot-cfg
-chmod +x /usr/libexec/fw-restore-boot-cfg
+TMP_ROOT_DIR=/tmp/fwupdate_root
+
+if [[ -f ${TMP_ROOT_DIR}/usr/libexec/fw-restore-boot-cfg ]]; then
+    cp ${TMP_ROOT_DIR}/usr/libexec/fw-restore-boot-cfg /usr/libexec/fw-restore-boot-cfg
+else
+    rm -f /usr/libexec/fw-restore-boot-cfg
+fi
