@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <old_boot>" 1>&2
+    exit -1
+fi
+
+old_boot=$1
+
+# Restore external antenna configuration
+if grep -qE "^dtparam=ant2" ${old_boot}/config.txt && ! grep -qE "^dtparam=ant2" /boot/config.txt; then
+    echo "dtparam=ant2" >> /boot/config.txt
+fi
