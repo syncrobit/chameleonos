@@ -5,7 +5,7 @@ diff -uNr miner-orig/Makefile miner-patched/Makefile
  
  	@echo "--- semtech-udp ---"
  	$(call clone_project,semtech-udp,$(SEMTECH_UDP_VSN))
-+        @(cd ./external/semtech-udp && sed -ri "s/aarch64-linux-gnu-gcc/$$(basename $(TARGET_CC))/g" .cargo/config)
++	@(cd ./external/semtech-udp && sed -ri "s/aarch64-linux-gnu-gcc/$$(basename $(CC))/g" .cargo/config)
  	@(cd ./external/semtech-udp && cargo build --release --features client\,server --example gwmp-mux)
  	$(call install_rust_bin,semtech-udp,examples/gwmp-mux,semtech_udp)
  
