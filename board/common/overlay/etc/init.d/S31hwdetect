@@ -26,7 +26,7 @@ PLATFORM_CONF=/etc/platforms/${OS_PREFIX}-${BOARD_NAME}.conf
 
 tweak_nbra_raspberrypi64() {
     # Enable button internal pull-up on GPIO26
-    raspi-gpio set 26 pu
+    gpio-do 26 pull-up
 }
 
 start() {
@@ -36,7 +36,7 @@ start() {
     test -s ${PLATFORM_CONF} && source ${PLATFORM_CONF}
 
     # Enable GPIO expander that is present on OG and RAK models
-    gpio.sh ${EXPANDER_GPIO} 1
+    gpio-do set ${EXPANDER_GPIO} 1
     usleep 100000
     
     # Detect I2C peripherals
@@ -81,7 +81,7 @@ start() {
     # Turn on the fan
     if [[ -n "${FAN_GPIO}" ]]; then
         test ${FAN_ACTIVE_LEVEL} == 1 && l=dh || l=dl
-        raspi-gpio set ${FAN_GPIO} op ${l}
+        gpio-do set ${FAN_GPIO} ${l}
     fi
 
     # Platform/vendor-specific tweaks

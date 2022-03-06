@@ -1,0 +1,16 @@
+
+function gpio_get() {
+    gpio.sh $1
+}
+
+function gpio_set() {
+    test $2 == 1 && raspi-gpio set $1 op dh || raspi-gpio set $1 op dl
+}
+
+function gpio_pull_up() {
+    raspi-gpio set $1 pu
+}
+
+function gpio_pull_down() {
+    raspi-gpio set $1 pd
+}

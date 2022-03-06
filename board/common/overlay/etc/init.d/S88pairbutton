@@ -20,7 +20,7 @@ watch_pair_button() {
     pair_enabled=false
     while true; do
         sleep 1
-        level=$(gpio.sh ${PAIR_BUTTON_GPIO})
+        level=$(gpio-do get ${PAIR_BUTTON_GPIO})
         if [[ "${level}" == "${PAIR_BUTTON_ACTIVE_LEVEL}" ]]; then
             count=$((count + 1))
         else
