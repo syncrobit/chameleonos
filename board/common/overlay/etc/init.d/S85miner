@@ -308,8 +308,9 @@ start() {
     
     msg_begin "Starting miner"
 
-    if ! [[ -e /dev/i2c-1 ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
-        msg_fail "no I2C device"
+    i2c_dev=/dev/i2c-${I2C_BUS}
+    if ! [[ -e ${i2c_dev} ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
+        msg_fail "no I2C device ${i2c_dev}"
         return
     fi
 

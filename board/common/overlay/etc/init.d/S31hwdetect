@@ -14,6 +14,7 @@ PAIR_LED_ACTIVE_LEVEL=1
 FAN_GPIO=
 FAN_ACTIVE_LEVEL=1
 SPI_DEV=/dev/spidev0.0
+I2C_BUS=1
 
 EXPANDER_GPIO=13
 OG_LGW_RESET_GPIO=25
@@ -41,7 +42,7 @@ start() {
     # Detect I2C peripherals
     HAS_EXPANDER=false
     HAS_GPS=false
-    i2c_output=$(i2cdetect -y 1 | awk -F: '{print $2}')
+    i2c_output=$(i2cdetect -y ${I2C_BUS} | awk -F: '{print $2}')
     grep -q 20 <<< "${i2c_output}" && HAS_EXPANDER=true
     grep -q 42 <<< "${i2c_output}" && HAS_GPS=true
     grep -q 58 <<< "${i2c_output}" && ECC_ADDRESS=0x58
@@ -74,6 +75,7 @@ start() {
         echo "FAN_GPIO=${FAN_GPIO}"
         echo "FAN_ACTIVE_LEVEL=${FAN_ACTIVE_LEVEL}"
         echo "SPI_DEV=${SPI_DEV}"
+        echo "I2C_BUS=${I2C_BUS}"
     } > ${HW_CONF}
     
     # Turn on the fan
