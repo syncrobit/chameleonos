@@ -122,12 +122,12 @@ function state_loop() {
             fi
         elif [[ -n "${PAIR_LED_GPIO}" ]]; then
             if is_pairing; then
-                gpio-do set ${PAIR_LED_GPIO} ${PAIR_LED_ACTIVE_LEVEL}
+                gpio-do ${PAIR_LED_GPIO} set ${PAIR_LED_ACTIVE_LEVEL}
                 usleep 500000
-                gpio-do set ${PAIR_LED_GPIO} ${pair_led_inactive_level}
+                gpio-do ${PAIR_LED_GPIO} set ${pair_led_inactive_level}
                 usleep 500000
             else
-                gpio-do set ${PAIR_LED_GPIO} ${pair_led_inactive_level}
+                gpio-do ${PAIR_LED_GPIO} set ${pair_led_inactive_level}
             fi
         else
             sleep 1

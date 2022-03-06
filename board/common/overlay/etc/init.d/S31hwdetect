@@ -36,7 +36,7 @@ start() {
     test -s ${PLATFORM_CONF} && source ${PLATFORM_CONF}
 
     # Enable GPIO expander that is present on OG and RAK models
-    gpio-do set ${EXPANDER_GPIO} 1
+    gpio-do ${EXPANDER_GPIO} set 1
     usleep 100000
     
     # Detect I2C peripherals
@@ -81,7 +81,7 @@ start() {
     # Turn on the fan
     if [[ -n "${FAN_GPIO}" ]]; then
         test ${FAN_ACTIVE_LEVEL} == 1 && l=dh || l=dl
-        gpio-do set ${FAN_GPIO} ${l}
+        gpio-do ${FAN_GPIO} set ${l}
     fi
 
     # Platform/vendor-specific tweaks
