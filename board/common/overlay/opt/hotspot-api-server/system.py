@@ -203,14 +203,15 @@ def set_periodic_reboot_enabled(enabled: bool) -> None:
 
 
 def is_ext_wifi_antenna_enabled() -> bool:
-    with open(CONFIG_TXT, 'rt') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
+    if os.path.exists(CONFIG_TXT):
+        with open(CONFIG_TXT, 'rt') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
 
-            if line == 'dtparam=ant2':
-                return True
+                if line == 'dtparam=ant2':
+                    return True
 
     return False
 
@@ -218,6 +219,10 @@ def is_ext_wifi_antenna_enabled() -> bool:
 async def set_ext_wifi_antenna_enabled(enabled: bool) -> None:
     if is_ext_wifi_antenna_enabled() == enabled:
         return  # We're already there
+
+    if not os.path.exists(CONFIG_TXT):
+        logging.debug('skipping external Wi-Fi antenna setting on non-RPi platform')
+        return
 
     logging.debug('%s external Wi-Fi antenna', ['disabling', 'enabling'][enabled])
 
