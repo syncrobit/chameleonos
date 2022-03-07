@@ -19,6 +19,7 @@ DATA_DIR = '/data'
 CONFIG_TXT = '/boot/config.txt'
 LAST_PANIC_FILE = '/var/lib/last_panic'
 OS_CONF = '/data/etc/os.conf'
+THERMAL_ZONE_PATH = '/sys/class/thermal/thermal_zone0/temp'
 
 LOG_DIR = '/var/log'
 MINER_DATA_DIR = '/var/lib/miner'
@@ -142,7 +143,11 @@ def get_temperature() -> Optional[int]:
     try:
         return int(psutil.sensors_temperatures()['cpu_thermal'][0].current)
     except Exception:
-        pass
+        try:
+            with open(THERMAL_ZONE_PATH, 'rt') as f:
+                return int(f.read().strip()) // 1000
+        except Exception:
+            pass
 
 
 def get_last_panic_details() -> Optional[Dict[str, str]]:
