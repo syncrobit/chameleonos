@@ -88,7 +88,7 @@ function main() {
                 exit 1
             fi
             latest_file="latest_beta_info.json"
-            path="/${THINGOS_PREFIX}/${os_name}-${os_prefix}-${platform}-${version}.img.xz"
+            path="/${THINGOS_PREFIX}/${os_name}-${os_prefix}-"'${platform}'"-${version}.img.xz"
             make_latest "${path}" ${version} > /tmp/${latest_file}
             s3upload ${THINGOS_PREFIX} /tmp/${latest_file}
             ;;
