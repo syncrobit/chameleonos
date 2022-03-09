@@ -15,4 +15,3 @@ cp ${BUILD_DIR}/linux-custom/arch/arm64/boot/dts/rockchip/overlay/*.dtbo ${BOOT_
 cp ${BINARIES_DIR}/Image ${BOOT_DIR}
 cp ${BOARD_DIR}/initrd.gz ${BOOT_DIR}
 cp ${BOARD_DIR}/uEnv.txt ${BOOT_DIR}
-cp ${BOARD_DIR}/rk3568-spi3-m0-cs0-spidev.dtbo ${BOOT_DIR}/overlays
