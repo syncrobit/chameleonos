@@ -94,7 +94,7 @@ find_reg() {
 
 find_sx() {
     cd $(dirname ${PROG_CI})
-    if ${PROG_CI} | grep -q "concentrator EUI:"; then
+    if ${PROG_CI} -d ${SPI_DEV} | grep -q "concentrator EUI:"; then
         echo "sx1302"
     else
         echo "sx1301"
