@@ -10,7 +10,7 @@ import asyncsubprocess
 
 ETH_MAC_FILE = '/sys/class/net/eth0/address'
 WLAN_MAC_FILE = '/sys/class/net/wlan0/address'
-BT_MAC_CMD = 'bluetoothctl list | grep -oE "[A-F0-9:]+{17}"'
+BT_MAC_CMD = 'timeout 1 bluetoothctl list | grep -oE "[A-F0-9:]+{17}"'
 BOARD_SN_CMD = '/etc/init.d/boardsn'
 FW_VERSION_CMD = '/sbin/fwupdate current'
 UPTIME_CMD = 'cat /proc/uptime | grep -oE "^[[:digit:]]+"'

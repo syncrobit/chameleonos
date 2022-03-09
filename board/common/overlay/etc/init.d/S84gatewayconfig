@@ -23,7 +23,7 @@ setup_bluetooth() {
     echo 153 > ${HCI_DIR}/adv_min_interval
     echo 153 > ${HCI_DIR}/adv_max_interval
     
-    echo -e "pairable off\nquit" | /usr/bin/bluetoothctl &>/dev/null
+    echo -e "pairable off\nquit" | timeout 1 /usr/bin/bluetoothctl &>/dev/null
 
     # Automatically enable pairing at boot
     (/bin/sleep 5 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
