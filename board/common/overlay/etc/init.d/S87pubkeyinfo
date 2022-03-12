@@ -40,6 +40,13 @@ send_prov_info() {
 start() {
     msg_begin "Saving public key info"
     
+    # Wait for miner to become responsive
+    for ((i=0; i < 10; i++)); do
+        output=$(miner ping 2>&1)
+        test "${output}" == pong && break
+        sleep 1
+    done
+
     info=$(${PROG} ${USER_SWARM_KEY} || ${PROG} ${USER_SWARM_KEY} || ${PROG} ${USER_SWARM_KEY})
     info=(${info})
     ecc_sn=${info[0]}
