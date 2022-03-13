@@ -15,9 +15,10 @@ source ${HARDWARE_CONF}
 start() {
     msg_begin "Starting gateway-mfr"
     
-    if ! [[ -e /dev/i2c-1 ]]; then
-        msg_fail "no I2C device"
-        return 1
+    i2c_dev=/dev/i2c-${I2C_BUS}
+    if ! [[ -e ${i2c_dev} ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
+        msg_fail "no I2C device ${i2c_dev}"
+        return
     fi
 
     # Prepare config file

@@ -308,8 +308,9 @@ start() {
     
     msg_begin "Starting miner"
 
-    if ! [[ -e /dev/i2c-1 ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
-        msg_fail "no I2C device"
+    i2c_dev=/dev/i2c-${I2C_BUS}
+    if ! [[ -e ${i2c_dev} ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
+        msg_fail "no I2C device ${i2c_dev}"
         return
     fi
 
@@ -366,12 +367,13 @@ start() {
             mkdir -p $(dirname ${MINER_SWARM_KEY})
             cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
             
-        # Configure ECC address and slot
+        # Configure ECC params
         else
             sed -ri "s/key_slot, [[:digit:]]+/key_slot, ${ECC_SLOT}/g" ${RELX_CONFIG_PATH}
             # An invalid slot for onboarding key will force miner to use ECC_SLOT for onboarding instead.
             sed -ri "s/onboarding_key_slot, [[:digit:]]+/onboarding_key_slot, 100/g" ${RELX_CONFIG_PATH}
             sed -ri "s/address, 16#[[:digit:]]+/address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
+            sed -ri "s/i2c-1/i2c-${I2C_BUS}/g" ${RELX_CONFIG_PATH}
         fi
         
         # Configure P2P

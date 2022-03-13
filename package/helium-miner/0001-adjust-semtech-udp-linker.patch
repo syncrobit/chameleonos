@@ -1,0 +1,11 @@
+diff -uNr miner-orig/Makefile miner-patched/Makefile
+--- miner-orig/Makefile	2022-02-28 23:24:02.000000000 +0200
++++ miner-patched/Makefile	2022-03-06 01:31:00.695404665 +0200
+@@ -92,6 +92,7 @@
+ 
+ 	@echo "--- semtech-udp ---"
+ 	$(call clone_project,semtech-udp,$(SEMTECH_UDP_VSN))
++	@(cd ./external/semtech-udp && sed -ri "s/aarch64-linux-gnu-gcc/$$(basename $(CC))/g" .cargo/config)
+ 	@(cd ./external/semtech-udp && cargo build --release --features client\,server --example gwmp-mux)
+ 	$(call install_rust_bin,semtech-udp,examples/gwmp-mux,semtech_udp)
+ 

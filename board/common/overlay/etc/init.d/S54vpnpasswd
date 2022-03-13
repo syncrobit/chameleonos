@@ -5,9 +5,12 @@ VPNPASSWD_FILE="/var/run/vpnpasswd"
 SYS_USER_SWARM_KEY="/usr/share/user_swarm_key"
 BOOT_USER_SWARM_KEY="/boot/user_swarm_key"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
+HARDWARE_CONF="/var/run/hardware.conf"
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
+
+source ${HARDWARE_CONF}
 
 prepare_conf ${USER_SWARM_KEY} ${SYS_USER_SWARM_KEY} ${BOOT_USER_SWARM_KEY}
 
@@ -15,8 +18,9 @@ prepare_conf ${USER_SWARM_KEY} ${SYS_USER_SWARM_KEY} ${BOOT_USER_SWARM_KEY}
 start() {
     msg_begin "Generating VPN password"
 
-    if ! [[ -e /dev/i2c-1 ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
-        msg_fail "no I2C device"
+    i2c_dev=/dev/i2c-${I2C_BUS}
+    if ! [[ -e ${i2c_dev} ]] && ! [[ -s ${USER_SWARM_KEY} ]]; then
+        msg_fail "no I2C device ${i2c_dev}"
         return
     fi
     

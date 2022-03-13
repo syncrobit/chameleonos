@@ -19,6 +19,7 @@ DATA_DIR = '/data'
 CONFIG_TXT = '/boot/config.txt'
 LAST_PANIC_FILE = '/var/lib/last_panic'
 OS_CONF = '/data/etc/os.conf'
+THERMAL_ZONE_PATH = '/sys/class/thermal/thermal_zone0/temp'
 
 LOG_DIR = '/var/log'
 MINER_DATA_DIR = '/var/lib/miner'
@@ -142,7 +143,11 @@ def get_temperature() -> Optional[int]:
     try:
         return int(psutil.sensors_temperatures()['cpu_thermal'][0].current)
     except Exception:
-        pass
+        try:
+            with open(THERMAL_ZONE_PATH, 'rt') as f:
+                return int(f.read().strip()) // 1000
+        except Exception:
+            pass
 
 
 def get_last_panic_details() -> Optional[Dict[str, str]]:
@@ -203,14 +208,15 @@ def set_periodic_reboot_enabled(enabled: bool) -> None:
 
 
 def is_ext_wifi_antenna_enabled() -> bool:
-    with open(CONFIG_TXT, 'rt') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
+    if os.path.exists(CONFIG_TXT):
+        with open(CONFIG_TXT, 'rt') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
 
-            if line == 'dtparam=ant2':
-                return True
+                if line == 'dtparam=ant2':
+                    return True
 
     return False
 
@@ -218,6 +224,10 @@ def is_ext_wifi_antenna_enabled() -> bool:
 async def set_ext_wifi_antenna_enabled(enabled: bool) -> None:
     if is_ext_wifi_antenna_enabled() == enabled:
         return  # We're already there
+
+    if not os.path.exists(CONFIG_TXT):
+        logging.debug('skipping external Wi-Fi antenna setting on non-RPi platform')
+        return
 
     logging.debug('%s external Wi-Fi antenna', ['disabling', 'enabling'][enabled])
 

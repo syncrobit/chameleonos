@@ -1,0 +1,48 @@
+#!/bin/bash
+
+source /usr/libexec/gpio-functions
+
+
+function usage() {
+    echo "Usage: $0 <gpio_no> <cmd> [args...]"
+    echo "Commands:"
+    echo "    get"
+    echo "    set <0|1>"
+    echo "    pull-up"
+    echo "    pull-down"
+}
+
+test -n "$2" || { usage; exit 1; }
+
+gpio_no=$1
+cmd=$2
+
+function do_get() {
+    gpio_get ${gpio_no}
+}
+
+function do_set() {
+    test -n "$1" || { usage; return 1; }
+    value=$1
+    gpio_set ${gpio_no} ${value}
+}
+
+function do_pull_up() {
+    gpio_pull_up ${gpio_no}
+}
+
+function do_pull_down() {
+    gpio_pull_down ${gpio_no}
+}
+
+if [[ ${cmd} == get ]]; then
+    do_get ${@:3}
+elif [[ ${cmd} == set ]]; then
+    do_set ${@:3}
+elif [[ ${cmd} == pull-up ]]; then
+    do_pull_up ${@:3}
+elif [[ ${cmd} == pull-down ]]; then
+    do_pull_down ${@:3}
+else
+    usage
+fi

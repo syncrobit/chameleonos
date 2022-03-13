@@ -1,0 +1,16 @@
+
+function gpio_get() {
+    gpio.sh $1
+}
+
+function gpio_set() {
+    gpio.sh $1 $2
+}
+
+function gpio_pull_up() {
+    true
+}
+
+function gpio_pull_down() {
+    true
+}
