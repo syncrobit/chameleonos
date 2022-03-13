@@ -25,6 +25,7 @@ start() {
     cp ${SYS_CONF} ${RELX_CONFIG_PATH}
     sed -ri "s/ecc_key_slot, [[:digit:]]/ecc_key_slot, ${ECC_SLOT}/" ${RELX_CONFIG_PATH}
     sed -ri "s/ecc_address, 16#[[:digit:]]+/ecc_address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
+    sed -ri "s/i2c-1/i2c-${I2C_BUS}/g" ${RELX_CONFIG_PATH}
 
     ${PROG} foreground &>> ${LOG} &
     msg_done
