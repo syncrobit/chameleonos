@@ -13,6 +13,8 @@ HELIUM_MINER_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_FETCH_PATCH_DEPS
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_UPDATE_VERSION
 
+HELIUM_NETWORK ?= mainnet
+
 define HELIUM_MINER_FETCH_PATCH_DEPS
     (cd $(@D); $(TARGET_MAKE_ENV) ./rebar3 get-deps)
 
@@ -48,7 +50,7 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     cd $(TARGET_DIR)/opt/miner; \
     tar xvf $(@D)/_build/prod/rel/*/*.tar.gz; \
     mkdir -p update; \
-    wget https://github.com/helium/blockchain-api/raw/master/priv/prod/genesis -O update/genesis; \
+    wget https://snapshots.helium.wtf/genesis.$(HELIUM_NETWORK) -o /opt/docker/update/genesis; \
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
     
     rm -rf $(TARGET_DIR)/opt/miner/$${HOME}
