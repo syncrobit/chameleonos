@@ -26,7 +26,7 @@ setup_bluetooth() {
     echo -e "pairable off\nquit" | timeout 1 /usr/bin/bluetoothctl &>/dev/null
 
     # Automatically enable pairing at boot
-    (/bin/sleep 5 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
+    (/bin/sleep 10 && HOME=/var/run ${FULL_PROG} advertise on) &>> ${LOG} &
 }
 
 start() {
@@ -45,7 +45,6 @@ start() {
     export DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
     export RUNNER_LOG_DIR="/var/log/gateway_config"
     export ERL_CRASH_DUMP="/var/log/gateway_config"
-    export ERL_EPMD_ADDRESS="127.0.0.1"
     export ERL_FULLSWEEP_AFTER=0  # We don't care about performance, just don't eat up RAM
     export HOME=/var/run
 
