@@ -5,7 +5,11 @@
 ################################################################################
 
 # Keep the version and patches in sync with bluez5_utils-headers
+<<<<<<< Updated upstream
 BLUEZ5_UTILS_VERSION = 5.63
+=======
+BLUEZ5_UTILS_VERSION = 5.54
+>>>>>>> Stashed changes
 BLUEZ5_UTILS_SOURCE = bluez-$(BLUEZ5_UTILS_VERSION).tar.xz
 BLUEZ5_UTILS_SITE = $(BR2_KERNEL_MIRROR)/linux/bluetooth
 BLUEZ5_UTILS_INSTALL_STAGING = YES
@@ -160,13 +164,6 @@ ifeq ($(BR2_PACKAGE_BLUEZ5_UTILS_TEST),y)
 BLUEZ5_UTILS_CONF_OPTS += --enable-test
 else
 BLUEZ5_UTILS_CONF_OPTS += --disable-test
-endif
-
-# enable hid2hci tool
-ifeq ($(BR2_PACKAGE_BLUEZ5_UTILS_TOOLS_HID2HCI),y)
-BLUEZ5_UTILS_CONF_OPTS += --enable-hid2hci
-else
-BLUEZ5_UTILS_CONF_OPTS += --disable-hid2hci
 endif
 
 # use udev if available

@@ -5,7 +5,11 @@
 ################################################################################
 
 # Keep the version and patches in sync with bluez5_utils
+<<<<<<< Updated upstream
 BLUEZ5_UTILS_HEADERS_VERSION = 5.63
+=======
+BLUEZ5_UTILS_HEADERS_VERSION = 5.54
+>>>>>>> Stashed changes
 BLUEZ5_UTILS_HEADERS_SOURCE = bluez-$(BLUEZ5_UTILS_VERSION).tar.xz
 BLUEZ5_UTILS_HEADERS_SITE = $(BR2_KERNEL_MIRROR)/linux/bluetooth
 BLUEZ5_UTILS_HEADERS_DL_SUBDIR = bluez5_utils

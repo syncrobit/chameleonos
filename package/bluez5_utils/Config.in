@@ -89,16 +89,17 @@ config BR2_PACKAGE_BLUEZ5_UTILS_PLUGINS_HOG
 	  Build plugin for HoG (input) profiles.
 
 config BR2_PACKAGE_BLUEZ5_UTILS_PLUGINS_MESH
+<<<<<<< Updated upstream
 	bool "build mesh plugin"
 	depends on BR2_TOOLCHAIN_HEADERS_AT_LEAST_4_12 # ell
+=======
+	bool "build mesh profile"
+>>>>>>> Stashed changes
 	select BR2_PACKAGE_ELL
 	select BR2_PACKAGE_JSON_C
 	select BR2_PACKAGE_READLINE
 	help
 	  Build plugin for Mesh support.
-
-comment "mesh profile needs a toolchain w/ headers >= 4.12"
-	depends on !BR2_TOOLCHAIN_HEADERS_AT_LEAST_4_12
 
 config BR2_PACKAGE_BLUEZ5_UTILS_PLUGINS_MIDI
 	bool "build midi plugin"
@@ -139,6 +140,7 @@ config BR2_PACKAGE_BLUEZ5_UTILS_TEST
 	help
 	  Install the python test scripts from the "test" directory.
 
+<<<<<<< Updated upstream
 config BR2_PACKAGE_BLUEZ5_UTILS_TOOLS_HID2HCI
 	bool "build hid2hci tool"
 	depends on BR2_PACKAGE_HAS_UDEV
@@ -150,6 +152,8 @@ config BR2_PACKAGE_BLUEZ5_UTILS_TOOLS_HID2HCI
 comment "hid2hci tool needs udev /dev management"
 	depends on !BR2_PACKAGE_HAS_UDEV
 
+=======
+>>>>>>> Stashed changes
 endif
 
 comment "bluez5-utils needs a toolchain w/ wchar, threads, headers >= 3.4, dynamic library"
