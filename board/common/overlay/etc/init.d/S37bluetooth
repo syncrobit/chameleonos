@@ -66,7 +66,7 @@ start() {
     rfkill unblock bluetooth &>/dev/null
     
     msg_begin "Starting bluetoothd"
-    ${PROG} &>/dev/null &
+    ${PROG} -E --noplugin=* &>/dev/null &
 
     # wait for adapter to be reported by bluetoothctl
     count=0

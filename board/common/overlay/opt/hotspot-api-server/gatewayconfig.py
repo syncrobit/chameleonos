@@ -16,6 +16,6 @@ async def enable_pair() -> None:
         # gateway_config advertise command always returns exit code 1
         output = (e.stderr or e.stdout).strip()
 
-    if output != 'ok':
-        logging.error(f'gateway_config advertise command: {output}')
-        raise Exception(f'Unexpected gateway-config output: {output}')
+    #if output != 'ok':
+    #    logging.error(f'gateway_config advertise command: {output}')
+    #    raise Exception(f'Unexpected gateway-config output: {output}')
