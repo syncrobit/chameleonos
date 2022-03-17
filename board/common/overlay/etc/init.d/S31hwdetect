@@ -5,6 +5,7 @@ USER_HW_CONF=/data/etc/hardware.conf
 
 ECC_ADDRESS=0x60
 ECC_SLOT=0
+ECC_ONBOARDING_SLOT=
 LGW_RESET_GPIO=17
 HAS_LED_STRIP=false
 PAIR_BUTTON_GPIO=
@@ -52,10 +53,15 @@ start() {
     if [[ ${HAS_GPS} == true ]]; then
         LGW_RESET_GPIO=${OG_LGW_RESET_GPIO}
     fi
+    
+    # In most cases, onboarding slot is the same as the default ECC slot
+    test -z "${ECC_ONBOARDING_SLOT}" && ECC_ONBOARDING_SLOT=${ECC_SLOT}
 
-    # Some ECC models are on 0x58 and have slots 0 and 1 preprovisioned
+    # Some ECC models are on 0x58 and have slots 0 and 1 preprovisioned;
+    # they also break the miner if onboarding slot is set to the default slot, for some reason
     if [[ ${ECC_ADDRESS} == 0x58 ]]; then
         ECC_SLOT=2
+        ECC_ONBOARDING_SLOT=15
     fi
     
     # User settings override detected ones
@@ -65,6 +71,7 @@ start() {
         echo "HAS_GPS=${HAS_GPS}"
         echo "ECC_ADDRESS=${ECC_ADDRESS}"
         echo "ECC_SLOT=${ECC_SLOT}"
+        echo "ECC_ONBOARDING_SLOT=${ECC_ONBOARDING_SLOT}"
         echo "HAS_EXPANDER=${HAS_EXPANDER}"
         echo "HAS_LED_STRIP=${HAS_LED_STRIP}"
         echo "LGW_RESET_GPIO=${LGW_RESET_GPIO}"
