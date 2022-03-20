@@ -88,13 +88,11 @@ watch_prog() {
         test -f ${SOFT_RESTART_FILE} && continue
         
         if ! ps aux | grep ${FULL_PROG} | grep -vq grep; then
-            panic_action miner "service dead"
-            break
+            panic_action miner "service dead" && break
         fi
         free_mb=$(free_space)
         if [[ "${free_mb}" -lt ${min_free_space_watch} ]]; then
-            panic_action miner "low disk space: ${free_mb} MB"
-            break
+            panic_action miner "low disk space: ${free_mb} MB" && break
         fi
     done
 }
@@ -266,7 +264,7 @@ sync_from_snapshot() {
     panic_inhibit
 
     # Increase miner command timeout
-    export NODETOOL_TIMEOUT=1800000
+    export NODETOOL_TIMEOUT=3600000
     
     # Pause miner sync during snapshot load
     ${FULL_PROG} repair sync_pause >/dev/null
