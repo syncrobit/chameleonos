@@ -24,7 +24,6 @@ test -s ${CONF} && source ${CONF}
 declare -A STATE_COLORS=( \
     [powered_up]=white \
     [ip_ready]=yellow \
-    [miner_syncing]=orange \
     [lora_ready]=${LED_STRIP_OK_COLOR} \
     [updating_firmware]=cyan \
     [no_net]=yellow \
@@ -35,7 +34,6 @@ declare -A STATE_COLORS=( \
 declare -A STATE_PATTERNS=( \
     [powered_up]=fade \
     [ip_ready]=steady \
-    [miner_syncing]=progress \
     [lora_ready]=steady \
     [updating_firmware]=fade \
     [no_net]=fade \
@@ -62,8 +60,6 @@ function get_state() {
         echo "updating_firmware"
     elif netstat -anup | grep -q "1680.*pkt_fwd"; then
         echo "lora_ready"
-    elif ps aux | grep snapshot | grep -qv grep; then
-        echo "miner_syncing"
     elif has_network; then
         echo "ip_ready"
     elif [[ $(cat /proc/uptime | grep -oE '^[[:digit:]]+') -gt ${NETWORK_TIMEOUT} ]]; then

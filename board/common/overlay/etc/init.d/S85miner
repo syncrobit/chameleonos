@@ -9,34 +9,19 @@ MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
 SYS_CONF_PATTERN="${MINER_DIR}/releases/*/sys.config"
 USER_CONF="/data/etc/miner_sys.config"
 MINER_CONF="/data/etc/miner.conf"
-MINER_LEGACY_CONF="/data/etc/nat.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
 HELIUM_API_CONF="/var/run/helium-api.conf"
-SSH_TUNNEL_CONF="/data/etc/ssh_tunnel.conf"
 
 WATCH_PROG_INTERVAL=10
-WATCH_LAG_INTERVAL=3600
-WATCH_LAG_INTERVAL_STARTUP=300
-WATCH_P2P_INTERVAL=3600
-WATCH_P2P_INTERVAL_STARTUP=600
 NETWORK_TIMEOUT=3600
-MAX_LAG=250
 MIN_FREE_SPACE=1024 # MB
 MIN_FREE_SPACE_LEEWAY=512 # MB
-SYNC_URL="https://msync.syncrob.it/"
-FORCE_SYNC_FILE="/var/lib/miner/force_sync"
 SOFT_RESTART_FILE="/var/run/miner_soft_restart"
-DEF_PORT=44158
 AUTH_TOKEN="3F4ECC8F2C95134BCA7281C83B879"
-
-PANIC_ON_RELAYED=false
-PANIC_ON_UNREACHABLE=false
-FORCE_SYNC_ENABLED=true
 
 
 test -n "${OS_VERSION}" || source /etc/init.d/base
 
-test -f ${MINER_LEGACY_CONF} && mv ${MINER_LEGACY_CONF} ${MINER_CONF}
 test -s ${MINER_CONF} && source ${MINER_CONF}
 
 source ${HARDWARE_CONF}
@@ -49,37 +34,9 @@ free_space() {
     df -m /data | tail -n1 | tr -s ' ' | cut -d ' ' -f 4
 }
 
-get_lag() {
-    current_height=$(curl --silent ${HELIUM_API_BASE_URL}/blocks/height | jq .data.height | grep -E '^[[:digit:]]+$')
-    test $? == 0 || return
-    own_height=$(${FULL_PROG} info height | awk '{print $2}' | grep -E '^[[:digit:]]+$')
-    test $? == 0 || return
-    lag=$(expr ${current_height} - ${own_height})
-    echo "${lag} ${own_height} ${current_height}"
-}
-
-force_sync() {
-    # $1 - optional own height
-
-    own_height=$1
-    snapshot_height=$(get_snapshot_height | grep -E '^[[:digit:]]+$')
-
-    if [[ -z "${snapshot_height}" ]]; then
-        logger -t miner "force_sync: skipping due to unknown snapshot height"
-        return
-    fi
-    if [[ -n "${own_height}" ]] && [[ ${own_height} -ge ${snapshot_height} ]]; then
-        logger -t miner "force_sync: skipping due to old snapshot (own=${own_height} >= snapshot=${snapshot_height})"
-        return
-    fi
-
-    logger -t miner "force_sync: miner will sync from snapshot at restart"
-    mkdir -p $(dirname ${FORCE_SYNC_FILE}) && touch ${FORCE_SYNC_FILE}
-}
-
 watch_prog() {
     # During normal running, we add an extra leeway when checking for free space,
-    # to make sure the free space check at next reboot will fail and do a force sync.
+    # to make sure the free space check at next reboot will force a disk cleanup.
     min_free_space_watch=$((${MIN_FREE_SPACE} - ${MIN_FREE_SPACE_LEEWAY})) # MB
     while true; do
         sleep ${WATCH_PROG_INTERVAL}
@@ -97,211 +54,13 @@ watch_prog() {
     done
 }
 
-watch_lag() {
-    startup=true
-    while true; do
-        if [[ ${startup} == true ]]; then
-            # Sleep for a smaller amount of time at startup so that we detect unsynced miner earlier
-            sleep ${WATCH_LAG_INTERVAL_STARTUP}
-            startup=false
-        else
-            sleep ${WATCH_LAG_INTERVAL}
-        fi
-        
-        # Don't check lag during syncing
-        if ps aux | grep snapshot | grep -qv grep; then
-            sleep 3600
-            continue
-        fi
-
-        lag_info=$(get_lag)
-        test -n "${lag_info}" || continue
-        lag_info=(${lag_info})
-        lag=${lag_info[0]}
-        own_height=${lag_info[1]}
-        if [[ ${lag} -le ${MAX_LAG} ]]; then
-            logger -t miner "lag is ${lag}"
-            continue
-        fi
-        if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
-            force_sync ${own_height}
-        fi
-        panic_action miner "lag is ${lag} > ${MAX_LAG}"
-    done
-}
-
-watch_p2p() {
-    startup=true
-    while true; do
-        if [[ ${startup} == true ]]; then
-            # Sleep for a smaller amount of time at startup so that we detect relayed miner earlier
-            sleep ${WATCH_P2P_INTERVAL_STARTUP}
-            startup=false
-        else
-            sleep ${WATCH_P2P_INTERVAL}
-        fi
-
-        # Don't check p2p during syncing
-        if ps aux | grep snapshot | grep -qv grep; then
-            continue
-        fi
-
-        listen_addr=$(${FULL_PROG} peer book -s | grep "listen_addrs (prioritized)" -A2 | tail -n1 | tr -d "|" | tr -d " ")
-        test -n "${listen_addr}" || continue
-        if [[ "${listen_addr}" =~ ^/ip4/([0-9.]+)/tcp/([0-9]+)$ ]]; then
-            listen_ip=${BASH_REMATCH[1]}
-            listen_port=${BASH_REMATCH[2]}
-            if [[ ${PANIC_ON_UNREACHABLE} == true ]]; then
-                body="{\"ip_address\":\"${listen_ip}\",\"port\":${listen_port}}"
-                url="https://api.syncrob.it/minerlistencheck/"
-                output=$(curl --fail -m 120 --silent --show-error --location-trusted -H "Authorization: ${AUTH_TOKEN}" "${url}" -d "${body}")
-                status=$(jq -r .status <<< "${output}")
-                if [[ "${status}" == "Port open" ]]; then
-                    logger -t miner "miner is reachable at ${listen_ip}:${listen_port}"
-                else
-                    panic_action miner "miner is unreachable at ${listen_ip}:${listen_port}"
-                fi
-            fi
-        else
-            if [[ ${PANIC_ON_RELAYED} == true ]]; then
-                # Only panic on relayed if SSH tunnel is not configured
-                if [[ -s ${SSH_TUNNEL_CONF} ]]; then
-                    logger -t miner "connection is relayed: ${listen_addr}"
-                    soft_restart
-                else
-                    panic_action miner "connection is relayed: ${listen_addr}"
-                fi
-            else
-                logger -t miner "connection is relayed: ${listen_addr}"
-            fi
-        fi
-    done
-}
-
-get_snapshot_height() {
-    if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
-        return
-    fi
-    if ! block_height=$(echo "${data}" | jq -r .fileUri | grep -oE '[[:digit:]]+'); then
-        return
-    fi
-    echo $block_height
-}
-
-sync_from_snapshot() {
-    logger -t miner "synchronizing miner data"
-
-    echo "-------- $(date) --------"
-    
-    # Kill any existing sync session
-    msg_begin "Cleaning up any existing sync session"
-    ps aux | grep curl | grep snapshot.bin | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
-    ps aux | grep 'snapshot load' | sed -e 's/^\s//' | cut -d ' ' -f 1 | xargs -r kill &>/dev/null
-    rm -f /data/snapshot.bin*
-    msg_done
-    
-    msg_begin "Fetching snapshot metadata from ${SYNC_URL}"
-    if ! data=$(curl --fail -m 300 --silent --show-error --location-trusted ${SYNC_URL}); then
-        msg_fail "metadata download failed"
-        return 1
-    fi
-    msg_done
-    
-    msg_begin "Parsing snapshot metadata"
-    if ! block_height=$(jq -r '.blockHeight' <<< ${data}); then
-        msg_fail "metadata parsing failed"
-        return 1
-    fi
-    if ! file=$(jq -r '.fileUri' <<< ${data}); then
-        msg_fail "metadata parsing failed"
-        return 1
-    fi
-    if ! ark=$(jq -r '.arkUri' <<< ${data}); then
-        msg_fail "metadata parsing failed"
-        return 1
-    fi
-    if ! check_sum=$(jq -r '.checkSum.md5' <<< ${data}); then
-        msg_fail "metadata parsing failed"
-        return 1
-    fi
-    msg_done
-    
-    msg_begin "Downloading snapshot from ${ark}"
-    if curl --fail -m 1800 --silent --show-error --location-trusted "${ark}" -o /data/snapshot.bin.xz; then
-        msg_done
-        msg_begin "Extracting snapshot"
-        if ! unxz /data/snapshot.bin.xz; then
-            msg_fail
-            return 1
-        fi
-        msg_done
-    fi
-    
-    msg_begin "Checking compressed snapshot"
-    if ! [[ -s /data/snapshot.bin ]]; then
-        msg_fail "failed"
-        msg_begin "Retrying with uncompressed snapshot"
-        if ! curl --fail -m 1800 --silent --show-error --location-trusted "${file}" -o /data/snapshot.bin; then
-            msg_fail
-            return 1
-        fi
-        msg_done
-    else
-        msg_done
-    fi
-
-    msg_begin "Verifying checksum"
-    local_check_sum=$(md5sum /data/snapshot.bin | awk '{print $1}')
-    if [[ "${local_check_sum}" != "${check_sum}" ]]; then
-        msg_fail
-        return 1
-    fi
-    msg_done
-    
-    msg_begin "Loading snapshot into miner"
-    
-    # Avoid panic reboots during snapshot load
-    panic_inhibit
-
-    # Increase miner command timeout
-    export NODETOOL_TIMEOUT=5400000
-    
-    # Pause miner sync during snapshot load
-    ${FULL_PROG} repair sync_pause >/dev/null
-
-    # Ignore errors from snapshot load command; it actually does the job in spite of reported errors
-    if ! ${FULL_PROG} snapshot load /data/snapshot.bin &>/dev/null; then
-        msg_fail
-        return 1
-    fi
-
-    # Resume miner sync after snapshot load
-    ${FULL_PROG} repair sync_resume >/dev/null
-
-    msg_done
-}
-
-sync_background() {
-    if ! sync_from_snapshot &>>/var/log/miner_sync.log; then
-        rm -rf /var/lib/miner
-        panic_action miner "sync from snapshot failed"
-        return 1
-    fi
-}
-
 start() {
-    # If we don't have enough storage space, remove miner data and do a force sync
+    # If we don't have enough storage space, remove miner data and start with clean data dir
     free_mb=$(free_space)
     if [[ "${free_mb}" -lt ${MIN_FREE_SPACE} ]]; then
         msg_begin "Removing miner data due to low space"
         rm -rf /var/lib/miner
         msg_done "${free_mb} MB"
-    fi
-    
-    if [[ -f ${FORCE_SYNC_FILE} ]]; then
-        msg_begin "Removing miner data due to forced sync"
-        rm -rf /var/lib/miner
-        msg_done
     fi
     
     msg_begin "Starting miner"
@@ -353,72 +112,22 @@ start() {
         mkdir -p /var/run/miner_update
         cp ${MINER_DIR}/update/genesis.${helium_network} /var/run/miner_update/genesis
 
-        if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
-            # Disable internal snapshot loading if we're going to use the fast sync
-            sed -ri 's;snapshots.helium.wtf;snapshots.helium.stf;' ${RELX_CONFIG_PATH}
-            sed -ri 's;fetch_latest_from_snap_source, true;fetch_latest_from_snap_source, false;' ${RELX_CONFIG_PATH}
-        fi
-                
-        # Impose a snapshot memory limit
-        sed -ri 's;\{honor_quick_sync;\{snapshot_memory_limit, 400\},\n   \{honor_quick_sync;' ${RELX_CONFIG_PATH}
-        
         # Adjust API base URL
         sed -ri "s;https://api.helium.io/v1;${HELIUM_API_BASE_URL};" ${RELX_CONFIG_PATH}
 
-        # If user swarm key is present, configure miner to use it instead of ECC
         if [[ -s ${USER_SWARM_KEY} ]]; then
+            # If user swarm key is present, configure miner to use it instead of ECC
             sed -ri 's/(.*key_slot.*)/%%\1/' ${RELX_CONFIG_PATH}
 
-            # If swarm key has changed, we need to force sync
-            new_sk_hash=$(md5sum ${USER_SWARM_KEY} | cut -d ' ' -f 1)
-            test -s ${MINER_SWARM_KEY} && old_sk_hash=$(md5sum ${MINER_SWARM_KEY} | cut -d ' ' -f 1)
-            
             # Copy user swarm key to miner swarm key location
             mkdir -p $(dirname ${MINER_SWARM_KEY})
             cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
-            
-        # Configure ECC params
         else
+            # Configure ECC params
             sed -ri "s/key_slot, [[:digit:]]+/key_slot, ${ECC_SLOT}/g" ${RELX_CONFIG_PATH}
             sed -ri "s/onboarding_key_slot, [[:digit:]]+/onboarding_key_slot, ${ECC_ONBOARDING_SLOT}/g" ${RELX_CONFIG_PATH}
             sed -ri "s/address, 16#[[:digit:]]+/address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
             sed -ri "s/i2c-1/i2c-${I2C_BUS}/g" ${RELX_CONFIG_PATH}
-        fi
-        
-        # Configure P2P
-        if [[ -n "${MAX_INBOUND_CONNECTIONS}" ]]; then
-            sed -ri "s/max_inbound_connections, [0-9]+/max_inbound_connections, ${MAX_INBOUND_CONNECTIONS}/g" ${RELX_CONFIG_PATH}
-        fi
-        if [[ -n "${OUTBOUND_GOSSIP_CONNECTIONS}" ]]; then
-            sed -ri "s/outbound_gossip_connections, [0-9]+/outbound_gossip_connections, ${OUTBOUND_GOSSIP_CONNECTIONS}/g" ${RELX_CONFIG_PATH}
-        fi
-        
-        # Manual NAT mapping
-        if [[ -n "${NAT_EXTERNAL_PORT}" ]]; then
-            NAT_INTERNAL_PORT=${NAT_INTERNAL_PORT:-${DEF_PORT}}
-            if [[ -z "${NAT_EXTERNAL_IP}" ]]; then
-                NAT_EXTERNAL_IP=$(curl --silent --show-error --location-trusted --fail -4 https://ifconfig.co)
-            fi
-            if [[ -z "${NAT_INTERNAL_IP}" ]]; then
-                eth_addr=$(
-                    ip addr show dev eth0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
-                    cut -d ' ' -f 2 | grep -iv fe80 | sed 'N;s/\n/, /'
-                )
-                wlan_addr=$(
-                    ip addr show dev wlan0 2>/dev/null | grep 'inet ' | tr -s ' ' | sed -r 's/^\s+//' | \
-                    cut -d ' ' -f 2 | grep -iv fe80 | sed 'N;s/\n/, /'
-                )
-                addr=${eth_addr:-${wlan_addr}}
-                NAT_INTERNAL_IP=$(cut -d / -f 1 <<< ${addr})
-            fi
-            NAT_INTERNAL_IP=$(tr . , <<< ${NAT_INTERNAL_IP})
-            NAT_EXTERNAL_IP=$(tr . , <<< ${NAT_EXTERNAL_IP})
-            mapping="#{{{${NAT_INTERNAL_IP}},${NAT_INTERNAL_PORT}} => {{${NAT_EXTERNAL_IP}},${NAT_EXTERNAL_PORT}}}}"
-            sed -ri "s/(\s+)(\{node_aliases,)/\1{nat_map, ${mapping},\n\1\2/" ${RELX_CONFIG_PATH}
-        fi
-        
-        if [[ -n "${NAT_INTERNAL_PORT}" ]]; then
-            sed -ri "s,/ip4/0.0.0.0/tcp/44158,/ip4/0.0.0.0/tcp/${NAT_INTERNAL_PORT}," ${RELX_CONFIG_PATH}
         fi
     fi
 
@@ -439,8 +148,6 @@ start() {
     # Start the watchers
     if [[ "$1" != soft ]]; then
         watch_prog &
-        watch_lag &
-        watch_p2p &
         disown
     fi
 

@@ -137,12 +137,6 @@ start() {
     
     count=0
     while true; do
-        # Don't ask miner for region while syncing
-        if ps aux | grep snapshot | grep -qv grep; then
-            sleep 5
-            continue
-        fi
-
         reg=$(find_reg)
         if [[ -z "${reg}" ]]; then
             count=$((count + 60))

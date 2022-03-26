@@ -1,7 +1,0 @@
-#!/bin/bash
-
-FORCE_SYNC_FILE="/var/lib/miner/force_sync"
-
-mkdir -p $(dirname ${FORCE_SYNC_FILE})
-touch ${FORCE_SYNC_FILE}
-service miner restart
