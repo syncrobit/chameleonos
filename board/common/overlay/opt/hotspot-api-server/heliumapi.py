@@ -62,8 +62,3 @@ async def is_reachable() -> bool:
         return False
 
     return 'data' in response
-
-
-async def get_blockchain_height() -> int:
-    result = await api_request('GET', '/blocks/height')
-    return result['data']['height']
