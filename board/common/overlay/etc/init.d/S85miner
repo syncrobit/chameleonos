@@ -331,7 +331,7 @@ start() {
     
     # Determine miner version & helium network
     miner_version=$(basename $(ls -d ${MINER_DIR}/releases/*/))
-    if [[ "${miner_version}" == testnet_* ]]; 
+    if [[ "${miner_version}" == testnet_* ]]; then
         helium_network=testnet
     else
         helium_network=mainnet
@@ -372,7 +372,6 @@ start() {
             # If swarm key has changed, we need to force sync
             new_sk_hash=$(md5sum ${USER_SWARM_KEY} | cut -d ' ' -f 1)
             test -s ${MINER_SWARM_KEY} && old_sk_hash=$(md5sum ${MINER_SWARM_KEY} | cut -d ' ' -f 1)
-            test "${old_sk_hash}" == "${new_sk_hash}" || sync_needed="true"
             
             # Copy user swarm key to miner swarm key location
             mkdir -p $(dirname ${MINER_SWARM_KEY})
@@ -446,7 +445,6 @@ start() {
     fi
 
     test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
-    test -d "/var/lib/miner/blockchain.db" || sync_needed="true"
 
     # Wait for a network connection
     msg_begin "Waiting for network connection"
@@ -457,13 +455,6 @@ start() {
         return 1
     fi
     msg_done "connected"
-
-    if [[ "${sync_needed}" == "true" ]] && [[ ${FORCE_SYNC_ENABLED} == true ]]; then
-        msg_begin "Synchronizing miner data"
-        sync_background &>/dev/null &
-        disown
-        msg_done "background"
-    fi
 }
 
 stop() {

@@ -1,0 +1,11 @@
+diff -uNr miner-testnet_2022.03.25.0.old/Makefile miner-testnet_2022.03.25.0.new/Makefile
+--- miner-testnet_2022.03.25.0.old/Makefile	2022-03-25 21:52:19.000000000 +0200
++++ miner-testnet_2022.03.25.0.new/Makefile	2022-03-26 20:03:25.244866066 +0200
+@@ -13,6 +13,7 @@
+ 
+ GATEWAY_RS_VSN ?= "e36e9ffd1fe375a66cdcf46ceafc73519e4e53e0"
+ GWMP_MUX_VSN ?= "v0.9.4"
++SEMTECH_UDP_VSN ?= $(GWMP_MUX_VSN)
+ 
+ all: compile
+ 

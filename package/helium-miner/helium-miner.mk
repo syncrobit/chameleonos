@@ -48,8 +48,8 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     cd $(TARGET_DIR)/opt/miner; \
     tar xvf $(@D)/_build/prod/rel/*/*.tar.gz; \
     mkdir -p update; \
-    wget https://snapshots.helium.wtf/genesis.mainnet -o /opt/docker/update/genesis.mainnet; \
-    wget https://snapshots.helium.wtf/genesis.testnet -o /opt/docker/update/genesis.testnet; \
+    wget https://snapshots.helium.wtf/genesis.mainnet -o update/genesis.mainnet; \
+    wget https://snapshots.helium.wtf/genesis.testnet -o update/genesis.testnet; \
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
     
     rm -rf $(TARGET_DIR)/opt/miner/$${HOME}
