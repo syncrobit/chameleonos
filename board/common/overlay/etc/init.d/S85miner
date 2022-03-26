@@ -264,7 +264,7 @@ sync_from_snapshot() {
     panic_inhibit
 
     # Increase miner command timeout
-    export NODETOOL_TIMEOUT=3600000
+    export NODETOOL_TIMEOUT=5400000
     
     # Pause miner sync during snapshot load
     ${FULL_PROG} repair sync_pause >/dev/null
