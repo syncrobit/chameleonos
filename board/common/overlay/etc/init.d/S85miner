@@ -1,12 +1,12 @@
 #!/bin/bash
 
-WORK_DIR="/opt/miner"
+MINER_DIR="/opt/miner"
 PROG="bin/miner"
-FULL_PROG=${WORK_DIR}/${PROG}
+FULL_PROG=${MINER_DIR}/${PROG}
 LOG="/var/log/miner/startup.log"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
 MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
-SYS_CONF_PATTERN="/opt/miner/releases/*/sys.config"
+SYS_CONF_PATTERN="${MINER_DIR}/releases/*/sys.config"
 USER_CONF="/data/etc/miner_sys.config"
 MINER_CONF="/data/etc/miner.conf"
 MINER_LEGACY_CONF="/data/etc/nat.conf"
@@ -318,7 +318,7 @@ start() {
         return 1
     fi
 
-    cd ${WORK_DIR}
+    cd ${MINER_DIR}
     mkdir -p $(dirname ${LOG})
     
     export RUNNER_LOG_DIR="/var/log/miner"
@@ -328,6 +328,14 @@ start() {
     export RELX_CONFIG_PATH="/var/run/miner_sys.config"
     test -n "${REGION_OVERRIDE}" && export ${REGION_OVERRIDE}
     ulimit -n 32768
+    
+    # Determine miner version & helium network
+    miner_version=$(basename $(ls -d ${MINER_DIR}/releases/*/))
+    if [[ "${miner_version}" == testnet_* ]]; 
+        helium_network=testnet
+    else
+        helium_network=mainnet
+    fi
     
     # Use custom config, if present
     if [[ -s ${USER_CONF} ]]; then
@@ -339,6 +347,11 @@ start() {
         # Adjust dirs
         sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
         sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
+        sed -ri 's;update_dir, ".*";update_dir, "/var/run/miner_update";' ${RELX_CONFIG_PATH}
+        
+        # Copy genesis block
+        mkdir -p /var/run/miner_update
+        cp ${MINER_DIR}/update/genesis.${helium_network} /var/run/miner_update/genesis
 
         if [[ ${FORCE_SYNC_ENABLED} == true ]]; then
             # Disable internal snapshot loading if we're going to use the fast sync
