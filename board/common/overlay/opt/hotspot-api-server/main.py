@@ -275,7 +275,6 @@ async def get_config(request: web.Request) -> web.Response:
 
         'remote_enabled': remote.is_enabled(),
         'external_wifi_antenna': system.is_ext_wifi_antenna_enabled(),
-        'periodic_reboot': await system.is_periodic_reboot_enabled()
     }
 
     if request.query.get('pretty') == 'true':
@@ -289,7 +288,6 @@ async def get_config(request: web.Request) -> web.Response:
         config['TX Power'] = f"{config.pop('pf_tx_power')} dBm"
         config['Remote Control Enabled'] = ['no', 'yes'][config.pop('remote_enabled')]
         config['External Wi-Fi Antenna'] = ['no', 'yes'][config.pop('external_wifi_antenna')]
-        config['Periodic Reboot'] = ['no', 'yes'][config.pop('periodic_reboot')]
 
     return web.json_response(config)
 
