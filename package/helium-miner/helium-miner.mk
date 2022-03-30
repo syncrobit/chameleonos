@@ -47,6 +47,7 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     mkdir -p $(TARGET_DIR)/opt/miner; \
     cd $(TARGET_DIR)/opt/miner; \
     tar xvf $(@D)/_build/prod/rel/*/*.tar.gz; \
+    cp $(@D)/config/testnet-sys.config $(TARGET_DIR)/opt/miner/releases/*/testnet-sys.config; \
     mkdir -p update; \
     wget https://snapshots.helium.wtf/genesis.mainnet -o update/genesis.mainnet; \
     wget https://snapshots.helium.wtf/genesis.testnet -o update/genesis.testnet; \

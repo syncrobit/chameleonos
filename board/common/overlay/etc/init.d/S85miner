@@ -6,7 +6,8 @@ FULL_PROG=${MINER_DIR}/${PROG}
 LOG="/var/log/miner/startup.log"
 USER_SWARM_KEY="/var/lib/user_swarm_key"
 MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
-SYS_CONF_PATTERN="${MINER_DIR}/releases/*/sys.config"
+SYS_CONF_MAINNET_PATTERN="${MINER_DIR}/releases/*/sys.config"
+SYS_CONF_TESTNET_PATTERN="${MINER_DIR}/releases/*/sys.config"
 USER_CONF="/data/etc/miner_sys.config"
 MINER_CONF="/data/etc/miner.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
@@ -100,7 +101,11 @@ start() {
     if [[ -s ${USER_CONF} ]]; then
         cp ${USER_CONF} ${RELX_CONFIG_PATH}
     else
-        SYS_CONF=$(ls -1 ${SYS_CONF_PATTERN} | head -n 1)  # Just use the first occurrence
+        if [[ "${helium_network}" == mainnet ]]; then
+            SYS_CONF=$(ls -1 ${SYS_CONF_MAINNET_PATTERN} | head -n 1)  # Just use the first occurrence
+        else
+            SYS_CONF=$(ls -1 ${SYS_CONF_TESTNET_PATTERN} | head -n 1)  # Just use the first occurrence
+        fi
         cp ${SYS_CONF} ${RELX_CONFIG_PATH}
         
         # Adjust dirs
