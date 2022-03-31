@@ -24,10 +24,16 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
 endef
 
 define HELIUM_MINER_UPDATE_VERSION
-    sed -i 's/git}/"-$(HELIUM_MINER_VERSION)"}/g' $(@D)/rebar.config
+    sed -i 's/git}/"$(HELIUM_MINER_VERSION)"}/g' $(@D)/rebar.config
 endef
             
 define HELIUM_MINER_BUILD_CMDS
+    (cd $(@D); \
+            CARGO_HOME=$(HOST_DIR)/share/cargo \
+            CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
+            $(TARGET_MAKE_ENV) \
+            $(MAKE) external_svcs \
+    )
     (cd $(@D); ERTS_VERSION=$$(ls -d $(STAGING_DIR)/usr/lib/erlang/erts-* | head -n1 | xargs basename | grep -oE [0-9.]+); \
             CC="$(TARGET_CC)" \
             CXX="$(TARGET_CXX)" \
@@ -40,7 +46,6 @@ define HELIUM_MINER_BUILD_CMDS
             $(TARGET_MAKE_ENV) \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
-            $(TARGET_MAKE_ENV) $(MAKE) external_svcs && \
             ./rebar3 as $(HELIUM_MINER_BUILD_AS) tar -n miner -v -$(HELIUM_MINER_VERSION) \
     )
 endef
