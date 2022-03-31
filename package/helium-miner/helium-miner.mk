@@ -13,7 +13,7 @@ HELIUM_MINER_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_FETCH_PATCH_DEPS
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_UPDATE_VERSION
 
-HELIUM_MINER_BUILD_AS = docker_testnet
+HELIUM_MINER_BUILD_AS = prod
 
 define HELIUM_MINER_FETCH_PATCH_DEPS
     (cd $(@D); $(TARGET_MAKE_ENV) ./rebar3 get-deps)
@@ -40,6 +40,7 @@ define HELIUM_MINER_BUILD_CMDS
             $(TARGET_MAKE_ENV) \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
+            $(TARGET_MAKE_ENV) $(MAKE) external_svcs && \
             ./rebar3 as $(HELIUM_MINER_BUILD_AS) tar -n miner -v -$(HELIUM_MINER_VERSION) \
     )
 endef
