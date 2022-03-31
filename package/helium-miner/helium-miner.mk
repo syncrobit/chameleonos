@@ -13,6 +13,8 @@ HELIUM_MINER_DEPENDENCIES = dbus gmp libsodium erlang host-rust-bin
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_FETCH_PATCH_DEPS
 HELIUM_MINER_POST_EXTRACT_HOOKS += HELIUM_MINER_UPDATE_VERSION
 
+HELIUM_MINER_BUILD_AS = docker_testnet
+
 define HELIUM_MINER_FETCH_PATCH_DEPS
     (cd $(@D); $(TARGET_MAKE_ENV) ./rebar3 get-deps)
 
@@ -38,7 +40,7 @@ define HELIUM_MINER_BUILD_CMDS
             $(TARGET_MAKE_ENV) \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
-            ./rebar3 as prod tar -n miner \
+            ./rebar3 as $(HELIUM_MINER_BUILD_AS) tar -n miner -v -$(HELIUM_MINER_VERSION) \
     )
 endef
 
@@ -46,7 +48,7 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     rm -rf $(TARGET_DIR)/opt/miner; \
     mkdir -p $(TARGET_DIR)/opt/miner; \
     cd $(TARGET_DIR)/opt/miner; \
-    tar xvf $(@D)/_build/prod/rel/*/*.tar.gz; \
+    tar xvf $(@D)/_build/$(HELIUM_MINER_BUILD_AS)/rel/miner/*.tar.gz; \
     cp $(@D)/config/testnet-sys.config $(TARGET_DIR)/opt/miner/releases/*/; \
     mkdir -p update; \
     wget https://snapshots.helium.wtf/genesis.mainnet -o update/genesis.mainnet; \
