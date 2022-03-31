@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-HELIUM_MINER_VERSION = testnet_2022.03.25.0
+HELIUM_MINER_VERSION = testnet_2022.03.31.0
 HELIUM_MINER_SITE = $(call github,helium,miner,$(HELIUM_MINER_VERSION))
 HELIUM_MINER_LICENSE = Apache-2.0
 HELIUM_MINER_LICENSE_FILES = LICENSE
@@ -24,7 +24,7 @@ define HELIUM_MINER_FETCH_PATCH_DEPS
 endef
 
 define HELIUM_MINER_UPDATE_VERSION
-    sed -i 's/git}/"$(HELIUM_MINER_VERSION)"}/g' $(@D)/rebar.config
+    sed -i 's/git}/"-$(HELIUM_MINER_VERSION)"}/g' $(@D)/rebar.config
 endef
             
 define HELIUM_MINER_BUILD_CMDS
