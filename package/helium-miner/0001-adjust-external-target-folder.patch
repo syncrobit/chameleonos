@@ -1,0 +1,12 @@
+diff -uNr miner-orig/Makefile miner-new/Makefile
+--- miner-orig/Makefile	2022-03-31 15:52:07.000000000 +0300
++++ miner-new/Makefile	2022-03-31 22:37:05.898081832 +0300
+@@ -114,7 +114,7 @@
+ 
+ define install_rust_bin
+ 	@mkdir -p ./priv/$(3)
+-	@mv ./external/$(1)/target/release/$(2) ./priv/$(3)/ 2>/dev/null || true
++	@mv ./external/$(1)/target/aarch64-unknown-linux-gnu/release/$(2) ./priv/$(3)/ 2>/dev/null || true
+ endef
+ 
+ define remove

@@ -31,6 +31,7 @@ define HELIUM_MINER_BUILD_CMDS
     (cd $(@D); \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
+            RUSTFLAGS="-C target-feature=-crt-static" \
             $(TARGET_MAKE_ENV) \
             $(MAKE) external_svcs \
     )
@@ -43,9 +44,10 @@ define HELIUM_MINER_BUILD_CMDS
             ERLANG_ROCKSDB_OPTS="-DWITH_BUNDLE_SNAPPY=ON -DWITH_BUNDLE_LZ4=ON" \
             ERL_COMPILER_OPTIONS="[deterministic]" \
             ERTS_INCLUDE_DIR="$(STAGING_DIR)/usr/lib/erlang/erts-$${ERTS_VERSION}/include" \
-            $(TARGET_MAKE_ENV) \
             CARGO_HOME=$(HOST_DIR)/share/cargo \
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
+            RUSTFLAGS="-C target-feature=-crt-static" \
+            $(TARGET_MAKE_ENV) \
             ./rebar3 as $(HELIUM_MINER_BUILD_AS) tar -n miner -v -$(HELIUM_MINER_VERSION) \
     )
 endef
