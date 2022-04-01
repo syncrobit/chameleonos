@@ -1,0 +1,4 @@
+config BR2_PACKAGE_HELIUM_GATEWAY_MFR_RS
+	bool "helium-gateway-mfr-rs"
+	help
+	  https://github.com/helium/gateway-mfr-rs

@@ -640,6 +640,7 @@ menu "Erlang libraries/modules"
 	source "package/helium-packet-forwarder-sx1301/Config.in"
 	source "package/helium-packet-forwarder-sx1302/Config.in"
 	source "package/helium-gateway-mfr/Config.in"
+	source "package/helium-gateway-mfr-rs/Config.in"
 endmenu
 endif
 	source "package/execline/Config.in"
