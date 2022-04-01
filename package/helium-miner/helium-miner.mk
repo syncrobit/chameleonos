@@ -48,7 +48,7 @@ define HELIUM_MINER_BUILD_CMDS
             CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu \
             RUSTFLAGS="-C target-feature=-crt-static" \
             $(TARGET_MAKE_ENV) \
-            ./rebar3 as $(HELIUM_MINER_BUILD_AS) tar -n miner -v -$(HELIUM_MINER_VERSION) \
+            ./rebar3 as $(HELIUM_MINER_BUILD_AS) tar -n miner -v $(HELIUM_MINER_VERSION) \
     )
 endef
 
