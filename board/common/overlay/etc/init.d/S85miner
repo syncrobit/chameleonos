@@ -8,7 +8,6 @@ USER_SWARM_KEY="/var/lib/user_swarm_key"
 MINER_SWARM_KEY="/var/lib/miner/miner/swarm_key"
 SYS_CONF_MAINNET_PATTERN="${MINER_DIR}/releases/*/sys.config"
 SYS_CONF_TESTNET_PATTERN="${MINER_DIR}/releases/*/testnet-sys.config"
-USER_CONF="/data/etc/miner_sys.config"
 MINER_CONF="/data/etc/miner.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
 HELIUM_API_CONF="/var/run/helium-api.conf"
@@ -86,56 +85,45 @@ start() {
     export ERL_FULLSWEEP_AFTER=5
     export HOME=/var/run
     export RELX_CONFIG_PATH="/var/run/miner_sys.config"
-    test -n "${REGION_OVERRIDE}" && export ${REGION_OVERRIDE}
     ulimit -n 32768
+    
+    # Configure gateway through env vars
+    test -n "${REGION_OVERRIDE}" && { export ${REGION_OVERRIDE}; export GW_REGION=${REGION_OVERRIDE}; }
+    if [[ -s ${USER_SWARM_KEY} ]]; then
+        export GW_KEYPAIR=${USER_SWARM_KEY}
+    else
+        ECC_ADDRESS_DEC=$(printf %d ${ECC_ADDRESS})
+        export GW_KEYPAIR="ecc://i2c-${I2C_BUS}:${ECC_ADDRESS_DEC}?slot=${ECC_SLOT}&network=${helium_network}"
+    fi
     
     # Determine miner version & helium network
     miner_version=$(basename $(ls -d ${MINER_DIR}/releases/*/))
-    if [[ "${miner_version}" == testnet_* ]]; then
+    if [[ "${miner_version}" == *testnet_* ]]; then
         helium_network=testnet
     else
         helium_network=mainnet
     fi
     
-    # Use custom config, if present
-    if [[ -s ${USER_CONF} ]]; then
-        cp ${USER_CONF} ${RELX_CONFIG_PATH}
+    if [[ "${helium_network}" == mainnet ]]; then
+        SYS_CONF=$(ls -1 ${SYS_CONF_MAINNET_PATTERN} | head -n 1)  # Just use the first occurrence
     else
-        if [[ "${helium_network}" == mainnet ]]; then
-            SYS_CONF=$(ls -1 ${SYS_CONF_MAINNET_PATTERN} | head -n 1)  # Just use the first occurrence
-        else
-            SYS_CONF=$(ls -1 ${SYS_CONF_TESTNET_PATTERN} | head -n 1)  # Just use the first occurrence
-        fi
-        cp ${SYS_CONF} ${RELX_CONFIG_PATH}
-        
-        # Adjust dirs
-        sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
-        sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
-        sed -ri 's;update_dir, ".*";update_dir, "/var/run/miner_update";' ${RELX_CONFIG_PATH}
-        
-        # Copy genesis block
-        mkdir -p /var/run/miner_update
-        cp ${MINER_DIR}/update/genesis.${helium_network} /var/run/miner_update/genesis
-
-        # Adjust API base URL
-        sed -ri "s;https://api.helium.io/v1;${HELIUM_API_BASE_URL};" ${RELX_CONFIG_PATH}
-
-        if [[ -s ${USER_SWARM_KEY} ]]; then
-            # If user swarm key is present, configure miner to use it instead of ECC
-            sed -ri 's/(.*key_slot.*)/%%\1/' ${RELX_CONFIG_PATH}
-
-            # Copy user swarm key to miner swarm key location
-            mkdir -p $(dirname ${MINER_SWARM_KEY})
-            cp ${USER_SWARM_KEY} ${MINER_SWARM_KEY}
-        else
-            # Configure ECC params
-            sed -ri "s/key_slot, [[:digit:]]+/key_slot, ${ECC_SLOT}/g" ${RELX_CONFIG_PATH}
-            sed -ri "s/onboarding_key_slot, [[:digit:]]+/onboarding_key_slot, ${ECC_ONBOARDING_SLOT}/g" ${RELX_CONFIG_PATH}
-            sed -ri "s/address, 16#[[:digit:]]+/address, 16#${ECC_ADDRESS:2}/" ${RELX_CONFIG_PATH}
-            sed -ri "s/i2c-1/i2c-${I2C_BUS}/g" ${RELX_CONFIG_PATH}
-        fi
+        SYS_CONF=$(ls -1 ${SYS_CONF_TESTNET_PATTERN} | head -n 1)  # Just use the first occurrence
     fi
+    cp ${SYS_CONF} ${RELX_CONFIG_PATH}
+    
+    # Adjust dirs
+    sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
+    sed -ri 's;onboarding_dir, ".*";onboarding_dir, "/boot";' ${RELX_CONFIG_PATH}
+    sed -ri 's;update_dir, ".*";update_dir, "/var/run/miner_update";' ${RELX_CONFIG_PATH}
+    sed -ri 's;log_root, ".*";log_root, "/var/log/miner";' ${RELX_CONFIG_PATH}
+    
+    # Copy genesis block
+    mkdir -p /var/run/miner_update
+    cp ${MINER_DIR}/update/genesis.${helium_network} /var/run/miner_update/genesis
 
+    # Adjust API base URL
+    sed -ri "s;https://api.helium.io/v1;${HELIUM_API_BASE_URL};" ${RELX_CONFIG_PATH}
+    
     # We need the public key information for gateway config & more
     public_keys=$(${PROG} print_keys)
     if [[ $? != 0 ]]; then

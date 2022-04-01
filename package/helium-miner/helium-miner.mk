@@ -64,6 +64,7 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
     
     rm -rf $(TARGET_DIR)/opt/miner/$${HOME}
+    rm -rf $(TARGET_DIR)/etc/helium_gateway
     cp $(@D)/config/com.helium.Miner.conf $(TARGET_DIR)/etc/dbus-1/system.d
 endef
 
