@@ -87,15 +87,6 @@ start() {
     export RELX_CONFIG_PATH="/var/run/miner_sys.config"
     ulimit -n 32768
     
-    # Configure gateway through env vars
-    test -n "${REGION_OVERRIDE}" && { export ${REGION_OVERRIDE}; export GW_REGION=${REGION_OVERRIDE}; }
-    if [[ -s ${USER_SWARM_KEY} ]]; then
-        export GW_KEYPAIR=${USER_SWARM_KEY}
-    else
-        ECC_ADDRESS_DEC=$(printf %d ${ECC_ADDRESS})
-        export GW_KEYPAIR="ecc://i2c-${I2C_BUS}:${ECC_ADDRESS_DEC}?slot=${ECC_SLOT}&network=${helium_network}"
-    fi
-    
     # Determine miner version & helium network
     miner_version=$(basename $(ls -d ${MINER_DIR}/releases/*/))
     if [[ "${miner_version}" == *testnet_* ]]; then
@@ -110,6 +101,15 @@ start() {
         SYS_CONF=$(ls -1 ${SYS_CONF_TESTNET_PATTERN} | head -n 1)  # Just use the first occurrence
     fi
     cp ${SYS_CONF} ${RELX_CONFIG_PATH}
+    
+    # Configure gateway through env vars
+    test -n "${REGION_OVERRIDE}" && { export ${REGION_OVERRIDE}; export GW_REGION=${REGION_OVERRIDE}; }
+    if [[ -s ${USER_SWARM_KEY} ]]; then
+        export GW_KEYPAIR=${USER_SWARM_KEY}
+    else
+        ECC_ADDRESS_DEC=$(printf %d ${ECC_ADDRESS})
+        export GW_KEYPAIR="ecc://i2c-${I2C_BUS}:${ECC_ADDRESS_DEC}?slot=${ECC_SLOT}&network=${helium_network}"
+    fi
     
     # Adjust dirs
     sed -ri 's;base_dir, ".*";base_dir, "/var/lib/miner";' ${RELX_CONFIG_PATH}
