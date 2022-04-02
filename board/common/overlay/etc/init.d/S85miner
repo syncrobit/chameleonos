@@ -117,6 +117,10 @@ start() {
     sed -ri 's;update_dir, ".*";update_dir, "/var/run/miner_update";' ${RELX_CONFIG_PATH}
     sed -ri 's;log_root, ".*";log_root, "/var/log/miner";' ${RELX_CONFIG_PATH}
     
+    # ECC configuration
+    ECC_LINE="{key, {ecc, [{key_slot, ${ECC_SLOT}}, {onboarding_key_slot, ${ECC_ONBOARDING_SLOT}}, {bus, \"i2c-${I2C_BUS}\"}, {address, 16#${ECC_ADDRESS:2}}]}},"
+    sed -ri "s/\{key,.*/${ECC_LINE}/g" ${RELX_CONFIG_PATH}
+    
     # Copy genesis block
     mkdir -p /var/run/miner_update
     cp ${MINER_DIR}/update/genesis.${helium_network} /var/run/miner_update/genesis
@@ -209,3 +213,4 @@ case "$1" in
 esac
 
 exit $?
+
