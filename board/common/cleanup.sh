@@ -1,9 +1,8 @@
 #!/bin/bash
 
-if [ -z "${TARGET}" ]; then
-    echo "this script must be invoked from postscript.sh"
-    exit 1
-fi
+TARGET=$1
+
+test -n "${TARGET}" || exit 1
 
 find ${TARGET} -name '.empty' | xargs -r rm
 
