@@ -15,6 +15,7 @@ from typing import Awaitable, Callable, Optional
 
 from aiohttp import web
 
+import captiveportal
 import connman
 import cpufreq
 import fwupdate
@@ -551,6 +552,7 @@ async def factory_reset(request: web.Request) -> web.Response:
 @handle_auth
 async def pair(request: web.Request) -> web.Response:
     await gatewayconfig.enable_pair()
+    await captiveportal.start()
 
     return web.Response(status=204)
 
@@ -703,6 +705,10 @@ async def handle_404(request: web.Request) -> web.FileResponse:
     return web.FileResponse(os.path.join(settings.HTML_PATH, '404.html'))
 
 
+async def handle_setup(request: web.Request) -> web.Response:
+    return web.HTTPFound('/setup')
+
+
 def create_error_middleware(overrides):
 
     @web.middleware
@@ -710,6 +716,10 @@ def create_error_middleware(overrides):
         try:
             return await handler(request)
         except web.HTTPException as ex:
+            # Handle captive portal requests separately
+            if ex.status == 404 and captiveportal.is_started():
+                return await handle_setup(request)
+
             override = overrides.get(ex.status)
             if override:
                 resp = await override(request)
@@ -717,6 +727,7 @@ def create_error_middleware(overrides):
                 return resp
 
             raise
+
         except Exception:
             resp = await overrides[500](request)
             resp.set_status(500)
