@@ -92,9 +92,9 @@ start_hostapd() {
     iwconfig ${iface} power off &> /dev/null
     ${PROG} ${run_conf} &> ${LOG} &
 
-    if [[ "${LINK_WATCH}" == "true" ]]; then
-        watch &
-    fi
+    # if [[ "${LINK_WATCH}" == "true" ]]; then
+    #    watch &
+    # fi
 
     test -n "${module}" && msg_done "done (${module})"|| msg_done
 
@@ -143,3 +143,5 @@ case "$1" in
         echo "Usage: $0 {start|stop|restart}"
         exit 1
 esac
+
+exit 0
