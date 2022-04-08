@@ -31,7 +31,7 @@ start() {
         test -s ${USER_SWARM_KEY} && msg_done "with user swarm key" || msg_done "with ECC"
     else
         msg_fail
-        rm -f ${VPNPASSWD_FILE}
+        echo "dummy" >> ${VPNPASSWD_FILE}
     fi
 }
 
