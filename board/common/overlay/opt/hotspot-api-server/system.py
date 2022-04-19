@@ -199,14 +199,6 @@ def set_os_conf_var(name: str, value: str) -> None:
         f.writelines(lines)
 
 
-async def is_periodic_reboot_enabled() -> bool:
-    return (await get_os_conf_var('OS_PERIODIC_REBOOT')) != 'false'
-
-
-def set_periodic_reboot_enabled(enabled: bool) -> None:
-    set_os_conf_var('OS_PERIODIC_REBOOT', str(enabled).lower())
-
-
 def is_ext_wifi_antenna_enabled() -> bool:
     if os.path.exists(CONFIG_TXT):
         with open(CONFIG_TXT, 'rt') as f:

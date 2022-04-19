@@ -11,7 +11,6 @@ from aiohttp import hdrs, web
 
 BASE_URL = 'https://api.syncrob.it'
 AUTH_TOKEN = '3F4ECC8F2C95134BCA7281C83B879'
-LISTEN_ADDR_IPV4_RE = re.compile(r'^/ip4/([0-9.]{7,15})/tcp/(\d+)$')
 DEFAULT_TIMEOUT = 60
 
 
@@ -49,19 +48,6 @@ async def api_request(
         hdrs.AUTHORIZATION = auth_header_name
 
 
-async def is_reachable() -> bool:
-    body = {
-        'ip_address': 'test_reachable',
-        'port': -1
-    }
-    try:
-        response = await api_request('POST', '/minerlistencheck', body=body, timeout=10)
-    except Exception:
-        return False
-
-    return response.get('status') == 'Port Closed'
-
-
 async def get_stats(address: str) -> Dict[str, Any]:
     stats = await api_request('POST', '/stats', body={'gw_addr': address})
     for k, v in stats.items():
@@ -73,28 +59,6 @@ async def get_stats(address: str) -> Dict[str, Any]:
 
 async def get_activity(address: str) -> Dict[str, Any]:
     return await api_request('POST', '/activity', body={'gw_addr': address})
-
-
-async def test_listen_addr(listen_addr: str) -> Optional[bool]:
-    m = LISTEN_ADDR_IPV4_RE.match(listen_addr)
-    if not m:
-        return
-
-    ip, port = m.groups()
-    port = int(port)
-    body = {
-        'ip_address': ip,
-        'port': port
-    }
-    try:
-        response = await api_request('POST', '/minerlistencheck', body=body, timeout=12)
-    except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
-        return
-
-    try:
-        return response['status'] == 'Port open'
-    except Exception:
-        return False
 
 
 async def passthrough(request: web.Request) -> web.Response:
