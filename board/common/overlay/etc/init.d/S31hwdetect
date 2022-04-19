@@ -87,8 +87,7 @@ start() {
     
     # Turn on the fan
     if [[ -n "${FAN_GPIO}" ]]; then
-        test ${FAN_ACTIVE_LEVEL} == 1 && l=dh || l=dl
-        gpio-do ${FAN_GPIO} set ${l}
+        gpio-do ${FAN_GPIO} set ${FAN_ACTIVE_LEVEL}
     fi
 
     # Platform/vendor-specific tweaks
