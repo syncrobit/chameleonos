@@ -74,4 +74,15 @@ endef
 define HELIUM_MINER_INSTALL_CMDS
 endef
 
+define HELIUM_MINER_TOOLCHAIN_ADJUST_GCC_CMDS
+    # On radxacm3 (default ARM toolchain), compiler is called aarch64-none-linux-gnu-gcc,
+    # but external/gateway-rs/longfi-sys expects aarch64-linux-gnu-gcc.
+    test -f $(HOST_DIR)/bin/aarch64-none-linux-gnu-gcc && \
+        ln -s aarch64-none-linux-gnu-gcc $(HOST_DIR)/bin/aarch64-linux-gnu-gcc || true
+    test -f $(HOST_DIR)/opt/ext-toolchain/bin/aarch64-none-linux-gnu-gcc && \
+        ln -sf aarch64-none-linux-gnu-gcc $(HOST_DIR)/opt/ext-toolchain/bin/aarch64-linux-gnu-gcc || true
+endef
+
+TOOLCHAIN_POST_INSTALL_TARGET_HOOKS += HELIUM_MINER_TOOLCHAIN_ADJUST_GCC_CMDS
+
 $(eval $(generic-package))
