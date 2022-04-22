@@ -59,8 +59,8 @@ define HELIUM_MINER_INSTALL_TARGET_CMDS
     tar xvf $(@D)/_build/$(HELIUM_MINER_BUILD_AS)/rel/miner/*.tar.gz; \
     cp $(@D)/config/testnet-sys.config $(TARGET_DIR)/opt/miner/releases/*/; \
     mkdir -p update; \
-    wget https://snapshots.helium.wtf/genesis.mainnet -o update/genesis.mainnet; \
-    wget https://snapshots.helium.wtf/genesis.testnet -o update/genesis.testnet; \
+    wget https://snapshots.helium.wtf/genesis.mainnet -O update/genesis.mainnet; \
+    wget https://snapshots.helium.wtf/genesis.testnet -O update/genesis.testnet; \
     cp $(TARGET_DIR)/usr/lib/erlang/bin/no_dot_erlang.boot .
     
     rm -rf $(TARGET_DIR)/opt/miner/$${HOME}
