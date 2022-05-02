@@ -164,7 +164,6 @@ async def get_net_test(request: web.Request) -> web.Response:
     net_test['download_speed'] = await net.test_download_speed()
     net_test['latency'] = await net.test_latency()
     net_test['public_ip'] = await net.get_public_ip()
-    net_test['sb_api_reachable'] = await sbapi.is_reachable()
     net_test['helium_api_reachable'] = await heliumapi.is_reachable()
 
     if request.query.get('pretty') == 'true':
@@ -193,7 +192,6 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
     net_info = {
         'download_speed': await net.test_download_speed(),
         'latency': await net.test_latency(),
-        'sb_api_reachable': await sbapi.is_reachable(),
         'helium_api_reachable': await heliumapi.is_reachable(),
     }
     miner_info = {
