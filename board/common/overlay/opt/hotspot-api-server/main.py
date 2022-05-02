@@ -170,7 +170,6 @@ async def get_net_test(request: web.Request) -> web.Response:
         net_test['Download Speed'] = f"{net_test.pop('download_speed')} kB/s"
         net_test['Latency'] = f"{net_test.pop('latency')} ms"
         net_test['Public IP'] = net_test.pop('public_ip')
-        net_test['SB API Reachable'] = ['no', 'yes'][net_test.pop('sb_api_reachable')]
         net_test['Helium API Reachable'] = ['no', 'yes'][net_test.pop('helium_api_reachable')]
 
     return web.json_response(net_test)
@@ -221,7 +220,6 @@ async def get_troubleshoot(request: web.Request) -> web.Response:
             'ECC': ecc_info,
             'Download Speed': download_speed,
             'Latency': latency,
-            'SB API Reachable': ['no', 'ok'][net_info['sb_api_reachable']],
             'Helium API Reachable': ['no', 'ok'][net_info['helium_api_reachable']],
             'Miner Ping': ['error', 'ok'][miner_info['ping']],
             'Region': ['unavailable', 'ok'][miner_info['region_ok']],
