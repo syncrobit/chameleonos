@@ -11,6 +11,7 @@ SYS_CONF_TESTNET_PATTERN="${MINER_DIR}/releases/*/testnet-sys.config"
 MINER_CONF="/data/etc/miner.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
 HELIUM_API_CONF="/var/run/helium-api.conf"
+HELIUM_SNAPSHOT_BASE_URL="https://helium-snapshots.nebracdn.com"
 
 WATCH_PROG_INTERVAL=10
 NETWORK_TIMEOUT=3600
@@ -127,6 +128,9 @@ start() {
 
     # Adjust API base URL
     sed -ri "s;https://api.helium.io/v1;${HELIUM_API_BASE_URL};" ${RELX_CONFIG_PATH}
+
+    # Adjust snapshot URL
+    sed -ri "s;https://snapshots.helium.wtf/mainnet;${HELIUM_SNAPSHOT_BASE_URL};" ${RELX_CONFIG_PATH}
     
     # We need the public key information for gateway config & more
     public_keys=$(${PROG} print_keys)
