@@ -6,7 +6,6 @@ CONF="/data/etc/openvpn"
 
 LOG="/var/log/openvpn.log"
 PROG="/usr/sbin/openvpn"
-PROG_ST="/sbin/sshtunnel"
 
 NETWATCH_CONF="/etc/netwatch.conf"
 
@@ -53,7 +52,6 @@ start_openvpn() {
 
 stop_openvpn() {
     killall $(basename ${PROG}) &>/dev/null
-    ${PROG_ST} stop &>/dev/null  # Also stop the tunnel
 }
 
 watch() {
@@ -75,14 +73,6 @@ watch() {
 
             stop_openvpn
             start_openvpn
-
-            # Start SSH tunnel if openvpn is successively found dead
-            if [[ ${dead_count} -gt ${NET_WATCH_RETRIES} ]]; then
-                if ! ${PROG_ST} status; then
-                    logger -t sshtunnel "starting"
-                    ${PROG_ST} start
-                fi
-            fi
 
             dead_count=$((dead_count + 1))
         else
