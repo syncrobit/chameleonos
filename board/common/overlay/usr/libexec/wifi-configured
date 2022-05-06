@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ls /var/lib/connman/wifi_* &>/dev/null
