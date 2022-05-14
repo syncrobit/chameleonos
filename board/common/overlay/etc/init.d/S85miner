@@ -11,7 +11,7 @@ SYS_CONF_TESTNET_PATTERN="${MINER_DIR}/releases/*/testnet-sys.config"
 MINER_CONF="/data/etc/miner.conf"
 HARDWARE_CONF="/var/run/hardware.conf"
 HELIUM_API_CONF="/var/run/helium-api.conf"
-HELIUM_SNAPSHOT_BASE_URL="https://helium-snapshots.nebracdn.com"
+HELIUM_SNAPSHOT_BASE_URL="https://snapshots.helium.wtf/mainnet"
 
 WATCH_PROG_INTERVAL=10
 NETWORK_TIMEOUT=3600
