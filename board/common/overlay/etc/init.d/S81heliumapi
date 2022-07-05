@@ -27,7 +27,7 @@ start() {
     msg_begin "Selecting Helium API provider"
 
     #if test_provider ${SB_DOMAIN}; then
-    domain=${SB_DOMAIN}
+    domain=${OFFICIAL_DOMAIN}
     #else
     #    domain=${OFFICIAL_DOMAIN}
     #fi
