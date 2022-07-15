@@ -132,6 +132,12 @@ start() {
     # Adjust snapshot URL
     sed -ri "s;https://snapshots.helium.wtf/mainnet;${HELIUM_SNAPSHOT_BASE_URL};" ${RELX_CONFIG_PATH}
     
+    # Enable gateway & mux
+    sed -ri "s;gateway_and_mux_enable, false;gateway_and_mux_enable, true;" ${RELX_CONFIG_PATH}
+    
+    # Disable blockchain following
+    sed -ri "s;gateways_run_chain, true;gateways_run_chain, false;" ${RELX_CONFIG_PATH}
+    
     # We need the public key information for gateway config & more
     public_keys=$(${PROG} print_keys)
     if [[ $? != 0 ]]; then
