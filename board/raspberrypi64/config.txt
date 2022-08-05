@@ -10,3 +10,4 @@ dtoverlay=spi1-3cs
 hdmi_force_hotplug=1
 hdmi_force_edid_audio=1
 arm_64bit=1
+boot_delay=5
